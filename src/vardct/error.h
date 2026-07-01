@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+#ifndef JXL_VARDCT_ERROR_H_
+#define JXL_VARDCT_ERROR_H_
+
+typedef enum {
+    JXL_VARDCT_OK = 0,
+    JXL_VARDCT_BITSTREAM_ERROR,
+    JXL_VARDCT_DECODER_ERROR,
+    JXL_VARDCT_MODULAR_ERROR,
+    JXL_VARDCT_OUT_OF_MEMORY,
+    JXL_VARDCT_VALIDATION_ERROR,
+} jxl_vardct_status_t;
+
+#endif /* JXL_VARDCT_ERROR_H_ */

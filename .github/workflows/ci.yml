@@ -1,0 +1,57 @@
+on:
+  push:
+    branches:
+      - main
+      - v*.x
+      - c-port
+    paths:
+      - '**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    paths:
+      - '**'
+      - '.github/workflows/ci.yml'
+  workflow_dispatch: {}
+
+name: CI
+
+jobs:
+  build-test:
+    name: C (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - windows-2022
+          - macos-14
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.95.0'
+      - name: Verify container digests match Rust oracle
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          RUST_ROOT="$(bash scripts/rust_root.sh)"
+          cargo test --manifest-path "$RUST_ROOT/Cargo.toml" -p jxl-bitstream print_decode_fixture_codestream_digests -- --ignored --nocapture > /tmp/rust_digests.txt
+          grep '^{' /tmp/rust_digests.txt | sort > /tmp/rust_sorted.txt
+          grep '^{' tests/container/codestream_digests.inc | sed 's/    //' | sort > /tmp/c_sorted.txt
+          diff -u /tmp/rust_sorted.txt /tmp/c_sorted.txt
+      - name: Prefetch conformance references
+        run: python3 tests/conformance/gen_conformance_cases.py
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Parity preflight
+        if: matrix.os == 'ubuntu-24.04'
+        shell: bash
+        run: make parity-preflight

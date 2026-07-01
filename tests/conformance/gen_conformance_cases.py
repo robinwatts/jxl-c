@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: MIT OR Apache-2.0
+"""Generate c/tests/conformance/conformance_cases.inc from conformance testcase lists."""
+
+from __future__ import annotations
+
+import ast
+import json
+import os
+import sys
+import urllib.request
+
+def rust_root() -> str:
+    env = os.environ.get("JXL_OXIDE_RUST_ROOT")
+    if env:
+        return os.path.abspath(env)
+    here = os.path.dirname(__file__)
+    sub = os.path.abspath(os.path.join(here, "../../third_party/jxl-oxide"))
+    if os.path.isdir(os.path.join(sub, "crates/jxl-oxide-tests")):
+        return sub
+    mono = os.path.abspath(os.path.join(here, "../../.."))
+    if os.path.isdir(os.path.join(mono, "crates/jxl-oxide-tests")):
+        return mono
+    return sub
+
+
+ROOT = os.path.join(rust_root(), "crates/jxl-oxide-tests/conformance/testcases")
+CACHE = os.path.join(rust_root(), "crates/jxl-oxide-tests/tests/cache")
+OUT = os.path.join(os.path.dirname(__file__), "conformance_cases.inc")
+LISTS = (
+    os.path.join(ROOT, "main_level5.txt"),
+    os.path.join(ROOT, "main_level10.txt"),
+)
+BASE_URL = "https://storage.googleapis.com/storage/v1/b/jxl-conformance/o/objects%2F{hash}?alt=media"
+
+# Keep in sync with JXL_CONFORMANCE_PASSING_FIXTURES in c/CMakeLists.txt.
+PASSING_FIXTURES = frozenset(
+    {
+        "alpha_nonpremultiplied",
+        "alpha_premultiplied",
+        "alpha_triangles",
+        "animation_icos4d",
+        "animation_icos4d_5",
+        "animation_newtons_cradle",
+        "animation_spline",
+        "animation_spline_5",
+        "bench_oriented_brg",
+        "bench_oriented_brg_5",
+        "bicycles",
+        "bike",
+        "bike_5",
+        "blendmodes",
+        "blendmodes_5",
+        "cafe",
+        "cafe_5",
+        "cmyk_layers",
+        "delta_palette",
+        "grayscale",
+        "grayscale_5",
+        "grayscale_jpeg",
+        "grayscale_jpeg_5",
+        "grayscale_public_university",
+        "lossless_pfm",
+        "lz77_flower",
+        "noise",
+        "noise_5",
+        "opsin_inverse",
+        "opsin_inverse_5",
+        "patches",
+        "patches_5",
+        "patches_lossless",
+        "progressive",
+        "progressive_5",
+        "spot",
+        "sunset_logo",
+        "upsampling",
+        "upsampling_5",
+    }
+)
+
+
+def cache_path(hash_hex: str, ext: str) -> str:
+    os.makedirs(CACHE, exist_ok=True)
+    return os.path.join(CACHE, f"{hash_hex}.{ext}")
+
+
+def ensure_cached(hash_hex: str, ext: str) -> bytes:
+    path = cache_path(hash_hex, ext)
+    if os.path.isfile(path):
+        with open(path, "rb") as f:
+            return f.read()
+    url = BASE_URL.format(hash=hash_hex)
+    with urllib.request.urlopen(url) as resp:
+        data = resp.read()
+    with open(path, "wb") as f:
+        f.write(data)
+    return data
+
+
+def npy_channels(data: bytes) -> int:
+    if len(data) < 10 or data[:6] != b"\x93NUMPY":
+        raise ValueError("invalid npy")
+    meta_len = int.from_bytes(data[8:10], "little")
+    meta = data[10 : 10 + meta_len].decode("latin1").strip()
+    header = ast.literal_eval(meta)
+    shape = header["shape"]
+    if len(shape) == 0:
+        return 1
+    return int(shape[-1])
+
+
+def load_fixture_names() -> list[str]:
+    seen: set[str] = set()
+    names: list[str] = []
+    for list_path in LISTS:
+        with open(list_path, encoding="utf-8") as f:
+            for line in f:
+                name = line.strip()
+                if name and name not in seen:
+                    seen.add(name)
+                    names.append(name)
+    return names
+
+
+def main() -> int:
+    names = load_fixture_names()
+
+    rows = []
+    for name in names:
+        with open(os.path.join(ROOT, name, "test.json"), encoding="utf-8") as f:
+            meta = json.load(f)
+        sha = meta["sha256sums"]
+        npy_hash = sha["reference_image.npy"]
+        icc_hash = sha.get("reference.icc", "")
+        frame = meta["frames"][0]
+        peak = frame["peak_error"]
+        rmse = frame["rms_error"]
+        # Rust conformance uses per-channel limits; C uses one limit per case.
+        if name == "alpha_premultiplied":
+            peak = 0.004
+            rmse = 0.0001
+        frames = len(meta["frames"])
+        anim_reject = 0
+        try:
+            channels = npy_channels(ensure_cached(npy_hash, "npy"))
+        except Exception as exc:  # noqa: BLE001
+            print(f"warning: {name}: {exc}", file=sys.stderr)
+            channels = 3
+        if icc_hash:
+            try:
+                ensure_cached(icc_hash, "icc")
+            except Exception as exc:  # noqa: BLE001
+                print(f"warning: {name}: icc: {exc}", file=sys.stderr)
+        passing = 1 if name in PASSING_FIXTURES else 0
+        rows.append(
+            f'    {{"{name}", "{npy_hash}", "{icc_hash}", {frames}, {channels}, '
+            f"{peak}f, {rmse}f, {anim_reject}, {passing}}},"
+        )
+
+    with open(OUT, "w", encoding="utf-8") as out:
+        out.write("/* Generated by gen_conformance_cases.py; do not edit. */\n")
+        out.write("typedef struct {\n")
+        out.write("    const char *name;\n")
+        out.write("    const char *npy_hash;\n")
+        out.write("    const char *icc_hash;\n")
+        out.write("    uint8_t frames;\n")
+        out.write("    uint8_t channels;\n")
+        out.write("    float peak_error;\n")
+        out.write("    float rmse;\n")
+        out.write("    uint8_t expect_animation_reject;\n")
+        out.write("    uint8_t passing;\n")
+        out.write("} jxl_conformance_case;\n\n")
+        out.write("static const jxl_conformance_case k_conformance_cases[] = {\n")
+        out.write("\n".join(rows))
+        out.write("\n};\n")
+        out.write("static const size_t k_conformance_case_count =\n")
+        out.write("    sizeof(k_conformance_cases) / sizeof(k_conformance_cases[0]);\n")
+    print(f"wrote {OUT} ({len(rows)} cases)")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

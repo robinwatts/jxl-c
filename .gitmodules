@@ -1,0 +1,3 @@
+[submodule "third_party/jxl-oxide"]
+	path = third_party/jxl-oxide
+	url = https://github.com/tirr-c/jxl-oxide.git
