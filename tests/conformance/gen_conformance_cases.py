@@ -15,13 +15,7 @@ def rust_root() -> str:
     if env:
         return os.path.abspath(env)
     here = os.path.dirname(__file__)
-    sub = os.path.abspath(os.path.join(here, "../../third_party/jxl-oxide"))
-    if os.path.isdir(os.path.join(sub, "crates/jxl-oxide-tests")):
-        return sub
-    mono = os.path.abspath(os.path.join(here, "../../.."))
-    if os.path.isdir(os.path.join(mono, "crates/jxl-oxide-tests")):
-        return mono
-    return sub
+    return os.path.abspath(os.path.join(here, "../../third_party/jxl-oxide"))
 
 
 ROOT = os.path.join(rust_root(), "crates/jxl-oxide-tests/conformance/testcases")

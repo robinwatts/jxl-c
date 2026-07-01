@@ -108,7 +108,7 @@ static int load_layout_oracle(const char *fixture, uint32_t *nb_meta_out,
     char path[512];
     char line[512];
     size_t line_no;
-    snprintf(path, sizeof(path), "%s/modular_transformed_layouts.txt", JXL_OXIDE_FIXTURES_DIR);
+    snprintf(path, sizeof(path), "%s/modular_transformed_layouts.txt", JXL_OXIDE_DECODE_ORACLE_DIR);
     FILE *f = fopen(path, "rb");
     if (f == NULL) {
         return 0;
@@ -179,7 +179,7 @@ static void validate_layout_oracle_file(void) {
     char seen[64][128];
     size_t seen_len;
     size_t line_no;
-    snprintf(path, sizeof(path), "%s/modular_transformed_layouts.txt", JXL_OXIDE_FIXTURES_DIR);
+    snprintf(path, sizeof(path), "%s/modular_transformed_layouts.txt", JXL_OXIDE_DECODE_ORACLE_DIR);
     FILE *f = fopen(path, "rb");
     if (f == NULL) {
         fprintf(stderr, "cannot open layout oracle file: %s\n", path);
@@ -718,7 +718,7 @@ static void test_modular_pass_group_offsets_decode_fixtures(void) {
     char seen[64][128];
     size_t seen_len;
     snprintf(oracle_path, sizeof(oracle_path), "%s/modular_pass_group_offsets.txt",
-             JXL_OXIDE_FIXTURES_DIR);
+             JXL_OXIDE_DECODE_ORACLE_DIR);
     FILE *f = fopen(oracle_path, "rb");
     if (f == NULL) {
         fprintf(stderr, "cannot open oracle file: %s\n", oracle_path);

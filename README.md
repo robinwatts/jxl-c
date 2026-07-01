@@ -2,7 +2,7 @@
 
 Manual C port of the [jxl-oxide](https://github.com/tirr-c/jxl-oxide) JPEG XL **decode** pipeline.
 
-The Rust workspace lives in a git submodule at `third_party/jxl-oxide`. C tests use Rust fixtures, goldens, and conformance references from that submodule; CI and local workflows are driven entirely from this repository.
+Fixtures and goldens come from the `third_party/jxl-oxide` git submodule. Decode parity oracle text files live in this repo under `tests/oracle/decode/`. All build and test workflows run from **jxl-c** only.
 
 ## Quick start
 
@@ -15,28 +15,38 @@ cd jxl-c
 
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
+python3 tests/conformance/gen_conformance_cases.py   # prefetch .npy cache
 ctest --test-dir build --output-on-failure
 ```
 
-## Rust oracle (fixtures + cross-checks)
+If bootstrap reports missing oracle files (unlikely — they are vendored):
+
+```bash
+./scripts/gen_decode_oracles.sh
+```
+
+## Paths
 
 | Path | Purpose |
 |------|---------|
-| `third_party/jxl-oxide/crates/jxl-oxide-tests/decode/` | Decode fixtures + `output.buf.zst` goldens |
-| `third_party/jxl-oxide/crates/jxl-oxide-tests/conformance/testcases/` | Conformance `input.jxl` + `test.json` |
+| `third_party/jxl-oxide/crates/jxl-oxide-tests/decode/` | `input.jxl` fixtures + `output.buf.zst` goldens |
+| `third_party/jxl-oxide/crates/jxl-oxide-tests/conformance/testcases/` | Conformance cases |
 | `third_party/jxl-oxide/crates/jxl-oxide-tests/tests/cache/` | Downloaded `.npy` / `.icc` references |
+| `tests/oracle/decode/` | Local C parity oracles (`modular_pass_group_offsets.txt`, etc.) |
 
-Override the Rust workspace root (e.g. monorepo checkout) with:
+Override the submodule location:
 
 ```bash
 export JXL_OXIDE_RUST_ROOT=/path/to/jxl-oxide
 ```
 
-CMake auto-detects `third_party/jxl-oxide` or a parent monorepo layout when `c/` is still nested inside jxl-oxide.
+Regenerate oracle files after decoder changes (C-only, no Rust toolchain):
+
+```bash
+./scripts/gen_decode_oracles.sh
+```
 
 ## Parity preflight
-
-Runs Rust `grayalpha_toc` parity tests, then the full C test suite:
 
 ```bash
 make parity-preflight
@@ -44,30 +54,29 @@ make parity-preflight
 
 ## Benchmarks (C vs Rust)
 
-Single-threaded decode comparison using fixtures from the submodule:
-
 ```bash
 scripts/bench_st_compare.sh --iters 40 --rounds 3
 ```
 
 ## Layout
 
-See [PLAN.md](PLAN.md) for the port roadmap. High-level structure:
-
 ```
 jxl-c/
-  include/jxl_oxide/     # public C API
-  src/                   # library sources
-  tests/                 # unit, oracle, conformance (driven from C)
-  tools/                 # bench_decode, oracle CLIs
-  third_party/jxl-oxide/ # git submodule (Rust oracle)
+  include/jxl_oxide/       # public C API
+  src/                     # library sources
+  tests/oracle/decode/     # vendored/regenerated parity oracles
+  tools/                   # bench_decode, gen_decode_oracles
+  third_party/jxl-oxide/   # git submodule (fixtures + Rust cross-checks)
 ```
+
+See [PLAN.md](PLAN.md) for the port roadmap.
 
 ## CMake options
 
 | Option | Default | Notes |
 |--------|---------|-------|
-| `JXL_OXIDE_RUST_ROOT` | auto | Path to jxl-oxide workspace |
+| `JXL_OXIDE_RUST_ROOT` | `third_party/jxl-oxide` | Submodule root |
+| `JXL_OXIDE_DECODE_ORACLE_DIR` | `tests/oracle/decode` | Local parity oracle files |
 | `JXL_OXIDE_C_ENABLE_JBR` | ON | JPEG bitstream reconstruction |
 | `JXL_OXIDE_C_BUILD_TOOLS` | OFF | `bench_decode` |
 | `JXL_OXIDE_C_BUILD_FUZZ` | OFF | libFuzzer target (Clang) |

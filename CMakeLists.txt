@@ -456,28 +456,24 @@ endif()
 if(JXL_OXIDE_C_BUILD_TESTS)
     enable_testing()
 
-    # jxl-oxide Rust workspace: submodule at third_party/jxl-oxide (jxl-c repo),
-    # or parent directory when still nested inside the monorepo.
+    # jxl-oxide Rust workspace: third_party/jxl-oxide submodule.
     if(NOT JXL_OXIDE_RUST_ROOT)
-        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/jxl-oxide/crates/jxl-oxide-tests/decode")
-            set(_jxl_rust_root_default "${CMAKE_CURRENT_SOURCE_DIR}/third_party/jxl-oxide")
-        elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../crates/jxl-oxide-tests/decode")
-            set(_jxl_rust_root_default "${CMAKE_CURRENT_SOURCE_DIR}/..")
-        else()
-            set(_jxl_rust_root_default "${CMAKE_CURRENT_SOURCE_DIR}/third_party/jxl-oxide")
-        endif()
-        set(JXL_OXIDE_RUST_ROOT "${_jxl_rust_root_default}"
-            CACHE PATH "Path to jxl-oxide Rust workspace (submodule or monorepo parent)")
+        set(JXL_OXIDE_RUST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/jxl-oxide"
+            CACHE PATH "Path to jxl-oxide submodule (fixtures + Rust oracle)")
     endif()
     if(NOT EXISTS "${JXL_OXIDE_RUST_ROOT}/crates/jxl-oxide-tests/decode")
         message(WARNING
             "jxl-oxide test fixtures not found under ${JXL_OXIDE_RUST_ROOT}; "
-            "run: git submodule update --init third_party/jxl-oxide")
+            "run: git submodule update --init --recursive third_party/jxl-oxide")
     endif()
 
     set(JXL_OXIDE_FIXTURES_DIR
         "${JXL_OXIDE_RUST_ROOT}/crates/jxl-oxide-tests/decode"
-        CACHE PATH "Path to Rust decode fixtures"
+        CACHE PATH "Path to decode fixtures (input.jxl, goldens)"
+    )
+    set(JXL_OXIDE_DECODE_ORACLE_DIR
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/oracle/decode"
+        CACHE PATH "Path to local decode parity oracle text files"
     )
     set(JXL_OXIDE_CONFORMANCE_DIR
         "${JXL_OXIDE_RUST_ROOT}/crates/jxl-oxide-tests/conformance/testcases"
@@ -504,9 +500,16 @@ if(JXL_OXIDE_C_BUILD_TESTS)
     target_compile_definitions(jxl_oxide_c_test_includes INTERFACE
         JXL_OXIDE_RUST_ROOT="${JXL_OXIDE_RUST_ROOT}"
         JXL_OXIDE_FIXTURES_DIR="${JXL_OXIDE_FIXTURES_DIR}"
+        JXL_OXIDE_DECODE_ORACLE_DIR="${JXL_OXIDE_DECODE_ORACLE_DIR}"
         JXL_OXIDE_CONFORMANCE_DIR="${JXL_OXIDE_CONFORMANCE_DIR}"
         JXL_OXIDE_CACHE_DIR="${JXL_OXIDE_CACHE_DIR}"
     )
+
+    add_executable(gen_decode_oracles tools/gen_decode_oracles.c)
+    target_link_libraries(gen_decode_oracles PRIVATE jxl_oxide_c)
+    target_include_directories(gen_decode_oracles PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
     add_executable(test_decoder_stub tests/unit/test_decoder_stub.c)
     target_link_libraries(test_decoder_stub PRIVATE jxl_oxide_c jxl_oxide_c_test_includes)

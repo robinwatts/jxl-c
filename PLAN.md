@@ -107,7 +107,7 @@ jxl-c.git/                     # this repository (C port root)
   tools/
 ```
 
-The C port previously lived in `jxl-oxide.git/c/`; it is now a standalone repo with jxl-oxide as a submodule. See [README.md](README.md) for clone/bootstrap instructions.
+The C port lives in **jxl-c** with jxl-oxide as a submodule. See [README.md](README.md) for clone/bootstrap instructions.
 
 Upstream Rust crates (oracle source) live under `third_party/jxl-oxide/crates/`:
 
