@@ -16,6 +16,7 @@ void jxl_opsin_inverse_set_defaults(jxl_opsin_inverse_parsed *out);
 jxl_bs_status_t jxl_opsin_inverse_parse(jxl_bs *bs, jxl_opsin_inverse_parsed *out);
 jxl_bs_status_t skip_opsin_inverse(jxl_bs *bs);
 jxl_bs_status_t skip_f16_array(jxl_bs *bs, size_t count);
+jxl_bs_status_t jxl_animation_header_parse(jxl_bs *bs, jxl_parsed_image_header *out);
 jxl_bs_status_t skip_animation_header(jxl_bs *bs, int *have_timecodes_out);
 
 #endif /* JXL_IMAGE_PARSE_HELPERS_H_ */

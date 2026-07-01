@@ -112,6 +112,18 @@ typedef struct {
     int have_animation;
 } jxl_image_header;
 
+/*
+ * Animation timing from the codestream AnimationHeader bundle.
+ * TPS (ticks per second) = tps_numerator / tps_denominator.
+ * num_loops == 0 means loop forever.
+ */
+typedef struct {
+    uint32_t tps_numerator;
+    uint32_t tps_denominator;
+    uint32_t num_loops;
+    int have_timecodes;
+} jxl_animation_header;
+
 typedef enum {
     JXL_EXIF_DECODING = 0,
     JXL_EXIF_NOT_FOUND,

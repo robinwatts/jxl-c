@@ -52,6 +52,7 @@ struct jxl_render {
     uint32_t color_planes;
     uint32_t keyframe_index;
     uint32_t duration;
+    uint32_t timecode;
     int ct_done;
     float **planes;
     float *samples;

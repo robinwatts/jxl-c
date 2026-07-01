@@ -74,7 +74,7 @@ jxl_bs_status_t jxl_image_metadata_parse(jxl_bs *bs, jxl_parsed_image_header *ou
         }
         out->have_animation = have_animation;
         if (have_animation) {
-            st = skip_animation_header(bs, &out->have_timecodes);
+            st = jxl_animation_header_parse(bs, out);
             if (st != JXL_BS_OK) {
                 return st;
             }

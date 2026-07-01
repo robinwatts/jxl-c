@@ -10,7 +10,7 @@ Manual port of the jxl-oxide decode pipeline to C, with Rust tests as the correc
 | Brotli | [google/brotli](https://github.com/google/brotli) C library |
 | Color management | **LCMS2** (required link dependency) |
 | Correctness oracle | Rust `jxl-oxide` + existing test fixtures |
-| **v1 scope** | **Still images + animation** (multi-keyframe render; no timing/streaming API) |
+| **v1 scope** | **Still images + animation** (multi-keyframe render; animation timing getters; no progressive streaming API) |
 | Threading | Deferred (single-threaded v1) |
 | JBR (JPEG reconstruction) | **In v1** — `src/jbr/`; `JXL_OXIDE_C_ENABLE_JBR=ON` (CMake option to disable) |
 | **`jxl_context`** | Explicit create/destroy required; pluggable allocator; CMS on context — see [CONTEXT_PLAN.md](CONTEXT_PLAN.md) |
@@ -34,7 +34,6 @@ The core render pipeline is shared: reference-only frames, LF frames, blend comp
 - **JPEG bitstream reconstruction** (`jxl-jbr`) — `jxl_decoder_jpeg_reconstruction_status()` + `jxl_decoder_reconstruct_jpeg()` when `JXL_OXIDE_C_ENABLE_JBR` is on
 
 **Out of scope for v1:**
-- Animation **timing** API (TPS, loop count, timecodes) — parse internally where the bitstream requires it, but do not expose getters
 - Progressive multi-keyframe loading / partial animation decode while feeding
 - CLI, WASM, `image` crate integration
 - Thread pool
@@ -50,7 +49,9 @@ Animated files are **first-class** in v1 — not a keyframe-0-only subset.
 - `jxl_decoder_num_keyframes()` returns the count of displayed keyframes.
 - `jxl_decoder_render_keyframe(ctx, dec, idx, …)` renders any keyframe index.
 - `jxl_decoder_render()` renders keyframe 0 (still images and animation).
-- `jxl_render_keyframe_index()` / `jxl_render_duration()` on the result (`duration` parsed; timing metadata not otherwise exposed).
+- `jxl_decoder_animation()` — TPS, loop count, timecode flag from `AnimationHeader`.
+- `jxl_render_keyframe_index()` / `jxl_render_duration()` / `jxl_render_timecode()` on the result.
+- `jxl_animation_frame_duration_rational()` — per-keyframe duration in seconds as a rational.
 
 **Render policy (must match Rust):**
 - Build the animation reference chain before each blend keyframe (`ensure_animation_refs`).
@@ -230,7 +231,7 @@ jxl_jpeg_reconstruction_status jxl_decoder_jpeg_reconstruction_status(const jxl_
 jxl_status_t jxl_decoder_reconstruct_jpeg(jxl_decoder *dec, uint8_t **jpeg_out, size_t *jpeg_len);
 ```
 
-**Not in v1:** TPS / loop / timecode getters, progressive loading callbacks, non-keyframe frame index API (`num_loaded_frames`).
+**Not in v1:** progressive loading callbacks, non-keyframe frame index API (`num_loaded_frames`).
 
 **JBR:** Port of `crates/jxl-jbr` in `src/jbr/`; gated by `JXL_OXIDE_C_ENABLE_JBR`. See [JBR policy](#jbr-policy-v1).
 
@@ -457,7 +458,7 @@ Sub-order:
 | 8 | `jxl-oxide` | `src/decoder.c`, `cms_lcms2.c` | ~2,778 | Public API + animation |
 | 8b | `jxl-jbr` | `src/jbr/` | ~814 | `c_unit_jbr` (6 cases) |
 
-Deferred: `jxl-threadpool`, animation timing/streaming API.
+Deferred: `jxl-threadpool`, progressive animation streaming API.
 
 ---
 
@@ -468,7 +469,7 @@ Deferred: `jxl-threadpool`, animation timing/streaming API.
 3. **`jxl_status_t` everywhere** internally; `jxl_decoder_last_error()` for detail.
 4. **Ownership:** decoder owns state; `jxl_render` owns pixels; free only via `destroy`.
 5. **Float samples:** planar `[0, 1]` `float` — matches Rust oracle format exactly.
-6. **Animation:** multi-keyframe render in v1; composite from ref slots per Rust `blend.rs`; timing getters deferred.
+6. **Animation:** multi-keyframe render in v1; composite from ref slots per Rust `blend.rs`; timing getters in v1; progressive streaming deferred.
 
 ---
 
@@ -500,7 +501,7 @@ Deferred: `jxl-threadpool`, animation timing/streaming API.
 
 Second developer parallelizing phases 5–7 sub-modules: **~4–5 months**.
 
-Animation multi-keyframe API and ref-chain compositing are **in v1**; animation timing/streaming remains v2.
+Animation multi-keyframe API, ref-chain compositing, and timing getters are **in v1**; progressive animation streaming remains v2.
 
 ### Crop tests (`tests/conformance/test_crop_conformance.c`)
 

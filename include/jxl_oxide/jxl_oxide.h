@@ -51,11 +51,27 @@ jxl_status_t jxl_decoder_render_keyframe(jxl_context *ctx, jxl_decoder *dec,
 
 uint32_t jxl_decoder_num_keyframes(const jxl_decoder *dec);
 
+/*
+ * Animation timing metadata. Requires jxl_decoder_try_init.
+ * Returns JXL_ERROR_UNSUPPORTED when the image is not animated.
+ */
+jxl_status_t jxl_decoder_animation(const jxl_decoder *dec, jxl_animation_header *out);
+
 uint32_t    jxl_render_width(const jxl_render *r);
 uint32_t    jxl_render_height(const jxl_render *r);
 uint32_t    jxl_render_num_planes(const jxl_render *r);
 uint32_t    jxl_render_keyframe_index(const jxl_render *r);
 uint32_t    jxl_render_duration(const jxl_render *r);
+uint32_t    jxl_render_timecode(const jxl_render *r);
+
+/*
+ * Frame presentation duration in seconds as a rational (numer/denom).
+ * When duration_ticks is UINT32_MAX, numer is duration_ticks and denom is 0.
+ * When anim is NULL or TPS is zero, numer is duration_ticks and denom is 1.
+ */
+void jxl_animation_frame_duration_rational(const jxl_animation_header *anim,
+                                         uint32_t duration_ticks, uint32_t *numer_out,
+                                         uint32_t *denom_out);
 
 typedef enum {
     JXL_RENDER_PLANE_F32 = 0,

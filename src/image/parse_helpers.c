@@ -517,7 +517,7 @@ jxl_bs_status_t skip_opsin_inverse(jxl_bs *bs) {
     return jxl_bs_read_f16_as_f32(bs, &scratch);
 }
 
-jxl_bs_status_t skip_animation_header(jxl_bs *bs, int *have_timecodes_out) {
+jxl_bs_status_t jxl_animation_header_parse(jxl_bs *bs, jxl_parsed_image_header *out) {
     uint32_t v;
     int have_timecodes;
     const jxl_u32_spec tps_num[4] = {JXL_U32_C(100), JXL_U32_C(1000), JXL_U32_BITS(1, 10),
@@ -527,26 +527,57 @@ jxl_bs_status_t skip_animation_header(jxl_bs *bs, int *have_timecodes_out) {
     const jxl_u32_spec loops[4] = {JXL_U32_C(0), JXL_U32_BITS(0, 3), JXL_U32_BITS(0, 16),
                                    JXL_U32_BITS(0, 32)};
     jxl_bs_status_t st;
-    if (have_timecodes_out != NULL) {
-        *have_timecodes_out = 0;
+
+    if (out != NULL) {
+        out->animation_tps_numerator = 0;
+        out->animation_tps_denominator = 0;
+        out->animation_num_loops = 0;
+        out->have_timecodes = 0;
     }
-    v = 0;
+
     st = jxl_bs_read_u32(bs, tps_num, &v);
     if (st != JXL_BS_OK) {
         return st;
     }
+    if (out != NULL) {
+        out->animation_tps_numerator = v;
+    }
+
     st = jxl_bs_read_u32(bs, tps_den, &v);
     if (st != JXL_BS_OK) {
         return st;
     }
+    if (out != NULL) {
+        out->animation_tps_denominator = v;
+    }
+
     st = jxl_bs_read_u32(bs, loops, &v);
     if (st != JXL_BS_OK) {
         return st;
     }
+    if (out != NULL) {
+        out->animation_num_loops = v;
+    }
+
     have_timecodes = 0;
     st = jxl_bs_read_bool(bs, &have_timecodes);
-    if (st == JXL_BS_OK && have_timecodes_out != NULL) {
-        *have_timecodes_out = have_timecodes;
+    if (st == JXL_BS_OK && out != NULL) {
+        out->have_timecodes = have_timecodes;
     }
     return st;
+}
+
+jxl_bs_status_t skip_animation_header(jxl_bs *bs, int *have_timecodes_out) {
+    jxl_parsed_image_header tmp;
+    memset(&tmp, 0, sizeof(tmp));
+    {
+        jxl_bs_status_t st = jxl_animation_header_parse(bs, &tmp);
+        if (st != JXL_BS_OK) {
+            return st;
+        }
+        if (have_timecodes_out != NULL) {
+            *have_timecodes_out = tmp.have_timecodes;
+        }
+        return JXL_BS_OK;
+    }
 }

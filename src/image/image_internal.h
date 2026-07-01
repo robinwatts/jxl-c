@@ -89,6 +89,9 @@ typedef struct {
     uint8_t ec_bit_depth[256];
     int have_animation;
     int have_timecodes;
+    uint32_t animation_tps_numerator;
+    uint32_t animation_tps_denominator;
+    uint32_t animation_num_loops;
     int xyb_encoded;
     /* When true (default), modular samples use i16 wrapping storage (Rust narrow path). */
     int modular_16bit_buffers;

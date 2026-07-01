@@ -317,6 +317,7 @@ static jxl_status_t jxl_render_display_keyframe_inner(const jxl_keyframe_render_
 
     r->keyframe_index = params->keyframe_index;
     r->duration = keyframe.header.duration;
+    r->timecode = keyframe.header.timecode;
 
     frame_params.params = params;
     frame_params.parsed = parsed;

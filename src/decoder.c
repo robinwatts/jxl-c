@@ -1106,12 +1106,50 @@ uint32_t jxl_decoder_num_keyframes(const jxl_decoder *dec) {
     return count;
 }
 
+jxl_status_t jxl_decoder_animation(const jxl_decoder *dec, jxl_animation_header *out) {
+    if (dec == NULL || out == NULL || !dec->initialized) {
+        return JXL_ERROR_INVALID_INPUT;
+    }
+    if (!dec->parsed_header.have_animation) {
+        return JXL_ERROR_UNSUPPORTED;
+    }
+    out->tps_numerator = dec->parsed_header.animation_tps_numerator;
+    out->tps_denominator = dec->parsed_header.animation_tps_denominator;
+    out->num_loops = dec->parsed_header.animation_num_loops;
+    out->have_timecodes = dec->parsed_header.have_timecodes;
+    return JXL_OK;
+}
+
+void jxl_animation_frame_duration_rational(const jxl_animation_header *anim,
+                                           uint32_t duration_ticks, uint32_t *numer_out,
+                                           uint32_t *denom_out) {
+    if (numer_out == NULL || denom_out == NULL) {
+        return;
+    }
+    if (duration_ticks == UINT32_MAX) {
+        *numer_out = duration_ticks;
+        *denom_out = 0;
+        return;
+    }
+    if (anim == NULL || anim->tps_numerator == 0 || anim->tps_denominator == 0) {
+        *numer_out = duration_ticks;
+        *denom_out = 1;
+        return;
+    }
+    *numer_out = anim->tps_denominator * duration_ticks;
+    *denom_out = anim->tps_numerator;
+}
+
 uint32_t jxl_render_keyframe_index(const jxl_render *r) {
     return r != NULL ? r->keyframe_index : 0;
 }
 
 uint32_t jxl_render_duration(const jxl_render *r) {
     return r != NULL ? r->duration : 0;
+}
+
+uint32_t jxl_render_timecode(const jxl_render *r) {
+    return r != NULL ? r->timecode : 0;
 }
 
 uint32_t jxl_render_width(const jxl_render *r) {
