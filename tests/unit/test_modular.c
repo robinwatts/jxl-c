@@ -160,6 +160,7 @@ static void test_squeeze_simd_matches_base(void) {
     size_t i;
     static const size_t sizes[][2] = {
         {4, 1}, {8, 8}, {17, 9}, {24, 16}, {33, 17}, {48, 24}, {64, 32}, {80, 40},
+        {513, 513}, {513, 1}, {1, 513},
     };
     for (i = 0; i < sizeof(sizes) / sizeof(sizes[0]); ++i) {
         test_squeeze_h_simd_matches_base(sizes[i][0], sizes[i][1]);

@@ -3,6 +3,7 @@
 #include "modular/transform/squeeze_internal.h"
 
 #include "allocator.h"
+#include "jxl_oxide/jxl_oxide.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -54,6 +55,27 @@ static void test_h(size_t width, size_t height) {
     free(simd);
 }
 
+static void test_h_with_context(size_t width, size_t height) {
+    jxl_context *ctx = NULL;
+    size_t stride = width;
+    size_t n = stride * height;
+    int16_t *base = (int16_t *)malloc(n * sizeof(*base));
+    int16_t *simd = (int16_t *)malloc(n * sizeof(*simd));
+
+    assert(base != NULL && simd != NULL);
+    assert(jxl_context_create(NULL, &ctx) == JXL_OK);
+
+    fill(base, width, height, stride);
+    memcpy(simd, base, n * sizeof(*base));
+    jxl_squeeze_inverse_h_i16_base(test_alloc(), base, width, height, stride);
+    jxl_squeeze_inverse_h_i16(ctx, test_alloc(), simd, width, height, stride);
+    assert(memcmp(base, simd, n * sizeof(*base)) == 0);
+
+    free(base);
+    free(simd);
+    jxl_context_destroy(ctx);
+}
+
 static void test_v(size_t width, size_t height) {
     size_t y;
     size_t stride = width;
@@ -83,11 +105,13 @@ int main(void) {
     size_t i;
     static const size_t sizes[][2] = {
         {4, 1}, {8, 8}, {17, 9}, {24, 16}, {33, 17}, {48, 24}, {64, 32}, {80, 40},
+        {513, 513}, {513, 1}, {1, 513},
     };
     for (i = 0; i < sizeof(sizes) / sizeof(sizes[0]); ++i) {
         test_h(sizes[i][0], sizes[i][1]);
         test_v(sizes[i][0], sizes[i][1]);
     }
+    test_h_with_context(513, 513);
     printf("test_squeeze_simd: ok\n");
     return 0;
 }

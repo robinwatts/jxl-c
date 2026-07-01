@@ -157,6 +157,7 @@ Build: CMake. Static library `jxl_oxide_c` (+ optional shared). LCMS2 and Brotli
 | `JXL_OXIDE_C_SIMD_SSE41` | ON (x86) | Generic fallback always built |
 | `JXL_OXIDE_C_SIMD_AVX2` | ON (x86) | |
 | `JXL_OXIDE_C_SIMD_NEON` | ON (arm64) | |
+| `JXL_OXIDE_C_SIMD_WASM128` | ON (wasm32) | |
 | `JXL_OXIDE_C_REQUIRE_LCMS2` | ON | Hard dependency |
 | `JXL_OXIDE_C_ENABLE_JBR` | ON | Set OFF to omit `src/jbr/` and JBR public API |
 | `JXL_OXIDE_C_ENABLE_THREADS` | OFF | v2+ |
@@ -393,7 +394,7 @@ Sub-order:
 4. Filters (EPF, Gabor, YCbCr)
 5. Features (noise, splines, spot colors, upsampling)
 6. LCMS2 at render boundary
-7. SIMD (`generic` must pass oracle before intrinsics)
+7. SIMD (`generic` must pass oracle before intrinsics): VarDCT DCT, EPF, color transforms, YCbCr/Gabor, **modular squeeze inverse (i16, SSE4.1/AVX2/NEON/wasm128)**
 
 **Gate:** All decode fixtures (all keyframes) + full conformance corpus (all keyframes on animation cases).
 
@@ -567,7 +568,7 @@ Rust uses **`i16` modular storage by default** when `ImageMetadata.modular_16bit
 
 ### Phase N3 — Inverse transforms
 
-- [x] Add i16 squeeze inverse in `transform/squeeze.c` (scalar `inverse_h_i16` / `inverse_v_i16`; SIMD deferred)
+- [x] Add i16 squeeze inverse in `transform/squeeze.c` (scalar base + SIMD: `squeeze_sse41.c`, `squeeze_avx2.c`, `squeeze_neon.c`, `squeeze_wasm128.c`)
 - [x] Dispatch squeeze entry on grid kind (`inverse_squeeze_channel` in `inverse.c`)
 - [x] Add `inverse_rct_row_i16` in `transform/inverse.c`; dispatch RCT on kind
 - [x] Palette resolve/store via sample ops (delta palette uses `sample_as_i32` / `store_i32` + i16 add)
@@ -605,7 +606,7 @@ Rust uses **`i16` modular storage by default** when `ImageMetadata.modular_16bit
 - [x] Add `jxl_modular_grid` typedef alias for `jxl_modular_grid_i32` (`image.h`)
 - [x] Unit tests: i16/i32 wrap divergence, squeeze i16 vs i32, `jxl_lf_quant_subgrid_sample`, `JXL_FORCE_WIDE_BUFFERS`
 - [x] Wide-buffer regression: `c_conformance_grayscale_force_wide` (env `JXL_FORCE_WIDE_BUFFERS=1`)
-- [ ] (Optional v2) i16 SIMD squeeze paths
+- [x] i16 SIMD squeeze paths (`c_unit_squeeze_simd`, parity vs scalar base; CI on x86 + arm64)
 - [x] Debug: `JXL_FORCE_WIDE_BUFFERS` env forces i32 storage (`jxl_parsed_narrow_modular`)
 
 **Rough scope:** ~2000 LOC touched across ~20 files; highest risk is a missed wrapping site in decode/transforms.
