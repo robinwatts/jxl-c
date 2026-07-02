@@ -18,6 +18,7 @@ option(JXL_OXIDE_C_SIMD_AVX2 "Enable AVX2 SIMD paths" ON)
 option(JXL_OXIDE_C_SIMD_NEON "Enable NEON SIMD paths" ON)
 option(JXL_OXIDE_C_SIMD_WASM128 "Enable WebAssembly SIMD128 paths" ON)
 option(JXL_OXIDE_C_ENABLE_JBR "Enable JPEG bitstream reconstruction" ON)
+option(JXL_OXIDE_C_ENABLE_SIMPLE_LOSSLESS "Enable simple lossless encoder" ON)
 option(JXL_OXIDE_C_ENABLE_THREADS "Enable thread pool" OFF)
 option(JXL_OXIDE_C_ENABLE_SANITIZERS "Enable AddressSanitizer and UBSan" OFF)
 option(JXL_OXIDE_C_BUILD_FUZZ "Build libFuzzer decode target (requires Clang)" OFF)
@@ -59,6 +60,12 @@ if(JXL_OXIDE_C_ENABLE_JBR)
         src/jbr/data.c
         src/jbr/scan.c
         src/jbr/reconstruct.c)
+endif()
+
+set(JXL_OXIDE_C_SIMPLE_LOSSLESS_SOURCES "")
+if(JXL_OXIDE_C_ENABLE_SIMPLE_LOSSLESS)
+    set(JXL_OXIDE_C_SIMPLE_LOSSLESS_SOURCES
+        src/encoder/simple_lossless.c)
 endif()
 
 set(BROTLI_DISABLE_TESTS ON CACHE BOOL "" FORCE)
@@ -249,6 +256,7 @@ set(JXL_OXIDE_C_SOURCES
     src/decoder_init.c
     src/decoder.c
     ${JXL_OXIDE_C_JBR_SOURCES}
+    ${JXL_OXIDE_C_SIMPLE_LOSSLESS_SOURCES}
 )
 
 add_library(jxl_oxide_c_obj OBJECT ${JXL_OXIDE_C_SOURCES})
@@ -263,6 +271,9 @@ target_include_directories(jxl_oxide_c_obj
 target_compile_definitions(jxl_oxide_c_obj PRIVATE JXL_OXIDE_C_BUILDING)
 if(JXL_OXIDE_C_ENABLE_JBR)
     target_compile_definitions(jxl_oxide_c_obj PUBLIC JXL_OXIDE_C_ENABLE_JBR=1)
+endif()
+if(JXL_OXIDE_C_ENABLE_SIMPLE_LOSSLESS)
+    target_compile_definitions(jxl_oxide_c_obj PUBLIC JXL_OXIDE_C_ENABLE_SIMPLE_LOSSLESS=1)
 endif()
 if(JXL_OXIDE_C_BUILD_TESTS)
     target_compile_definitions(jxl_oxide_c_obj PRIVATE JXL_OXIDE_TESTING)
@@ -453,6 +464,12 @@ if(JXL_OXIDE_C_BUILD_TOOLS)
     target_include_directories(bench_decode PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 endif()
 
+if(JXL_OXIDE_C_ENABLE_SIMPLE_LOSSLESS)
+    add_executable(simple_lossless_cli tools/simple_lossless_cli.c)
+    target_link_libraries(simple_lossless_cli PRIVATE jxl_oxide_c)
+    target_include_directories(simple_lossless_cli PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+endif()
+
 if(JXL_OXIDE_C_BUILD_TESTS)
     enable_testing()
 
@@ -622,6 +639,18 @@ if(JXL_OXIDE_C_BUILD_TESTS)
         target_include_directories(test_jbr PRIVATE ${JXL_OXIDE_C_TEST_INCLUDES}
             ${CMAKE_CURRENT_SOURCE_DIR}/tests/container)
         add_test(NAME c_unit_jbr COMMAND test_jbr)
+    endif()
+
+    if(JXL_OXIDE_C_ENABLE_SIMPLE_LOSSLESS)
+        add_executable(test_simple_lossless_roundtrip tests/unit/test_simple_lossless_roundtrip.c)
+        target_link_libraries(test_simple_lossless_roundtrip PRIVATE jxl_oxide_c jxl_oxide_c_test_includes)
+        target_include_directories(test_simple_lossless_roundtrip PRIVATE ${JXL_OXIDE_C_TEST_INCLUDES})
+        add_test(NAME c_unit_simple_lossless_roundtrip COMMAND test_simple_lossless_roundtrip)
+
+        add_executable(test_simple_lossless_alloc tests/unit/test_simple_lossless_alloc.c)
+        target_link_libraries(test_simple_lossless_alloc PRIVATE jxl_oxide_c jxl_oxide_c_test_includes)
+        target_include_directories(test_simple_lossless_alloc PRIVATE ${JXL_OXIDE_C_TEST_INCLUDES})
+        add_test(NAME c_unit_simple_lossless_alloc COMMAND test_simple_lossless_alloc)
     endif()
 
     add_executable(test_ycbcr_simd tests/unit/test_ycbcr_simd.c)
