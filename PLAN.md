@@ -201,7 +201,7 @@ jxl_status_t jxl_decoder_try_init(jxl_decoder *dec);
 const jxl_image_header *jxl_decoder_header(const jxl_decoder *dec);
 
 jxl_status_t jxl_decoder_request_icc(jxl_decoder *dec, const uint8_t *icc, size_t len);
-jxl_status_t jxl_decoder_request_color_encoding(jxl_decoder *dec, jxl_color_encoding enc);
+jxl_status_t jxl_decoder_request_color_encoding(jxl_decoder *dec, jxl_colour_encoding enc);
 
 /* Renders keyframe 0 (still images and animation). */
 jxl_status_t jxl_decoder_render(jxl_context *ctx, jxl_decoder *dec, jxl_render **out);
