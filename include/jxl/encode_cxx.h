@@ -15,7 +15,6 @@
 #ifndef JXL_ENCODE_CXX_H_
 #define JXL_ENCODE_CXX_H_
 
-#include <jxl/context.h>
 #include <jxl/encode.h>
 
 #include <memory>

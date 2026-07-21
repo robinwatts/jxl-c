@@ -7,7 +7,7 @@
 #define LIB_JXL_JPEG_ENC_JPEG_DATA_H_
 
 #include <jxl/cms_interface.h>
-#include <jxl/context.h>
+#include <jxl_oxide/jxl_context.h>
 #include <jxl/memory_manager.h>
 
 #include <stdint.h>

@@ -4,7 +4,7 @@
  * license that can be found in the LICENSE file.
  */
 
-#include <jxl/context.h>
+#include <jxl_oxide/jxl_context.h>
 #include <jxl/encode.h>
 
 #include <stdio.h>

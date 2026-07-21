@@ -4,7 +4,7 @@
  * Bitstream goldens are checked by jpeg_progressive_parity_test.
  */
 
-#include <jxl/context.h>
+#include <jxl_oxide/jxl_context.h>
 #include <jxl/encode.h>
 
 #include <stdio.h>
