@@ -41,7 +41,7 @@ static jxl_bs_status_t parse_white_point(jxl_bs *bs, jxl_colour_space_i cs,
     uint32_t d;
     jxl_bs_status_t st;
     if (cs == JXL_COLOUR_SPACE_XYB_I) {
-        *wp = JXL_WHITE_POINT_D65_I;
+        *wp = JXL_COLOUR_WHITE_POINT_D65_I;
         return JXL_BS_OK;
     }
     d = 0;
@@ -51,10 +51,10 @@ static jxl_bs_status_t parse_white_point(jxl_bs *bs, jxl_colour_space_i cs,
     }
     switch (d) {
     case 1:
-        *wp = JXL_WHITE_POINT_D65_I;
+        *wp = JXL_COLOUR_WHITE_POINT_D65_I;
         return JXL_BS_OK;
     case 2:
-        *wp = JXL_WHITE_POINT_CUSTOM_I;
+        *wp = JXL_COLOUR_WHITE_POINT_CUSTOM_I;
         return read_customxy(bs, cx, cy);
     case 10:
         *wp = JXL_WHITE_POINT_E_I;
@@ -73,7 +73,7 @@ static jxl_bs_status_t parse_primaries(jxl_bs *bs, jxl_colour_space_i cs, jxl_pr
     uint32_t d;
     jxl_bs_status_t st;
     if (cs == JXL_COLOUR_SPACE_XYB_I || cs == JXL_COLOUR_SPACE_GRAY_I) {
-        *prim = JXL_PRIMARIES_SRGB_I;
+        *prim = JXL_COLOUR_PRIMARIES_SRGB_I;
         return JXL_BS_OK;
     }
     d = 0;
@@ -83,10 +83,10 @@ static jxl_bs_status_t parse_primaries(jxl_bs *bs, jxl_colour_space_i cs, jxl_pr
     }
     switch (d) {
     case 1:
-        *prim = JXL_PRIMARIES_SRGB_I;
+        *prim = JXL_COLOUR_PRIMARIES_SRGB_I;
         return JXL_BS_OK;
     case 2:
-        *prim = JXL_PRIMARIES_CUSTOM_I;
+        *prim = JXL_COLOUR_PRIMARIES_CUSTOM_I;
         st = read_customxy(bs, rx, ry);
         if (st != JXL_BS_OK) {
             return st;
@@ -165,8 +165,8 @@ jxl_bs_status_t jxl_colour_encoding_parse(jxl_bs *bs, jxl_colour_encoding_parsed
     }
     if (all_default) {
         out->colour_space = JXL_COLOUR_SPACE_RGB_I;
-        out->white_point = JXL_WHITE_POINT_D65_I;
-        out->primaries = JXL_PRIMARIES_SRGB_I;
+        out->white_point = JXL_COLOUR_WHITE_POINT_D65_I;
+        out->primaries = JXL_COLOUR_PRIMARIES_SRGB_I;
         out->transfer = JXL_TRANSFER_SRGB_I;
         out->rendering_intent = JXL_RENDERING_RELATIVE_I;
         return JXL_BS_OK;

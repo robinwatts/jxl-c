@@ -3,7 +3,7 @@
 #define JXL_OXIDE_CONTEXT_H_
 
 #include "jxl_status.h"
-#include "jxl_types.h"
+#include "jxl_allocator.h"
 
 #include <stddef.h>
 

@@ -1,0 +1,13 @@
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+#ifndef LIB_JXL_BASE_FAST_MATH_SCALAR_H_
+#define LIB_JXL_BASE_FAST_MATH_SCALAR_H_
+
+#include <math.h>
+
+static inline float jxl_fast_log2f(float f) { return log2f(f); }
+
+#endif  // LIB_JXL_BASE_FAST_MATH_SCALAR_H_

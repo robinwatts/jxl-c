@@ -24,17 +24,17 @@ typedef struct {
 } jxl_size_header;
 
 typedef enum {
-    JXL_WHITE_POINT_D65_I = 0,
+    JXL_COLOUR_WHITE_POINT_D65_I = 0,
     JXL_WHITE_POINT_DCI_I = 1,
     JXL_WHITE_POINT_E_I = 2,
-    JXL_WHITE_POINT_CUSTOM_I = 3,
+    JXL_COLOUR_WHITE_POINT_CUSTOM_I = 3,
 } jxl_white_point_i;
 
 typedef enum {
-    JXL_PRIMARIES_SRGB_I = 0,
+    JXL_COLOUR_PRIMARIES_SRGB_I = 0,
     JXL_PRIMARIES_P3_I = 1,
     JXL_PRIMARIES_BT2100_I = 2,
-    JXL_PRIMARIES_CUSTOM_I = 3,
+    JXL_COLOUR_PRIMARIES_CUSTOM_I = 3,
 } jxl_primaries_i;
 
 typedef enum {

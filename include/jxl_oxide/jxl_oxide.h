@@ -38,7 +38,7 @@ jxl_status_t jxl_decoder_first_exif(const jxl_decoder *dec, jxl_exif_metadata *o
 
 jxl_status_t jxl_decoder_request_icc(jxl_decoder *dec, const uint8_t *icc, size_t len);
 jxl_status_t jxl_decoder_request_color_encoding(jxl_decoder *dec,
-                                                jxl_color_encoding enc);
+                                                jxl_colour_encoding enc);
 
 jxl_status_t jxl_decoder_set_crop(jxl_decoder *dec, const jxl_crop *crop);
 

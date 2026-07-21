@@ -16,8 +16,8 @@ jxl_status_t jxl_color_transform_xyb_to_encoding(jxl_context *ctx, float *x, flo
         target->colour_space != JXL_COLOUR_SPACE_GRAY_I) {
         return JXL_ERROR_UNSUPPORTED;
     }
-    if (target->white_point != JXL_WHITE_POINT_D65_I ||
-        target->primaries != JXL_PRIMARIES_SRGB_I) {
+    if (target->white_point != JXL_COLOUR_WHITE_POINT_D65_I ||
+        target->primaries != JXL_COLOUR_PRIMARIES_SRGB_I) {
         return JXL_ERROR_UNSUPPORTED;
     }
     if (target->transfer != JXL_TRANSFER_SRGB_I && target->transfer != JXL_TRANSFER_LINEAR_I &&

@@ -72,6 +72,7 @@ void jxl_allocator_init(jxl_allocator_state *state, const jxl_allocator_t *user)
     } else {
         allocator_set_defaults(&state->vtable);
     }
+    state->next_align_group = 0;
 }
 
 void *jxl_alloc(jxl_allocator_state *state, size_t size) {

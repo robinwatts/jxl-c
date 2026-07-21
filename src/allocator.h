@@ -2,14 +2,17 @@
 #ifndef JXL_OXIDE_ALLOCATOR_H_
 #define JXL_OXIDE_ALLOCATOR_H_
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl_oxide/jxl_allocator.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 typedef struct jxl_context jxl_context;
 
 typedef struct {
     jxl_allocator_t vtable;
+    /* Rotating alignment group for encoder jxl_aligned_memory (JPEG XL). */
+    uint32_t next_align_group;
 } jxl_allocator_state;
 
 /*

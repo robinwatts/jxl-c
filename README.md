@@ -78,6 +78,8 @@ See [PLAN.md](PLAN.md) for the port roadmap.
 | `JXL_OXIDE_RUST_ROOT` | `third_party/jxl-oxide` | Submodule root |
 | `JXL_OXIDE_DECODE_ORACLE_DIR` | `tests/oracle/decode` | Local parity oracle files |
 | `JXL_OXIDE_C_ENABLE_JBR` | ON | JPEG bitstream reconstruction |
+| `JXL_OXIDE_C_ENABLE_SIMPLE_LOSSLESS` | ON | Simple lossless encoder |
+| `JXL_OXIDE_C_ENABLE_JPEG_ENCODER` | ON | JPEG→JXL recompression encoder |
 | `JXL_OXIDE_C_BUILD_TOOLS` | OFF | `bench_decode` |
 | `JXL_OXIDE_C_BUILD_FUZZ` | OFF | libFuzzer target (Clang) |
 

@@ -3,20 +3,20 @@
 
 #include <string.h>
 
-void jxl_color_encoding_default_srgb(jxl_color_encoding *out) {
+void jxl_colour_encoding_default_srgb(jxl_colour_encoding *out) {
     if (out == NULL) {
         return;
     }
     memset(out, 0, sizeof(*out));
     out->colour_space = JXL_COLOUR_SPACE_RGB;
-    out->white_point = JXL_WHITE_POINT_D65;
-    out->primaries = JXL_PRIMARIES_SRGB;
+    out->white_point = JXL_COLOUR_WHITE_POINT_D65;
+    out->primaries = JXL_COLOUR_PRIMARIES_SRGB;
     out->transfer = JXL_TRANSFER_SRGB;
     out->rendering_intent = JXL_RENDERING_RELATIVE;
 }
 
 jxl_status_t jxl_colour_encoding_parsed_to_public(const jxl_colour_encoding_parsed *in,
-                                                jxl_color_encoding *out) {
+                                                jxl_colour_encoding *out) {
     if (in == NULL || out == NULL) {
         return JXL_ERROR_INVALID_INPUT;
     }
@@ -36,25 +36,25 @@ jxl_status_t jxl_colour_encoding_parsed_to_public(const jxl_colour_encoding_pars
         break;
     }
     switch (in->white_point) {
-    case JXL_WHITE_POINT_D65_I:
-        out->white_point = JXL_WHITE_POINT_D65;
+    case JXL_COLOUR_WHITE_POINT_D65_I:
+        out->white_point = JXL_COLOUR_WHITE_POINT_D65;
         break;
-    case JXL_WHITE_POINT_CUSTOM_I:
-        out->white_point = JXL_WHITE_POINT_CUSTOM;
+    case JXL_COLOUR_WHITE_POINT_CUSTOM_I:
+        out->white_point = JXL_COLOUR_WHITE_POINT_CUSTOM;
         break;
     default:
-        out->white_point = JXL_WHITE_POINT_UNKNOWN;
+        out->white_point = JXL_COLOUR_WHITE_POINT_UNKNOWN;
         break;
     }
     switch (in->primaries) {
-    case JXL_PRIMARIES_SRGB_I:
-        out->primaries = JXL_PRIMARIES_SRGB;
+    case JXL_COLOUR_PRIMARIES_SRGB_I:
+        out->primaries = JXL_COLOUR_PRIMARIES_SRGB;
         break;
-    case JXL_PRIMARIES_CUSTOM_I:
-        out->primaries = JXL_PRIMARIES_CUSTOM;
+    case JXL_COLOUR_PRIMARIES_CUSTOM_I:
+        out->primaries = JXL_COLOUR_PRIMARIES_CUSTOM;
         break;
     default:
-        out->primaries = JXL_PRIMARIES_UNKNOWN;
+        out->primaries = JXL_COLOUR_PRIMARIES_UNKNOWN;
         break;
     }
     switch (in->transfer) {
@@ -99,10 +99,10 @@ int jxl_colour_encoding_is_d65_srgb_fast_path(const jxl_colour_encoding_parsed *
         enc->colour_space != JXL_COLOUR_SPACE_GRAY_I) {
         return 0;
     }
-    if (enc->white_point != JXL_WHITE_POINT_D65_I) {
+    if (enc->white_point != JXL_COLOUR_WHITE_POINT_D65_I) {
         return 0;
     }
-    if (enc->primaries != JXL_PRIMARIES_SRGB_I) {
+    if (enc->primaries != JXL_COLOUR_PRIMARIES_SRGB_I) {
         return 0;
     }
     if (enc->transfer != JXL_TRANSFER_SRGB_I && enc->transfer != JXL_TRANSFER_LINEAR_I &&
@@ -139,7 +139,7 @@ int jxl_colour_encoding_parsed_equivalent(const jxl_colour_encoding_parsed *a,
     return a->primaries == b->primaries;
 }
 
-jxl_status_t jxl_color_encoding_to_parsed(const jxl_color_encoding *in,
+jxl_status_t jxl_colour_encoding_to_parsed(const jxl_colour_encoding *in,
                                           jxl_colour_encoding_parsed *out) {
     if (in == NULL || out == NULL) {
         return JXL_ERROR_INVALID_INPUT;
@@ -159,21 +159,21 @@ jxl_status_t jxl_color_encoding_to_parsed(const jxl_color_encoding *in,
         return JXL_ERROR_UNSUPPORTED;
     }
     switch (in->white_point) {
-    case JXL_WHITE_POINT_D65:
-        out->white_point = JXL_WHITE_POINT_D65_I;
+    case JXL_COLOUR_WHITE_POINT_D65:
+        out->white_point = JXL_COLOUR_WHITE_POINT_D65_I;
         break;
-    case JXL_WHITE_POINT_CUSTOM:
-        out->white_point = JXL_WHITE_POINT_CUSTOM_I;
+    case JXL_COLOUR_WHITE_POINT_CUSTOM:
+        out->white_point = JXL_COLOUR_WHITE_POINT_CUSTOM_I;
         break;
     default:
         return JXL_ERROR_UNSUPPORTED;
     }
     switch (in->primaries) {
-    case JXL_PRIMARIES_SRGB:
-        out->primaries = JXL_PRIMARIES_SRGB_I;
+    case JXL_COLOUR_PRIMARIES_SRGB:
+        out->primaries = JXL_COLOUR_PRIMARIES_SRGB_I;
         break;
-    case JXL_PRIMARIES_CUSTOM:
-        out->primaries = JXL_PRIMARIES_CUSTOM_I;
+    case JXL_COLOUR_PRIMARIES_CUSTOM:
+        out->primaries = JXL_COLOUR_PRIMARIES_CUSTOM_I;
         break;
     default:
         return JXL_ERROR_UNSUPPORTED;

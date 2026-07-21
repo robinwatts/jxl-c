@@ -2,6 +2,8 @@
 #ifndef JXL_OXIDE_TYPES_H_
 #define JXL_OXIDE_TYPES_H_
 
+#include "jxl_allocator.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -35,25 +37,6 @@ extern "C" {
 
 typedef struct jxl_decoder jxl_decoder;
 typedef struct jxl_render jxl_render;
-typedef struct jxl_cms jxl_cms;
-
-typedef void *(*jxl_alloc_fn)(void *user_data, size_t size);
-typedef void (*jxl_free_fn)(void *user_data, void *ptr);
-typedef void *(*jxl_calloc_fn)(void *user_data, size_t nmemb, size_t size);
-typedef void *(*jxl_realloc_fn)(void *user_data, void *ptr, size_t size);
-
-/*
- * Pluggable heap for a jxl_context. Passed via jxl_context_options::alloc.
- * alloc and free are required; calloc and realloc may be NULL (library defaults).
- * user_data is forwarded unchanged to every callback.
- */
-typedef struct {
-    jxl_alloc_fn alloc;
-    jxl_free_fn free;
-    jxl_calloc_fn calloc;   /* NULL → alloc + zero-fill */
-    jxl_realloc_fn realloc; /* NULL → alloc/copy/free emulation */
-    void *user_data;
-} jxl_allocator_t;
 
 typedef struct {
     /* Region in display-oriented coordinates (matches jxl_image_header width/height). */
@@ -71,15 +54,15 @@ typedef enum {
 } jxl_colour_space_t;
 
 typedef enum {
-    JXL_WHITE_POINT_D65 = 1,
-    JXL_WHITE_POINT_CUSTOM = 2,
-    JXL_WHITE_POINT_UNKNOWN = 255,
+    JXL_COLOUR_WHITE_POINT_D65 = 1,
+    JXL_COLOUR_WHITE_POINT_CUSTOM = 2,
+    JXL_COLOUR_WHITE_POINT_UNKNOWN = 255,
 } jxl_white_point_t;
 
 typedef enum {
-    JXL_PRIMARIES_SRGB = 1,
-    JXL_PRIMARIES_CUSTOM = 2,
-    JXL_PRIMARIES_UNKNOWN = 255,
+    JXL_COLOUR_PRIMARIES_SRGB = 1,
+    JXL_COLOUR_PRIMARIES_CUSTOM = 2,
+    JXL_COLOUR_PRIMARIES_UNKNOWN = 255,
 } jxl_primaries_t;
 
 typedef enum {
@@ -102,7 +85,7 @@ typedef struct {
     jxl_primaries_t primaries;
     jxl_transfer_function_t transfer;
     jxl_rendering_intent_t rendering_intent;
-} jxl_color_encoding;
+} jxl_colour_encoding;
 
 typedef struct {
     uint32_t width;

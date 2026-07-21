@@ -19,6 +19,7 @@ option(JXL_OXIDE_C_SIMD_NEON "Enable NEON SIMD paths" ON)
 option(JXL_OXIDE_C_SIMD_WASM128 "Enable WebAssembly SIMD128 paths" ON)
 option(JXL_OXIDE_C_ENABLE_JBR "Enable JPEG bitstream reconstruction" ON)
 option(JXL_OXIDE_C_ENABLE_SIMPLE_LOSSLESS "Enable simple lossless encoder" ON)
+option(JXL_OXIDE_C_ENABLE_JPEG_ENCODER "Enable JPEG→JXL recompression encoder" ON)
 option(JXL_OXIDE_C_ENABLE_THREADS "Enable thread pool" OFF)
 option(JXL_OXIDE_C_ENABLE_SANITIZERS "Enable AddressSanitizer and UBSan" OFF)
 option(JXL_OXIDE_C_BUILD_FUZZ "Build libFuzzer decode target (requires Clang)" OFF)
@@ -66,6 +67,60 @@ set(JXL_OXIDE_C_SIMPLE_LOSSLESS_SOURCES "")
 if(JXL_OXIDE_C_ENABLE_SIMPLE_LOSSLESS)
     set(JXL_OXIDE_C_SIMPLE_LOSSLESS_SOURCES
         src/encoder/simple_lossless.c)
+endif()
+
+set(JXL_OXIDE_C_JPEG_ENCODER_SOURCES "")
+if(JXL_OXIDE_C_ENABLE_JPEG_ENCODER)
+    set(JXL_OXIDE_C_JPEG_ENCODER_SOURCES
+        src/encoder/jpeg_context.c
+        src/encoder/lib/jxl/ac_strategy.c
+        src/encoder/lib/jxl/ans_common.c
+        src/encoder/lib/jxl/chroma_from_luma.c
+        src/encoder/lib/jxl/cms/jxl_cms.c
+        src/encoder/lib/jxl/coeff_order.c
+        src/encoder/lib/jxl/color_encoding_internal.c
+        src/encoder/lib/jxl/compressed_dc.c
+        src/encoder/lib/jxl/dec_ans.c
+        src/encoder/lib/jxl/enc_ans.c
+        src/encoder/lib/jxl/enc_ans_simd.c
+        src/encoder/lib/jxl/enc_bit_writer.c
+        src/encoder/lib/jxl/enc_chroma_from_luma.c
+        src/encoder/lib/jxl/enc_cluster.c
+        src/encoder/lib/jxl/enc_coeff_order.c
+        src/encoder/lib/jxl/enc_context_map.c
+        src/encoder/lib/jxl/enc_entropy_coder.c
+        src/encoder/lib/jxl/enc_fields.c
+        src/encoder/lib/jxl/enc_frame.c
+        src/encoder/lib/jxl/enc_huffman.c
+        src/encoder/lib/jxl/enc_huffman_tree.c
+        src/encoder/lib/jxl/enc_icc_codec.c
+        src/encoder/lib/jxl/enc_lz77.c
+        src/encoder/lib/jxl/enc_modular.c
+        src/encoder/lib/jxl/enc_quant_weights.c
+        src/encoder/lib/jxl/enc_toc.c
+        src/encoder/lib/jxl/encode.c
+        src/encoder/lib/jxl/fields.c
+        src/encoder/lib/jxl/frame_header.c
+        src/encoder/lib/jxl/headers.c
+        src/encoder/lib/jxl/icc_codec_common.c
+        src/encoder/lib/jxl/image.c
+        src/encoder/lib/jxl/image_metadata.c
+        src/encoder/lib/jxl/jpeg/enc_jpeg_data.c
+        src/encoder/lib/jxl/jpeg/enc_jpeg_data_reader.c
+        src/encoder/lib/jxl/jpeg/enc_jpeg_huffman_decode.c
+        src/encoder/lib/jxl/jpeg/jpeg_data.c
+        src/encoder/lib/jxl/loop_filter.c
+        src/encoder/lib/jxl/luminance.c
+        src/encoder/lib/jxl/memory_manager_internal.c
+        src/encoder/lib/jxl/modular/encoding/enc_encoding.c
+        src/encoder/lib/jxl/modular/encoding/enc_ma.c
+        src/encoder/lib/jxl/modular/encoding/encoding.c
+        src/encoder/lib/jxl/modular/modular_image.c
+        src/encoder/lib/jxl/quant_weights.c
+        src/encoder/lib/jxl/quantizer.c
+        src/encoder/lib/jxl/simd_util.c
+        src/encoder/lib/jxl/toc.c
+    )
 endif()
 
 set(BROTLI_DISABLE_TESTS ON CACHE BOOL "" FORCE)
@@ -257,6 +312,7 @@ set(JXL_OXIDE_C_SOURCES
     src/decoder.c
     ${JXL_OXIDE_C_JBR_SOURCES}
     ${JXL_OXIDE_C_SIMPLE_LOSSLESS_SOURCES}
+    ${JXL_OXIDE_C_JPEG_ENCODER_SOURCES}
 )
 
 add_library(jxl_oxide_c_obj OBJECT ${JXL_OXIDE_C_SOURCES})
@@ -268,6 +324,15 @@ target_include_directories(jxl_oxide_c_obj
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
+if(JXL_OXIDE_C_ENABLE_JPEG_ENCODER)
+    target_include_directories(jxl_oxide_c_obj PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/encoder
+    )
+    target_compile_definitions(jxl_oxide_c_obj
+        PUBLIC JXL_OXIDE_C_ENABLE_JPEG_ENCODER=1
+        PRIVATE JXL_STATIC_DEFINE JXL_CMS_STATIC_DEFINE
+    )
+endif()
 target_compile_definitions(jxl_oxide_c_obj PRIVATE JXL_OXIDE_C_BUILDING)
 if(JXL_OXIDE_C_ENABLE_JBR)
     target_compile_definitions(jxl_oxide_c_obj PUBLIC JXL_OXIDE_C_ENABLE_JBR=1)
@@ -385,6 +450,16 @@ else()
 endif()
 
 target_link_libraries(jxl_oxide_c_obj PUBLIC ${JXL_OXIDE_C_BROTLI_TARGET})
+if(JXL_OXIDE_C_ENABLE_JPEG_ENCODER)
+    if(TARGET brotlienc)
+        target_link_libraries(jxl_oxide_c_obj PUBLIC brotlienc)
+    elseif(TARGET brotlienc-static)
+        target_link_libraries(jxl_oxide_c_obj PUBLIC brotlienc-static)
+    else()
+        message(FATAL_ERROR "JPEG encoder requires brotlienc CMake target")
+    endif()
+    target_link_libraries(jxl_oxide_c_obj PUBLIC m)
+endif()
 
 if(JXL_OXIDE_C_REQUIRE_LCMS2)
     if(TARGET PkgConfig::lcms2)
@@ -651,6 +726,23 @@ if(JXL_OXIDE_C_BUILD_TESTS)
         target_link_libraries(test_simple_lossless_alloc PRIVATE jxl_oxide_c jxl_oxide_c_test_includes)
         target_include_directories(test_simple_lossless_alloc PRIVATE ${JXL_OXIDE_C_TEST_INCLUDES})
         add_test(NAME c_unit_simple_lossless_alloc COMMAND test_simple_lossless_alloc)
+    endif()
+
+    if(JXL_OXIDE_C_ENABLE_JPEG_ENCODER)
+        set(JXL_JPEG_TEST_DEFS
+            JPEG_SMOKE_JPEG_DEFAULT="${CMAKE_CURRENT_SOURCE_DIR}/testdata/jpeg/smoke.jpg"
+            JPEG_PARITY_JPEG_DEFAULT="${CMAKE_CURRENT_SOURCE_DIR}/testdata/jpeg/smoke.jpg"
+            JPEG_PARITY_GOLDEN_DIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata/jxl"
+            JPEG_ROUNDTRIP_JPEG_DEFAULT="${CMAKE_CURRENT_SOURCE_DIR}/testdata/jpeg/smoke.jpg"
+            JPEG_PROGRESSIVE_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata/jpeg"
+        )
+        foreach(jxl_jpeg_test jpeg_smoke_test jpeg_bitstream_parity_test jpeg_roundtrip_test jpeg_progressive_test)
+            add_executable(${jxl_jpeg_test} tests/unit/${jxl_jpeg_test}.c)
+            target_link_libraries(${jxl_jpeg_test} PRIVATE jxl_oxide_c jxl_oxide_c_test_includes)
+            target_include_directories(${jxl_jpeg_test} PRIVATE ${JXL_OXIDE_C_TEST_INCLUDES})
+            target_compile_definitions(${jxl_jpeg_test} PRIVATE ${JXL_JPEG_TEST_DEFS})
+            add_test(NAME c_unit_${jxl_jpeg_test} COMMAND ${jxl_jpeg_test})
+        endforeach()
     endif()
 
     add_executable(test_ycbcr_simd tests/unit/test_ycbcr_simd.c)

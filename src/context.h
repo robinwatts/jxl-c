@@ -89,6 +89,10 @@ typedef struct jxl_context {
     jxl_context_cpu_features_cache cpu_features;
     jxl_context_dequant dequant;
     jxl_context_hf_orders hf_orders;
+#if defined(JXL_OXIDE_C_ENABLE_JPEG_ENCODER)
+    /* Opaque JPEG-encoder session (mm bridge, LCMS, sRGB encodings). */
+    struct jxl_jpeg_encoder_context *jpeg_enc;
+#endif
 } jxl_context;
 
 void jxl_context_init_inplace(jxl_context *ctx, const jxl_context_options *opts);

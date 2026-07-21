@@ -8,6 +8,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(JXL_OXIDE_C_ENABLE_JPEG_ENCODER)
+#include "encoder/jpeg_context.h"
+#endif
+
 #ifndef NDEBUG
 static int env_truthy(const char *name) {
     const char *v = getenv(name);
@@ -131,6 +135,9 @@ void jxl_context_fini_inplace(jxl_context *ctx) {
     if (ctx == NULL) {
         return;
     }
+#if defined(JXL_OXIDE_C_ENABLE_JPEG_ENCODER)
+    jxl_jpeg_encoder_context_fini(ctx);
+#endif
     jxl_context_dequant_free(ctx);
     memset(&ctx->cpu_features, 0, sizeof(ctx->cpu_features));
     memset(&ctx->hf_orders, 0, sizeof(ctx->hf_orders));
@@ -152,6 +159,13 @@ jxl_status_t jxl_context_create(const jxl_context_options *opts, jxl_context **o
     }
     jxl_context_init_inplace(ctx, opts);
     ctx->alloc = scratch;
+#if defined(JXL_OXIDE_C_ENABLE_JPEG_ENCODER)
+    if (!jxl_jpeg_encoder_context_init(ctx)) {
+        jxl_context_fini_inplace(ctx);
+        jxl_free(&scratch, ctx);
+        return JXL_ERROR_OUT_OF_MEMORY;
+    }
+#endif
     *out = ctx;
     return JXL_OK;
 }

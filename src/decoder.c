@@ -181,7 +181,7 @@ struct jxl_decoder {
     int has_crop;
     uint8_t *requested_icc;
     size_t requested_icc_len;
-    jxl_color_encoding requested_color_encoding;
+    jxl_colour_encoding requested_color_encoding;
     int has_requested_color_encoding;
     jxl_reference_store animation_refs;
     jxl_progressive_lf_store animation_lf_store;
@@ -325,7 +325,7 @@ static jxl_render *decoder_extract_render_subregion(jxl_allocator_state *alloc, 
 static int decoder_target_matches_frame_encoding(const jxl_parsed_image_header *parsed,
                                                  const uint8_t *target_icc,
                                                  size_t target_icc_len) {
-    jxl_color_encoding enc;
+    jxl_colour_encoding enc;
     jxl_colour_encoding_parsed target_parsed;
     if (parsed == NULL || target_icc == NULL || target_icc_len == 0) {
         return 0;
@@ -337,7 +337,7 @@ static int decoder_target_matches_frame_encoding(const jxl_parsed_image_header *
     if (jxl_icc_parse_color_encoding(target_icc, target_icc_len, &enc) != JXL_OK) {
         return 0;
     }
-    if (jxl_color_encoding_to_parsed(&enc, &target_parsed) != JXL_OK) {
+    if (jxl_colour_encoding_to_parsed(&enc, &target_parsed) != JXL_OK) {
         return 0;
     }
     return jxl_colour_encoding_parsed_equivalent(&parsed->colour, &target_parsed);
@@ -499,14 +499,14 @@ static jxl_status_t decoder_apply_output_color_transform(jxl_decoder *dec, jxl_r
 
     if (dec->has_requested_color_encoding) {
         jxl_status_t st =
-            jxl_color_encoding_to_parsed(&dec->requested_color_encoding, &target_parsed);
+            jxl_colour_encoding_to_parsed(&dec->requested_color_encoding, &target_parsed);
         if (st != JXL_OK) {
             use_cms = 1;
         }
     } else {
-        jxl_color_encoding enc;
+        jxl_colour_encoding enc;
         if (jxl_icc_parse_color_encoding(target_icc, target_icc_len, &enc) == JXL_OK) {
-            jxl_status_t st = jxl_color_encoding_to_parsed(&enc, &target_parsed);
+            jxl_status_t st = jxl_colour_encoding_to_parsed(&enc, &target_parsed);
             if (st != JXL_OK) {
                 use_cms = 1;
             }
@@ -718,7 +718,7 @@ jxl_status_t jxl_decoder_request_icc(jxl_decoder *dec, const uint8_t *icc, size_
     return JXL_OK;
 }
 
-jxl_status_t jxl_decoder_request_color_encoding(jxl_decoder *dec, jxl_color_encoding enc) {
+jxl_status_t jxl_decoder_request_color_encoding(jxl_decoder *dec, jxl_colour_encoding enc) {
     if (dec == NULL) {
         return JXL_ERROR_INVALID_INPUT;
     }

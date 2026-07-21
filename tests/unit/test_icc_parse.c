@@ -11,7 +11,7 @@
 
 int main(void) {
     char path[512];
-    jxl_color_encoding enc;
+    jxl_colour_encoding enc;
     const char *hash = getenv("JXL_ICC_HASH");
     if (hash == NULL || hash[0] == '\0') {
         hash = "80a1d9ea2892c89ab10a05fcbd1d752069557768fac3159ecd91c33be0d74a19";
@@ -44,7 +44,7 @@ int main(void) {
         return 1;
     }
     if (enc.colour_space != JXL_COLOUR_SPACE_RGB || enc.transfer != JXL_TRANSFER_SRGB ||
-        enc.white_point != JXL_WHITE_POINT_D65 || enc.primaries != JXL_PRIMARIES_SRGB) {
+        enc.white_point != JXL_COLOUR_WHITE_POINT_D65 || enc.primaries != JXL_COLOUR_PRIMARIES_SRGB) {
         fprintf(stderr, "unexpected parsed ICC colour encoding\n");
         free(icc);
         return 1;

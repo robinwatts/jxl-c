@@ -176,35 +176,35 @@ static jxl_rendering_intent_t icc_header_rendering_intent(const uint8_t *icc, si
     }
 }
 
-static jxl_status_t fill_rgb_encoding(jxl_color_encoding *out, jxl_transfer_function_t tf,
+static jxl_status_t fill_rgb_encoding(jxl_colour_encoding *out, jxl_transfer_function_t tf,
                                     jxl_rendering_intent_t ri) {
     if (out == NULL) {
         return JXL_ERROR_INVALID_INPUT;
     }
     memset(out, 0, sizeof(*out));
     out->colour_space = JXL_COLOUR_SPACE_RGB;
-    out->white_point = JXL_WHITE_POINT_D65;
-    out->primaries = JXL_PRIMARIES_SRGB;
+    out->white_point = JXL_COLOUR_WHITE_POINT_D65;
+    out->primaries = JXL_COLOUR_PRIMARIES_SRGB;
     out->transfer = tf;
     out->rendering_intent = ri;
     return JXL_OK;
 }
 
-static jxl_status_t fill_gray_encoding(jxl_color_encoding *out, jxl_transfer_function_t tf,
+static jxl_status_t fill_gray_encoding(jxl_colour_encoding *out, jxl_transfer_function_t tf,
                                        jxl_rendering_intent_t ri) {
     if (out == NULL) {
         return JXL_ERROR_INVALID_INPUT;
     }
     memset(out, 0, sizeof(*out));
     out->colour_space = JXL_COLOUR_SPACE_GRAY;
-    out->white_point = JXL_WHITE_POINT_D65;
-    out->primaries = JXL_PRIMARIES_SRGB;
+    out->white_point = JXL_COLOUR_WHITE_POINT_D65;
+    out->primaries = JXL_COLOUR_PRIMARIES_SRGB;
     out->transfer = tf;
     out->rendering_intent = ri;
     return JXL_OK;
 }
 
-jxl_status_t jxl_icc_parse_color_encoding(const uint8_t *icc, size_t len, jxl_color_encoding *out) {
+jxl_status_t jxl_icc_parse_color_encoding(const uint8_t *icc, size_t len, jxl_colour_encoding *out) {
     jxl_rendering_intent_t ri;
     if (icc == NULL || len < 128 || out == NULL) {
         return JXL_ERROR_INVALID_INPUT;

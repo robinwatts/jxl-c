@@ -13,6 +13,6 @@ int jxl_icc_maps_to_linear_display(const uint8_t *icc, size_t len);
 #include "jxl_oxide/jxl_status.h"
 
 /* Rust icc::parse_icc — maps conformance ICC profiles to enum colour encodings. */
-jxl_status_t jxl_icc_parse_color_encoding(const uint8_t *icc, size_t len, jxl_color_encoding *out);
+jxl_status_t jxl_icc_parse_color_encoding(const uint8_t *icc, size_t len, jxl_colour_encoding *out);
 
 #endif /* JXL_OXIDE_ICC_PARSE_H_ */
