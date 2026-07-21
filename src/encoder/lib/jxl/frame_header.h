@@ -237,6 +237,9 @@ static inline void jxl_blending_info_construct_empty(jxl_blending_info* self) {
 }
 static inline void jxl_blending_info_destroy(jxl_blending_info* self) { (void)self; }
 static inline void jxl_blending_info_init(jxl_blending_info* self) {
+  /* VisitFields conditionals read these before the parent sets them. */
+  self->nonserialized_num_extra_channels = 0;
+  self->nonserialized_is_partial_frame = false;
   JXL_FIELDS_REGISTER_PTR(jxl_blending_info, &self->fields);
   jxl_bundle_init(&self->fields);
 }

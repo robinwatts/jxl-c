@@ -249,6 +249,7 @@ JXL_DEFINE_POD_ARRAY(jxl_array_tree_range, jxl_tree_range)
 
 static inline bool jxl_tree_to_lookup_table(const jxl_flat_tree *tree, jxl_tree_lut *lut) {
   jxl_array_tree_range ranges;
+  bool ok = true;
   jxl_array_construct_empty(&ranges, lut->context_lookup.memory_manager);
   if (!jxl_status_ok(jxl_array_tree_range_push_back(&ranges, jxl_tree_range_make(-kPropRangeFast - 1, kPropRangeFast - 1, 0)))) {
     JXL_CRASH();
@@ -259,25 +260,30 @@ static inline bool jxl_tree_to_lookup_table(const jxl_flat_tree *tree, jxl_tree_
     if (cur.begin < -kPropRangeFast - 1 || cur.begin >= kPropRangeFast - 1 ||
         cur.end > kPropRangeFast - 1) {
       // jxl_tree is outside the allowed range, exit.
-      return false;
+      ok = false;
+      break;
     }
     const jxl_flat_decision_node* node = jxl_array_at_const(tree, cur.pos);
     // Leaf.
     if (node->property0 == -1) {
       if (node->meta.predictor_offset < INT8_MIN ||
           node->meta.predictor_offset > INT8_MAX) {
-        return false;
+        ok = false;
+        break;
       }
       if (node->children.multiplier < INT8_MIN ||
           node->children.multiplier > INT8_MAX) {
-        return false;
+        ok = false;
+        break;
       }
       // Encoder LUT path only supports multiplier 1 and zero offset.
       if (node->children.multiplier != 1) {
-        return false;
+        ok = false;
+        break;
       }
       if (node->meta.predictor_offset != 0) {
-        return false;
+        ok = false;
+        break;
       }
       for (int i = cur.begin + 1; i < cur.end + 1; i++) {
         *jxl_array_at(&lut->context_lookup, i + kPropRangeFast) =
@@ -318,7 +324,8 @@ static inline bool jxl_tree_to_lookup_table(const jxl_flat_tree *tree, jxl_tree_
       }
     }
   }
-  return true;
+  jxl_array_destroy(&ranges);
+  return ok;
 }
 
 

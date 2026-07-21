@@ -380,6 +380,7 @@ jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
       for (uint32_t j = i + 1; j < jxl_array_len(out); j++) {
         jxl_histogram histo;
         jxl_array_i32 histo_counts;
+        jxl_histogram_construct_empty(&histo);
         jxl_array_construct_empty(&histo_counts, mm);
         jxl_histogram_add_histogram(&histo, &histo_counts, jxl_array_at(out, i), jxl_hist_count_streams_at(out_counts, i));
         jxl_histogram_add_histogram(&histo, &histo_counts, jxl_array_at(out, j), jxl_hist_count_streams_at(out_counts, j));
@@ -445,6 +446,7 @@ jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
         if (*jxl_array_at(&version, j) == 0) continue;
         jxl_histogram histo;
         jxl_array_i32 histo_counts;
+        jxl_histogram_construct_empty(&histo);
         jxl_array_construct_empty(&histo_counts, mm);
         jxl_histogram_add_histogram(&histo, &histo_counts, jxl_array_at(out, first), jxl_hist_count_streams_at(out_counts, first));
         jxl_histogram_add_histogram(&histo, &histo_counts, jxl_array_at(out, j), jxl_hist_count_streams_at(out_counts, j));

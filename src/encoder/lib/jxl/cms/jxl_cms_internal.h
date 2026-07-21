@@ -751,20 +751,35 @@ jxl_array_clear(out);
 
 static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
                                      jxl_array_u8* icc) {
+  jxl_status status = jxl_ok_status();
   jxl_memory_manager* mm = icc->memory_manager;
+  jxl_array_u8 header;
+  jxl_array_u8 tagtable;
+  jxl_array_u8 tags;
+  jxl_array_size offsets;
+  jxl_array_char description;
+  jxl_array_u8 icc_sum;
+  jxl_transfer_function tf;
+  size_t tag_offset = 0;
+  size_t tag_size = 0;
+  uint8_t checksum[16];
+  size_t i;
+
   if (mm == NULL) {
     return JXL_FAILURE("maybe_create_profile: missing memory manager");
   }
-  jxl_array_u8 header;
   jxl_array_construct_empty(&header, mm);
-  jxl_array_u8 tagtable;
   jxl_array_construct_empty(&tagtable, mm);
-  jxl_array_u8 tags;
   jxl_array_construct_empty(&tags, mm);
-  jxl_transfer_function tf = c->transfer_function;
+  jxl_array_construct_empty(&offsets, mm);
+  jxl_array_construct_empty(&description, mm);
+  jxl_array_construct_empty(&icc_sum, mm);
+
+  tf = c->transfer_function;
   if (c->color_space == JXL_COLOR_SPACE_UNKNOWN ||
       tf == JXL_TRANSFER_FUNCTION_UNKNOWN) {
-    return jxl_error_status();  // Not an error
+    status = jxl_error_status();  // Not an error
+    goto done;
   }
 
   switch (c->color_space) {
@@ -772,22 +787,19 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
     case JXL_COLOR_SPACE_GRAY:
       break;  // OK
     default:
-      return JXL_FAILURE("Invalid CS %u",
-                         (unsigned int)(c->color_space));
+      status = JXL_FAILURE("Invalid CS %u",
+                           (unsigned int)(c->color_space));
+      goto done;
   }
 
-  JXL_RETURN_IF_ERROR(jxl_create_icc_header(c, &header));
+  status = jxl_create_icc_header(c, &header);
+  if (!jxl_status_ok(status)) {
+    goto done;
+  }
 
-  jxl_array_size offsets;
-  jxl_array_construct_empty(&offsets, mm);
   // tag count, deferred to later
   jxl_write_icc_uint32(0, jxl_array_len(&tagtable), &tagtable);
 
-  size_t tag_offset = 0;
-  size_t tag_size = 0;
-
-  jxl_array_char description;
-  jxl_array_construct_empty(&description, mm);
   jxl_color_encoding_description_impl(c, false, &description);
   jxl_create_icc_mluc_tag(jxl_array_data(&description), jxl_array_len(&description), &tags);
   jxl_finalize_icc_tag(&tags, &tag_offset, &tag_size);
@@ -800,12 +812,14 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
   // TODO(eustas): isn't it the other way round: gray image has d50 jxl_white_point?
   if (c->color_space == JXL_COLOR_SPACE_GRAY) {
     jxl_color wtpt;
-    JXL_RETURN_IF_ERROR(
-        jxl_ciexyz_from_white_ci_exy(c->white_point_xy[0], c->white_point_xy[1], &wtpt));
-    JXL_RETURN_IF_ERROR(jxl_create_iccxyz_tag(&wtpt, &tags));
+    status = jxl_ciexyz_from_white_ci_exy(c->white_point_xy[0], c->white_point_xy[1], &wtpt);
+    if (!jxl_status_ok(status)) goto done;
+    status = jxl_create_iccxyz_tag(&wtpt, &tags);
+    if (!jxl_status_ok(status)) goto done;
   } else {
     jxl_color d50 = jxl_color_make(0.964203f, 1.0f, 0.824905f);
-    JXL_RETURN_IF_ERROR(jxl_create_iccxyz_tag(&d50, &tags));
+    status = jxl_create_iccxyz_tag(&d50, &tags);
+    if (!jxl_status_ok(status)) goto done;
   }
   jxl_finalize_icc_tag(&tags, &tag_offset, &tag_size);
   jxl_add_to_icc_tag_table("wtpt", tag_offset, tag_size, &tagtable, &offsets);
@@ -813,39 +827,47 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
   if (c->color_space != JXL_COLOR_SPACE_GRAY) {
     // Chromatic adaptation matrix
     jxl_matrix3x3 chad;
-    JXL_RETURN_IF_ERROR(
-        jxl_create_icc_chad_matrix(c->white_point_xy[0], c->white_point_xy[1], &chad));
+    status = jxl_create_icc_chad_matrix(c->white_point_xy[0], c->white_point_xy[1], &chad);
+    if (!jxl_status_ok(status)) goto done;
 
-    JXL_RETURN_IF_ERROR(jxl_create_icc_chad_tag(&chad, &tags));
+    status = jxl_create_icc_chad_tag(&chad, &tags);
+    if (!jxl_status_ok(status)) goto done;
     jxl_finalize_icc_tag(&tags, &tag_offset, &tag_size);
     jxl_add_to_icc_tag_table("chad", tag_offset, tag_size, &tagtable, &offsets);
   }
 
   if (c->color_space == JXL_COLOR_SPACE_RGB) {
+    jxl_matrix3x3 m;
+    jxl_color r;
+    jxl_color g;
+    jxl_color b;
     jxl_maybe_create_icccicp_tag(c, &tags, &tag_offset, &tag_size, &tagtable,
                           &offsets);
 
-    jxl_matrix3x3 m;
-    JXL_RETURN_IF_ERROR(jxl_create_iccrgb_matrix(
+    status = jxl_create_iccrgb_matrix(
         c->primaries_red_xy[0], c->primaries_red_xy[1], c->primaries_green_xy[0],
         c->primaries_green_xy[1], c->primaries_blue_xy[0], c->primaries_blue_xy[1],
-        c->white_point_xy[0], c->white_point_xy[1], &m));
-    jxl_color r = jxl_color_make(jxl_matrix3x3_at(&m, 0)[0], jxl_matrix3x3_at(&m, 1)[0],
+        c->white_point_xy[0], c->white_point_xy[1], &m);
+    if (!jxl_status_ok(status)) goto done;
+    r = jxl_color_make(jxl_matrix3x3_at(&m, 0)[0], jxl_matrix3x3_at(&m, 1)[0],
                         jxl_matrix3x3_at(&m, 2)[0]);
-    jxl_color g = jxl_color_make(jxl_matrix3x3_at(&m, 0)[1], jxl_matrix3x3_at(&m, 1)[1],
+    g = jxl_color_make(jxl_matrix3x3_at(&m, 0)[1], jxl_matrix3x3_at(&m, 1)[1],
                         jxl_matrix3x3_at(&m, 2)[1]);
-    jxl_color b = jxl_color_make(jxl_matrix3x3_at(&m, 0)[2], jxl_matrix3x3_at(&m, 1)[2],
+    b = jxl_color_make(jxl_matrix3x3_at(&m, 0)[2], jxl_matrix3x3_at(&m, 1)[2],
                         jxl_matrix3x3_at(&m, 2)[2]);
 
-    JXL_RETURN_IF_ERROR(jxl_create_iccxyz_tag(&r, &tags));
+    status = jxl_create_iccxyz_tag(&r, &tags);
+    if (!jxl_status_ok(status)) goto done;
     jxl_finalize_icc_tag(&tags, &tag_offset, &tag_size);
     jxl_add_to_icc_tag_table("rXYZ", tag_offset, tag_size, &tagtable, &offsets);
 
-    JXL_RETURN_IF_ERROR(jxl_create_iccxyz_tag(&g, &tags));
+    status = jxl_create_iccxyz_tag(&g, &tags);
+    if (!jxl_status_ok(status)) goto done;
     jxl_finalize_icc_tag(&tags, &tag_offset, &tag_size);
     jxl_add_to_icc_tag_table("gXYZ", tag_offset, tag_size, &tagtable, &offsets);
 
-    JXL_RETURN_IF_ERROR(jxl_create_iccxyz_tag(&b, &tags));
+    status = jxl_create_iccxyz_tag(&b, &tags);
+    if (!jxl_status_ok(status)) goto done;
     jxl_finalize_icc_tag(&tags, &tag_offset, &tag_size);
     jxl_add_to_icc_tag_table("bXYZ", tag_offset, tag_size, &tagtable, &offsets);
   }
@@ -853,7 +875,8 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
   if (tf == JXL_TRANSFER_FUNCTION_GAMMA) {
     float gamma = 1.0 / c->gamma;
     const float gamma_params[] = {gamma};
-    JXL_RETURN_IF_ERROR(jxl_create_icc_curv_para_tag(gamma_params, 1, 0, &tags));
+    status = jxl_create_icc_curv_para_tag(gamma_params, 1, 0, &tags);
+    if (!jxl_status_ok(status)) goto done;
   } else {
     switch (tf) {
       case JXL_TRANSFER_FUNCTION_HLG:
@@ -878,31 +901,35 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
         {
           const float params[] = {2.4f, 1.0f / 1.055f, 0.055f / 1.055f,
                                   1.0f / 12.92f, 0.04045f};
-          JXL_RETURN_IF_ERROR(jxl_create_icc_curv_para_tag(params, 5, 3, &tags));
+          status = jxl_create_icc_curv_para_tag(params, 5, 3, &tags);
+          if (!jxl_status_ok(status)) goto done;
         }
         break;
       case JXL_TRANSFER_FUNCTION_709:
         {
           const float params[] = {1.0f / 0.45f, 1.0f / 1.099f, 0.099f / 1.099f,
                                   1.0f / 4.5f, 0.081f};
-          JXL_RETURN_IF_ERROR(jxl_create_icc_curv_para_tag(params, 5, 3, &tags));
+          status = jxl_create_icc_curv_para_tag(params, 5, 3, &tags);
+          if (!jxl_status_ok(status)) goto done;
         }
         break;
       case JXL_TRANSFER_FUNCTION_LINEAR:
         {
           const float params[] = {1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
-          JXL_RETURN_IF_ERROR(jxl_create_icc_curv_para_tag(params, 5, 3, &tags));
+          status = jxl_create_icc_curv_para_tag(params, 5, 3, &tags);
+          if (!jxl_status_ok(status)) goto done;
         }
         break;
       case JXL_TRANSFER_FUNCTION_DCI:
         {
           const float params[] = {2.6f, 1.0f, 0.0f, 1.0f, 0.0f};
-          JXL_RETURN_IF_ERROR(jxl_create_icc_curv_para_tag(params, 5, 3, &tags));
+          status = jxl_create_icc_curv_para_tag(params, 5, 3, &tags);
+          if (!jxl_status_ok(status)) goto done;
         }
         break;
       default:
-        return JXL_UNREACHABLE("unknown TF %u",
-                               (unsigned int)(tf));
+        status = JXL_UNREACHABLE("unknown TF %u", (unsigned int)(tf));
+        goto done;
     }
   }
   jxl_finalize_icc_tag(&tags, &tag_offset, &tag_size);
@@ -916,7 +943,7 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
 
   // jxl_tag count
   jxl_write_icc_uint32(jxl_array_len(&offsets), 0, &tagtable);
-  for (size_t i = 0; i < jxl_array_len(&offsets); i++) {
+  for (i = 0; i < jxl_array_len(&offsets); i++) {
     jxl_write_icc_uint32(*jxl_array_at(&offsets, i) + jxl_array_len(&header) + jxl_array_len(&tagtable), 4 + 12 * i + 4,
                    &tagtable);
   }
@@ -925,7 +952,6 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
   jxl_write_icc_uint32(jxl_array_len(&header) + jxl_array_len(&tagtable) + jxl_array_len(&tags), 0, &header);
 
   jxl_array_swap(icc, &header);
-  jxl_array_destroy(&header);
   if (!jxl_status_ok(jxl_array_append(icc, jxl_array_data(&tagtable), jxl_array_len(&tagtable))) ||
       !jxl_status_ok(jxl_array_append(icc, jxl_array_data(&tags), jxl_array_len(&tags)))) {
     JXL_CRASH();
@@ -935,20 +961,24 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
   // rendering intent, and region of the checksum itself, set to 0.
   // TODO(lode): manually verify with a reliable tool that this creates correct
   // signature (profile id) for ICC profiles.
-  jxl_array_u8 icc_sum;
-  jxl_array_construct_empty(&icc_sum, mm);
   if (!jxl_status_ok(jxl_array_copy_from(&icc_sum, icc))) JXL_CRASH();
   if (jxl_array_len(&icc_sum) >= 64 + 4) {
     memset(jxl_array_data(&icc_sum) + 44, 0, 4);
     memset(jxl_array_data(&icc_sum) + 64, 0, 4);
   }
-  uint8_t checksum[16];
   jxl_icc_compute_md5(&icc_sum, checksum);
-  jxl_array_destroy(&icc_sum);
 
   memcpy(jxl_array_data(icc) + 84, checksum, sizeof(checksum));
+  status = jxl_ok_status();
 
-  return jxl_ok_status();
+done:
+  jxl_array_destroy(&header);
+  jxl_array_destroy(&tagtable);
+  jxl_array_destroy(&tags);
+  jxl_array_destroy(&offsets);
+  jxl_array_destroy(&description);
+  jxl_array_destroy(&icc_sum);
+  return status;
 }
 
 

@@ -951,7 +951,8 @@ static void channel_row_processor_process_chunk(ChannelRowProcessor *proc,
   size_t prefix_size = 0;
   size_t required_prefix_size = 0;
   size_t ix;
-  for (ix = 0; ix < JXL_SL_CHUNK_SIZE; ix++) {
+  /* Only touch the first n samples; CHUNK_SIZE is the max chunk width. */
+  for (ix = 0; ix < n; ix++) {
     int32_t px = row[ix];
     int32_t left = row_left[ix];
     int32_t top = row_top[ix];
@@ -970,7 +971,6 @@ static void channel_row_processor_process_chunk(ChannelRowProcessor *proc,
                       : prefix_size;
     required_prefix_size += 1;
   }
-  prefix_size = JXL_SL_MIN(n, prefix_size);
   if (prefix_size == n && (proc->run > 0 || prefix_size > JXL_SL_LZ77_MIN_LENGTH)) {
     proc->run += prefix_size;
   } else if (prefix_size + proc->run > JXL_SL_LZ77_MIN_LENGTH) {
@@ -1393,7 +1393,13 @@ void prepare_dc_global_palette(jxl_allocator_state *alloc, int is_single_group, 
   row_encoder.do_chunk = encoder_chunk_wrapper;
   row_encoder.do_finalize = encoder_finalize_wrapper;
   row_encoder.run = 0;
-  for (i = 0; i < pcolors; i++) {
+  /*
+   * Lookup index 0 is reserved (pcolors starts at 1 when the palette is built),
+   * so the encoded palette row is [0, color0, color1, ...] of length pcolors.
+   * Zero the scratch so the leading entry and CHUNK_SIZE padding are defined.
+   */
+  memset(p, 0, sizeof(p));
+  for (i = 0; i + 1 < pcolors; i++) {
     p[0][16 + i + 1] = (int32_t)(palette[i] & 0xFF);
     p[1][16 + i + 1] = (int32_t)((palette[i] >> 8) & 0xFF);
     p[2][16 + i + 1] = (int32_t)((palette[i] >> 16) & 0xFF);
