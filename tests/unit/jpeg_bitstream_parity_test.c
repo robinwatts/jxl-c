@@ -61,13 +61,13 @@ static int encode_jpeg_at_effort(const uint8_t* jpeg, size_t jpeg_size,
     return 0;
   }
 
-  if (jxl_encoder_use_container(enc, JXL_TRUE) != JXL_ENCODER_SUCCESS) {
+  if (jxl_encoder_use_container(enc, JXL_TRUE) != JXL_OK) {
     jxl_encoder_destroy(enc);
     jxl_context_destroy(ctx);
     return 0;
   }
   if (store_jbrd &&
-      jxl_encoder_store_jpeg_metadata(enc, JXL_TRUE) != JXL_ENCODER_SUCCESS) {
+      jxl_encoder_store_jpeg_metadata(enc, JXL_TRUE) != JXL_OK) {
     jxl_encoder_destroy(enc);
     jxl_context_destroy(ctx);
     return 0;
@@ -80,12 +80,12 @@ static int encode_jpeg_at_effort(const uint8_t* jpeg, size_t jpeg_size,
     return 0;
   }
   if (jxl_encoder_frame_settings_set_option(fs, JXL_ENCODER_FRAME_SETTING_EFFORT,
-                                       effort) != JXL_ENCODER_SUCCESS) {
+                                       effort) != JXL_OK) {
     jxl_encoder_destroy(enc);
     jxl_context_destroy(ctx);
     return 0;
   }
-  if (jxl_encoder_add_jpeg_frame(fs, jpeg, jpeg_size) != JXL_ENCODER_SUCCESS) {
+  if (jxl_encoder_add_jpeg_frame(fs, jpeg, jpeg_size) != JXL_OK) {
     jxl_encoder_destroy(enc);
     jxl_context_destroy(ctx);
     return 0;
@@ -102,9 +102,9 @@ static int encode_jpeg_at_effort(const uint8_t* jpeg, size_t jpeg_size,
   uint8_t* next = *out;
   size_t avail = cap;
 
-  jxl_encoder_status st;
+  jxl_status_t st;
   while ((st = jxl_encoder_process_output(enc, &next, &avail)) ==
-         JXL_ENCODER_NEED_MORE_OUTPUT) {
+         JXL_NEED_MORE_OUTPUT) {
     size_t used = (size_t)(next - *out);
     cap *= 2;
     uint8_t* grown = (uint8_t*)realloc(*out, cap);
@@ -119,7 +119,7 @@ static int encode_jpeg_at_effort(const uint8_t* jpeg, size_t jpeg_size,
     avail = cap - used;
   }
 
-  if (st != JXL_ENCODER_SUCCESS) {
+  if (st != JXL_OK) {
     free(*out);
     jxl_encoder_destroy(enc);
     jxl_context_destroy(ctx);

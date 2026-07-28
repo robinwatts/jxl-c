@@ -1082,7 +1082,7 @@ typedef struct jxl_encoder {
   jxl_codec_metadata metadata;
   jxl_array_u8 jpeg_metadata;
 
-  jxl_encoder_error error;
+  jxl_status_t error;
 
   // Encoder wrote a jxlp (partial codestream) box, so any next codestream
   // parts must also be written in jxlp boxes, a single jxlc box cannot be
@@ -1117,7 +1117,7 @@ static inline void jxl_encoder_construct_empty(jxl_encoder* self,
   jxl_array_construct_empty(&self->jpeg_metadata, mm);
   // Match in-class defaults used by jxl_encoder_create.
   self->container_ftyp_version = -1;
-  self->error = JXL_ENCODER_ERR_OK;
+  self->error = JXL_OK;
 }
 static inline void jxl_encoder_destroy_contents(jxl_encoder* self) {
   jxl_owned_frame_settings_list_destroy(&self->encoder_options);

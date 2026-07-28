@@ -16,6 +16,7 @@
 #include <jxl/context.h>
 #include <jxl/jxl_export.h>
 #include <jxl/memory_manager.h>
+#include <jxl/status.h>
 #include <jxl/types.h>
 #include <jxl/version.h>
 #include <stddef.h>
@@ -36,22 +37,6 @@ JXL_EXPORT uint32_t jxl_encoder_version(void);
 
 typedef struct jxl_encoder jxl_encoder;
 typedef struct jxl_encoder_frame_settings jxl_encoder_frame_settings;
-
-typedef enum {
-  JXL_ENCODER_SUCCESS = 0,
-  JXL_ENCODER_ERROR = 1,
-  JXL_ENCODER_NEED_MORE_OUTPUT = 2,
-} jxl_encoder_status;
-
-typedef enum {
-  JXL_ENCODER_ERR_OK = 0,
-  JXL_ENCODER_ERR_GENERIC = 1,
-  JXL_ENCODER_ERR_OOM = 2,
-  JXL_ENCODER_ERR_JBRD = 3,
-  JXL_ENCODER_ERR_BAD_INPUT = 4,
-  JXL_ENCODER_ERR_NOT_SUPPORTED = 0x80,
-  JXL_ENCODER_ERR_API_USAGE = 0x81,
-} jxl_encoder_error;
 
 typedef enum {
   /** Encoding speed: 1 (fastest) .. 10 (slowest). Default: 7. */
@@ -80,13 +65,14 @@ typedef enum {
 JXL_EXPORT jxl_encoder* jxl_encoder_create(jxl_context* ctx);
 JXL_EXPORT void jxl_encoder_destroy(jxl_encoder* enc);
 
-JXL_EXPORT jxl_encoder_error jxl_encoder_get_error(jxl_encoder* enc);
+/** Last error set by an encoder call that returned a JXL_ERROR_* status. */
+JXL_EXPORT jxl_status_t jxl_encoder_get_error(jxl_encoder* enc);
 
 /**
  * Encodes output bytes. Call repeatedly until status is not
- * ::JXL_ENCODER_NEED_MORE_OUTPUT. Requires *avail_out >= 32 on each call.
+ * ::JXL_NEED_MORE_OUTPUT. Requires *avail_out >= 32 on each call.
  */
-JXL_EXPORT jxl_encoder_status jxl_encoder_process_output(jxl_encoder* enc,
+JXL_EXPORT jxl_status_t jxl_encoder_process_output(jxl_encoder* enc,
                                                     uint8_t** next_out,
                                                     size_t* avail_out);
 
@@ -97,19 +83,19 @@ JXL_EXPORT jxl_encoder_status jxl_encoder_process_output(jxl_encoder* enc,
  * @ref jxl_encoder_close_input before the final @ref jxl_encoder_process_output
  * when this is the last frame.
  */
-JXL_EXPORT jxl_encoder_status
+JXL_EXPORT jxl_status_t
 jxl_encoder_add_jpeg_frame(const jxl_encoder_frame_settings* frame_settings,
                        const uint8_t* buffer, size_t size);
 
 JXL_EXPORT void jxl_encoder_close_input(jxl_encoder* enc);
 
-JXL_EXPORT jxl_encoder_status jxl_encoder_use_container(jxl_encoder* enc,
+JXL_EXPORT jxl_status_t jxl_encoder_use_container(jxl_encoder* enc,
                                                    JXL_BOOL use_container);
 
-JXL_EXPORT jxl_encoder_status
+JXL_EXPORT jxl_status_t
 jxl_encoder_store_jpeg_metadata(jxl_encoder* enc, JXL_BOOL store_jpeg_metadata);
 
-JXL_EXPORT jxl_encoder_status jxl_encoder_frame_settings_set_option(
+JXL_EXPORT jxl_status_t jxl_encoder_frame_settings_set_option(
     jxl_encoder_frame_settings* frame_settings, jxl_encoder_frame_setting_id option,
     int64_t value);
 
