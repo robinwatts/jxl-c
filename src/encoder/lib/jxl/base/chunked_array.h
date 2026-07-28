@@ -10,7 +10,7 @@
 // starts has NumChunks()+1 entries when non-empty;
 // *jxl_array_at(&starts, jxl_array_len(&starts)-1) == jxl_array_len(&data).
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>

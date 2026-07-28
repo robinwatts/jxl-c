@@ -9,8 +9,8 @@
 // ICC profiles and color space conversions.
 
 #include <jxl/cms_interface.h>
+#include <jxl/context.h>
 #include <jxl/jxl_cms_export.h>
-#include <jxl/memory_manager.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,9 +18,9 @@ extern "C" {
 
 JXL_CMS_EXPORT const jxl_cms_interface* jxl_get_default_cms();
 
-/* Opaque LCMS cmsContext for a jxl_context. Allocations go through mm.
+/* Opaque LCMS cmsContext for a jxl_context. Allocations go through ctx.
  * Destroy with jxl_cms_destroy_lcms_context. */
-JXL_CMS_EXPORT void* jxl_cms_create_lcms_context(jxl_memory_manager* mm);
+JXL_CMS_EXPORT void* jxl_cms_create_lcms_context(jxl_context* ctx);
 JXL_CMS_EXPORT void jxl_cms_destroy_lcms_context(void* lcms_context);
 
 #ifdef __cplusplus

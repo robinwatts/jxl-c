@@ -8,7 +8,7 @@
 
 #include <jxl/cms_interface.h>
 #include <jxl/context.h>
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stdint.h>
 

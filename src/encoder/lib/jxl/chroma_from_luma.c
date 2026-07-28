@@ -5,7 +5,7 @@
 
 #include "lib/jxl/chroma_from_luma.h"
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 

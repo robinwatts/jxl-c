@@ -6,7 +6,7 @@
 #ifndef LIB_JXL_DCT_UTIL_H_
 #define LIB_JXL_DCT_UTIL_H_
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>

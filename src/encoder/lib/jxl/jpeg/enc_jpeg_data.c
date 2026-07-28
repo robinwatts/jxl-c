@@ -9,7 +9,7 @@
 
 #include <brotli/encode.h>
 #include <jxl/cms.h>
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>

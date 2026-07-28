@@ -5,7 +5,7 @@
 
 #include "lib/jxl/enc_icc_codec.h"
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>

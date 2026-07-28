@@ -18,7 +18,7 @@
 // Operations are macros + field-pointer helpers (no C++ overloads, no
 // ArrayCommon* casts that break strict aliasing).
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>

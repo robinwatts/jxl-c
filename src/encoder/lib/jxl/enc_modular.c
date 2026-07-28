@@ -5,7 +5,7 @@
 
 #include "lib/jxl/enc_modular.h"
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <math.h>
 #include <stddef.h>

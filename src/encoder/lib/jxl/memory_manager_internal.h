@@ -8,7 +8,7 @@
 
 // Memory allocator with support for alignment + misalignment.
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 

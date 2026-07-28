@@ -9,7 +9,7 @@
 // Library to encode the ANS population counts to the bit-stream and encode
 // symbols based on the respective distributions.
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>

@@ -5,7 +5,7 @@
 
 #include "lib/jxl/ac_strategy.h"
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include "lib/jxl/base/bits.h"
 #include "lib/jxl/base/common.h"

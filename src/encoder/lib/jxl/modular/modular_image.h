@@ -6,7 +6,7 @@
 #ifndef LIB_JXL_MODULAR_MODULAR_IMAGE_H_
 #define LIB_JXL_MODULAR_MODULAR_IMAGE_H_
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>

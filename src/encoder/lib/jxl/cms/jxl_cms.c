@@ -20,6 +20,8 @@
 #include "lib/jxl/cms/color_encoding_cms.h"
 #include "lib/jxl/cms/jxl_cms_internal.h"
 #include "lib/jxl/color_encoding_internal.h"
+#include "lib/jxl/context_internal.h"
+#include "lib/jxl/memory_manager.h"
 #include "lcms2.h"
 #include "lcms2_plugin.h"
 
@@ -659,15 +661,21 @@ JXL_CMS_EXPORT const jxl_cms_interface* jxl_get_default_cms() {
   return &kInterface;
 }
 
-JXL_CMS_EXPORT void* jxl_cms_create_lcms_context(jxl_memory_manager* mm) {
+JXL_CMS_EXPORT void* jxl_cms_create_lcms_context(jxl_context* ctx) {
+  jxl_memory_manager* mm;
+  cmsContext lcms;
+  if (ctx == NULL) {
+    return NULL;
+  }
+  mm = jxl_context_memory_manager(ctx);
   if (mm == NULL || mm->alloc == NULL || mm->free == NULL) {
     return NULL;
   }
-  cmsContext ctx = cmsCreateContext(&k_jxl_cms_mem_plugin, mm);
-  if (ctx != NULL) {
-    cmsSetLogErrorHandlerTHR(ctx, &jxl_error_handler);
+  lcms = cmsCreateContext(&k_jxl_cms_mem_plugin, mm);
+  if (lcms != NULL) {
+    cmsSetLogErrorHandlerTHR(lcms, &jxl_error_handler);
   }
-  return ctx;
+  return lcms;
 }
 
 JXL_CMS_EXPORT void jxl_cms_destroy_lcms_context(void* lcms_context) {

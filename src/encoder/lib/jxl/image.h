@@ -8,7 +8,7 @@
 
 // SIMD/multicore-friendly planar image representation with row accessors.
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>

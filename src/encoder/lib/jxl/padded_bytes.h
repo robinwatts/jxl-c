@@ -10,7 +10,7 @@
 // without bounds checks. Backed by jxl_array_u8; bind a memory_manager via
 // jxl_padded_bytes_make before growing.
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>

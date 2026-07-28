@@ -5,7 +5,7 @@
 
 #include "lib/jxl/enc_quant_weights.h"
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include "lib/jxl/base/status.h"
 #include "lib/jxl/layer_type.h"

@@ -7,7 +7,7 @@
 #define LIB_JXL_BROTLI_ALLOC_H_
 
 #include <brotli/encode.h>
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 

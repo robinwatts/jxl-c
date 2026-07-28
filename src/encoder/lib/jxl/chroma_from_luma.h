@@ -9,7 +9,7 @@
 // Chroma-from-luma, computed using heuristics to determine the best linear
 // model for the X and B channels from the Y channel.
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>

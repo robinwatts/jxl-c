@@ -6,7 +6,7 @@
 #include <brotli/encode.h>
 #include <jxl/cms.h>
 #include <jxl/encode.h>
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 #include <jxl/version.h>
 
 #include <stddef.h>
@@ -28,6 +28,7 @@
 #include "lib/jxl/luminance.h"
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/brotli_alloc.h"
+#include "lib/jxl/allocator.h"
 
 // Map public jxl_status_t onto internal encoder jxl_status (lib/jxl/base/status.h).
 static jxl_status jxl_internal_status_from_api(jxl_status_t s) {
@@ -850,7 +851,6 @@ jxl_status_t jxl_encoder_frame_settings_set_option(
 
 jxl_encoder* jxl_encoder_create(jxl_context* ctx) {
   jxl_memory_manager* mm;
-  void* alloc;
   jxl_encoder* enc;
   if (ctx == NULL) {
     return NULL;
@@ -863,10 +863,10 @@ jxl_encoder* jxl_encoder_create(jxl_context* ctx) {
     return NULL;
   }
 
-  alloc = jxl_memory_manager_alloc(mm, sizeof(jxl_encoder));
-  if (!alloc) return NULL;
-  enc = (jxl_encoder*)(alloc);
-  /* Install encoder-owned MM copy first so nested arrays/lists point at it. */
+  enc = (jxl_encoder*)jxl_ctx_alloc(ctx, sizeof(jxl_encoder));
+  if (!enc) return NULL;
+  /* Install encoder-owned MM copy first so nested arrays/lists point at it.
+   * The copy bridges to ctx->alloc; prefer enc->ctx + jxl_ctx_* for new code. */
   enc->memory_manager = *mm;
   jxl_encoder_construct_empty(enc, &enc->memory_manager);
   enc->ctx = ctx;
@@ -892,10 +892,10 @@ jxl_encoder* jxl_encoder_create(jxl_context* ctx) {
 
 void jxl_encoder_destroy(jxl_encoder* enc) {
   if (enc) {
-    jxl_memory_manager local_memory_manager = enc->memory_manager;
+    jxl_context* ctx = enc->ctx;
     // Destroy owning members directly since custom free function is used.
     jxl_encoder_destroy_contents(enc);
-    jxl_memory_manager_free(&local_memory_manager, enc);
+    jxl_ctx_free(ctx, enc);
   }
 }
 

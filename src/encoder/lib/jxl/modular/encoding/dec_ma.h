@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/common.h"

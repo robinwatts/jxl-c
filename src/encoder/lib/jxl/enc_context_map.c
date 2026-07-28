@@ -7,7 +7,7 @@
 
 #include "lib/jxl/enc_context_map.h"
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>

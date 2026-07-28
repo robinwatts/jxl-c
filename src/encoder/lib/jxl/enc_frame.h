@@ -6,7 +6,7 @@
 #ifndef LIB_JXL_ENC_FRAME_H_
 #define LIB_JXL_ENC_FRAME_H_
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 #include <jxl/types.h>
 
 #include "lib/jxl/base/status.h"

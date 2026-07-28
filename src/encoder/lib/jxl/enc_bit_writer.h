@@ -8,7 +8,7 @@
 
 // jxl_bit_writer: unbuffered writes using unaligned 64-bit stores.
 
-#include <jxl/memory_manager.h>
+#include "lib/jxl/memory_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>

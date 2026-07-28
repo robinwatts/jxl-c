@@ -15,7 +15,6 @@
 
 #include <jxl/context.h>
 #include <jxl/jxl_export.h>
-#include <jxl/memory_manager.h>
 #include <jxl/status.h>
 #include <jxl/types.h>
 #include <jxl/version.h>
