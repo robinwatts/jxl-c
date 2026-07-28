@@ -5,7 +5,7 @@
  * Usage: simple_lossless_cli in.ppm out.jxl [effort]
  */
 
-#include "jxl/decode.h"
+#include "jxl/simple_lossless.h"
 
 #include <errno.h>
 #include <limits.h>

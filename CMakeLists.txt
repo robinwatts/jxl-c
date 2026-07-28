@@ -155,9 +155,17 @@ endif()
 set(JXL_C_PUBLIC_HEADERS
     include/jxl/allocator.h
     include/jxl/status.h
+    include/jxl/colour_encoding.h
     include/jxl/decode_types.h
+    include/jxl/types.h
     include/jxl/context.h
     include/jxl/decode.h
+    include/jxl/encode.h
+    include/jxl/simple_lossless.h
+    include/jxl/cms_interface.h
+    include/jxl/cms.h
+    include/jxl/codestream_header.h
+    include/jxl/version.h
 )
 
 set(JXL_C_BITSTREAM_SOURCES

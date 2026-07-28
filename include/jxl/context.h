@@ -48,6 +48,10 @@ typedef struct {
 jxl_status_t jxl_context_create(const jxl_context_options *opts, jxl_context **out);
 void jxl_context_destroy(jxl_context *ctx);
 
+/* Heap helpers that route through the context allocator. */
+void *jxl_alloc(jxl_context *ctx, size_t size);
+void jxl_free(jxl_context *ctx, void *ptr);
+
 #ifdef __cplusplus
 }
 #endif

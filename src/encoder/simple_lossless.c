@@ -7,6 +7,8 @@
 #include "context.h"
 #include "encoder/simple_lossless_internal.h"
 
+#include <jxl/simple_lossless.h>
+
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>

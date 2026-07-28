@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "jxl/decode.h"
+#include "jxl/simple_lossless.h"
 
 #include "allocator.h"
 #include "test_helpers.h"
