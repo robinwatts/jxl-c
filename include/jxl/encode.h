@@ -13,7 +13,7 @@
 #ifndef JXL_ENCODE_H_
 #define JXL_ENCODE_H_
 
-#include <jxl_oxide/jxl_context.h>
+#include <jxl/context.h>
 #include <jxl/jxl_export.h>
 #include <jxl/memory_manager.h>
 #include <jxl/types.h>

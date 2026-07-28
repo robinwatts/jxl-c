@@ -3,7 +3,7 @@
 
 #include <immintrin.h>
 #include <smmintrin.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 #include <string.h>
 
 #if defined(JXL_HAVE_SIMD_SSE41)

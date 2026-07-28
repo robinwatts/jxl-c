@@ -2,7 +2,7 @@
 #ifndef JXL_CONTAINER_BOX_TYPE_H_
 #define JXL_CONTAINER_BOX_TYPE_H_
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct {
     uint8_t bytes[4];

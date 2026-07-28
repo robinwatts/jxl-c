@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "allocator.h"
 #include "bitstream/consts.h"
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 #include <assert.h>
 #include "test_helpers.h"

@@ -2,7 +2,7 @@
 #ifndef JXL_VARDCT_DCT_SELECT_H_
 #define JXL_VARDCT_DCT_SELECT_H_
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef enum {
     JXL_TRANSFORM_DCT8 = 0,

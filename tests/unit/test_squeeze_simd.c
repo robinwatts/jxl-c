@@ -3,7 +3,7 @@
 #include "modular/transform/squeeze_internal.h"
 
 #include "allocator.h"
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 #include <assert.h>
 #include <stdio.h>

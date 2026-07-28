@@ -18,7 +18,7 @@
 #include "render/render_util.h"
 #include "vardct/lf.h"
 #include "test_helpers.h"
-#include "jxl_oxide/jxl_context.h"
+#include "jxl/context.h"
 
 static jxl_allocator_state *test_alloc(void) {
     static jxl_allocator_state alloc;
@@ -38,7 +38,7 @@ static jxl_context *test_library_ctx(void) {
 }
 
 #include <assert.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -108,7 +108,7 @@ static int load_layout_oracle(const char *fixture, uint32_t *nb_meta_out,
     char path[512];
     char line[512];
     size_t line_no;
-    snprintf(path, sizeof(path), "%s/modular_transformed_layouts.txt", JXL_OXIDE_DECODE_ORACLE_DIR);
+    snprintf(path, sizeof(path), "%s/modular_transformed_layouts.txt", JXL_C_DECODE_ORACLE_DIR);
     FILE *f = fopen(path, "rb");
     if (f == NULL) {
         return 0;
@@ -179,7 +179,7 @@ static void validate_layout_oracle_file(void) {
     char seen[64][128];
     size_t seen_len;
     size_t line_no;
-    snprintf(path, sizeof(path), "%s/modular_transformed_layouts.txt", JXL_OXIDE_DECODE_ORACLE_DIR);
+    snprintf(path, sizeof(path), "%s/modular_transformed_layouts.txt", JXL_C_DECODE_ORACLE_DIR);
     FILE *f = fopen(path, "rb");
     if (f == NULL) {
         fprintf(stderr, "cannot open layout oracle file: %s\n", path);
@@ -243,7 +243,7 @@ static jxl_frame *load_modular_frame(const char *fixture, jxl_allocator_state *a
     jxl_bs bs;
     jxl_parsed_image_header image;
     size_t consumed;
-    snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_OXIDE_FIXTURES_DIR, fixture);
+    snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_C_FIXTURES_DIR, fixture);
 
     uint8_t *file = NULL;
     file_len = 0;
@@ -718,7 +718,7 @@ static void test_modular_pass_group_offsets_decode_fixtures(void) {
     char seen[64][128];
     size_t seen_len;
     snprintf(oracle_path, sizeof(oracle_path), "%s/modular_pass_group_offsets.txt",
-             JXL_OXIDE_DECODE_ORACLE_DIR);
+             JXL_C_DECODE_ORACLE_DIR);
     FILE *f = fopen(oracle_path, "rb");
     if (f == NULL) {
         fprintf(stderr, "cannot open oracle file: %s\n", oracle_path);
@@ -780,7 +780,7 @@ static jxl_frame *load_conformance_first_frame(const char *case_name, jxl_alloca
     jxl_bs bs;
     jxl_parsed_image_header image;
     size_t consumed;
-    snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_OXIDE_CONFORMANCE_DIR, case_name);
+    snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_C_CONFORMANCE_DIR, case_name);
 
     uint8_t *file = NULL;
     file_len = 0;

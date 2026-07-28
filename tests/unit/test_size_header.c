@@ -14,7 +14,7 @@ int main(void) {
     jxl_bs bs;
     uint32_t sig;
     jxl_size_header size;
-    FILE *f = fopen(JXL_OXIDE_FIXTURES_DIR "/grayalpha/input.jxl", "rb");
+    FILE *f = fopen(JXL_C_FIXTURES_DIR "/grayalpha/input.jxl", "rb");
     assert(f != NULL);
     fseek(f, 0, SEEK_END);
     long n = ftell(f);

@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(JXL_OXIDE_C_ENABLE_JPEG_ENCODER)
+#if defined(JXL_C_ENABLE_JPEG_ENCODER)
 #include "encoder/jpeg_context.h"
 #endif
 
@@ -135,7 +135,7 @@ void jxl_context_fini_inplace(jxl_context *ctx) {
     if (ctx == NULL) {
         return;
     }
-#if defined(JXL_OXIDE_C_ENABLE_JPEG_ENCODER)
+#if defined(JXL_C_ENABLE_JPEG_ENCODER)
     jxl_jpeg_encoder_context_fini(ctx);
 #endif
     jxl_context_dequant_free(ctx);
@@ -159,7 +159,7 @@ jxl_status_t jxl_context_create(const jxl_context_options *opts, jxl_context **o
     }
     jxl_context_init_inplace(ctx, opts);
     ctx->alloc = scratch;
-#if defined(JXL_OXIDE_C_ENABLE_JPEG_ENCODER)
+#if defined(JXL_C_ENABLE_JPEG_ENCODER)
     if (!jxl_jpeg_encoder_context_init(ctx)) {
         jxl_context_fini_inplace(ctx);
         jxl_free(&scratch, ctx);

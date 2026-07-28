@@ -2,9 +2,9 @@
 #include "deps_check.h"
 
 #include <brotli/decode.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
-#if defined(JXL_OXIDE_C_HAVE_LCMS2)
+#if defined(JXL_C_HAVE_LCMS2)
 #include <lcms2.h>
 #endif
 
@@ -15,7 +15,7 @@ jxl_status_t jxl_deps_self_test(void) {
     }
     BrotliDecoderDestroyInstance(brotli);
 
-#if defined(JXL_OXIDE_C_HAVE_LCMS2)
+#if defined(JXL_C_HAVE_LCMS2)
     cmsContext cms = cmsCreateContext(NULL, NULL);
     if (cms == NULL) {
         return JXL_ERROR_OUT_OF_MEMORY;

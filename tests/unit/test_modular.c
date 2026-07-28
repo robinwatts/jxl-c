@@ -2,7 +2,7 @@
 #include "image/image_internal.h"
 #include "modular/modular.h"
 #include "modular/transform/squeeze.h"
-#include "jxl_oxide/jxl_context.h"
+#include "jxl/context.h"
 #if defined(JXL_HAVE_SIMD_SSE41)
 #include "modular/transform/squeeze_internal.h"
 #endif

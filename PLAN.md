@@ -1,4 +1,4 @@
-# jxl-oxide C Port Plan
+# jxl-c Port Plan
 
 Manual port of the jxl-oxide decode pipeline to C, with Rust tests as the correctness oracle during development.
 
@@ -12,7 +12,7 @@ Manual port of the jxl-oxide decode pipeline to C, with Rust tests as the correc
 | Correctness oracle | Rust `jxl-oxide` + existing test fixtures |
 | **v1 scope** | **Still images + animation** (multi-keyframe render; animation timing getters; no progressive streaming API) |
 | Threading | Deferred (single-threaded v1) |
-| JBR (JPEG reconstruction) | **In v1** — `src/jbr/`; `JXL_OXIDE_C_ENABLE_JBR=ON` (CMake option to disable) |
+| JBR (JPEG reconstruction) | **In v1** — `src/jbr/`; `JXL_C_ENABLE_JBR=ON` (CMake option to disable) |
 | **`jxl_context`** | Explicit create/destroy required; pluggable allocator; CMS on context — see [CONTEXT_PLAN.md](CONTEXT_PLAN.md) |
 
 ### v1 scope
@@ -31,7 +31,7 @@ The core render pipeline is shared: reference-only frames, LF frames, blend comp
 - Aux boxes (EXIF, etc.) — parse only if needed for parity tests
 - Animation **blend compositing** via reference slots (`blending_info.source`), matching Rust `blend.rs`
 - Decode oracle + conformance on **all keyframes** for animated fixtures
-- **JPEG bitstream reconstruction** (`jxl-jbr`) — `jxl_decoder_jpeg_reconstruction_status()` + `jxl_decoder_reconstruct_jpeg()` when `JXL_OXIDE_C_ENABLE_JBR` is on
+- **JPEG bitstream reconstruction** (`jxl-jbr`) — `jxl_decoder_jpeg_reconstruction_status()` + `jxl_decoder_reconstruct_jpeg()` when `JXL_C_ENABLE_JBR` is on
 
 **Out of scope for v1:**
 - Progressive multi-keyframe loading / partial animation decode while feeding
@@ -83,7 +83,7 @@ Animated files are **first-class** in v1 — not a keyframe-0-only subset.
 
 JPEG bitstream reconstruction re-encodes a VarDCT frame’s HF coefficients into a JPEG file when the container carries a `jbrd` box. Matches Rust `jxl-jbr` + `JxlImage::reconstruct_jpeg()`.
 
-**Public API (when `JXL_OXIDE_C_ENABLE_JBR`):**
+**Public API (when `JXL_C_ENABLE_JBR`):**
 - `jxl_decoder_jpeg_reconstruction_status(dec)` — `Available` / `Decoding` / `NeedMoreData` / etc.
 - `jxl_decoder_reconstruct_jpeg(dec, &buf, &len)` — allocates output via context allocator; caller frees with `jxl_free`
 
@@ -102,7 +102,7 @@ jxl-c.git/                     # this repository (C port root)
   third_party/jxl-oxide/       # git submodule — Rust oracle + fixtures
   PLAN.md                      # this document
   CMakeLists.txt
-  include/jxl_oxide/
+  include/jxl/
   src/
   tests/
   tools/
@@ -148,19 +148,19 @@ third_party/
   brotli/                    # FetchContent at configure time
 ```
 
-Build: CMake. Static library `jxl_oxide_c` (+ optional shared). LCMS2 and Brotli via `FetchContent` or submodules.
+Build: CMake. Static library `jxl_c` (+ optional shared). LCMS2 and Brotli via `FetchContent` or submodules.
 
 ### CMake options
 
 | Option | Default | Notes |
 |--------|---------|-------|
-| `JXL_OXIDE_C_SIMD_SSE41` | ON (x86) | Generic fallback always built |
-| `JXL_OXIDE_C_SIMD_AVX2` | ON (x86) | |
-| `JXL_OXIDE_C_SIMD_NEON` | ON (arm64) | |
-| `JXL_OXIDE_C_SIMD_WASM128` | ON (wasm32) | |
-| `JXL_OXIDE_C_REQUIRE_LCMS2` | ON | Hard dependency |
-| `JXL_OXIDE_C_ENABLE_JBR` | ON | Set OFF to omit `src/jbr/` and JBR public API |
-| `JXL_OXIDE_C_ENABLE_THREADS` | OFF | v2+ |
+| `JXL_C_SIMD_SSE41` | ON (x86) | Generic fallback always built |
+| `JXL_C_SIMD_AVX2` | ON (x86) | |
+| `JXL_C_SIMD_NEON` | ON (arm64) | |
+| `JXL_C_SIMD_WASM128` | ON (wasm32) | |
+| `JXL_C_REQUIRE_LCMS2` | ON | Hard dependency |
+| `JXL_C_ENABLE_JBR` | ON | Set OFF to omit `src/jbr/` and JBR public API |
+| `JXL_C_ENABLE_THREADS` | OFF | v2+ |
 
 ---
 
@@ -169,7 +169,7 @@ Build: CMake. Static library `jxl_oxide_c` (+ optional shared). LCMS2 and Brotli
 Opaque decoder; incremental feed; **multi-keyframe render** for animation.
 
 ```c
-/* jxl_status.h */
+/* jxl/status.h */
 typedef enum {
     JXL_OK = 0,
     JXL_NEED_MORE_DATA,
@@ -180,7 +180,7 @@ typedef enum {
     JXL_ERROR_LIMIT_EXCEEDED,
 } jxl_status_t;
 
-/* jxl_oxide.h — sketch */
+/* jxl/decode.h — sketch */
 typedef struct jxl_context  jxl_context;
 typedef struct jxl_decoder jxl_decoder;
 typedef struct jxl_render  jxl_render;
@@ -227,14 +227,14 @@ void jxl_render_destroy(jxl_context *ctx, jxl_render *r);
 void jxl_decoder_destroy(jxl_context *ctx, jxl_decoder *dec);
 const char *jxl_decoder_last_error(const jxl_decoder *dec);
 
-/* When JXL_OXIDE_C_ENABLE_JBR (default ON): */
+/* When JXL_C_ENABLE_JBR (default ON): */
 jxl_jpeg_reconstruction_status jxl_decoder_jpeg_reconstruction_status(const jxl_decoder *dec);
 jxl_status_t jxl_decoder_reconstruct_jpeg(jxl_decoder *dec, uint8_t **jpeg_out, size_t *jpeg_len);
 ```
 
 **Not in v1:** progressive loading callbacks, non-keyframe frame index API (`num_loaded_frames`).
 
-**JBR:** Port of `crates/jxl-jbr` in `src/jbr/`; gated by `JXL_OXIDE_C_ENABLE_JBR`. See [JBR policy](#jbr-policy-v1).
+**JBR:** Port of `crates/jxl-jbr` in `src/jbr/`; gated by `JXL_C_ENABLE_JBR`. See [JBR policy](#jbr-policy-v1).
 
 **LCMS2:** Port `crates/jxl-oxide/src/lcms2.rs` as default CMS when `opts.cms == NULL`. Matrix-only transforms stay in `jxl-color` C code.
 
@@ -439,9 +439,9 @@ Sub-order:
 
 ### Phase 9 — Hardening (~2 weeks)
 
-- libFuzzer on `jxl_decoder_feed` — `c/fuzz/decode_fuzzer.c` (`JXL_OXIDE_C_BUILD_FUZZ=ON`, Clang)
-- ASan/UBSan CI — `.github/workflows/c-sanitizers.yml` (`JXL_OXIDE_C_ENABLE_SANITIZERS=ON`)
-- Benchmark vs Rust — `c/tools/bench_decode.c` (`JXL_OXIDE_C_BUILD_TOOLS=ON`)
+- libFuzzer on `jxl_decoder_feed` — `c/fuzz/decode_fuzzer.c` (`JXL_C_BUILD_FUZZ=ON`, Clang)
+- ASan/UBSan CI — `.github/workflows/c-sanitizers.yml` (`JXL_C_ENABLE_SANITIZERS=ON`)
+- Benchmark vs Rust — `c/tools/bench_decode.c` (`JXL_C_BUILD_TOOLS=ON`)
 
 ---
 

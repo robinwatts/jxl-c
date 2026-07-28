@@ -9,7 +9,7 @@
 #include "vardct/dequant.h"
 #include "vardct/lf.h"
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct {
     float quant_bias[3];

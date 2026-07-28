@@ -4,7 +4,7 @@
 
 #include "image/image_internal.h"
 
-#include "jxl_oxide/jxl_status.h"
+#include "jxl/status.h"
 
 typedef struct jxl_context jxl_context;
 

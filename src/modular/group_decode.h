@@ -4,7 +4,7 @@
 
 #include "frame/frame.h"
 #include "image/image_internal.h"
-#include "jxl_oxide/jxl_status.h"
+#include "jxl/status.h"
 #include "modular/image.h"
 #include "modular/ma.h"
 #include "modular/param.h"

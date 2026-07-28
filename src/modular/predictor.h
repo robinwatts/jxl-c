@@ -5,7 +5,7 @@
 #include "bitstream/bitstream.h"
 #include "modular/error.h"
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct {
     int default_wp;

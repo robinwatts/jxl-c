@@ -94,8 +94,8 @@ build_all() {
     echo "==> Configure/build C (Release) -> $C_BUILD"
     cmake -S "$ROOT" -B "$C_BUILD" \
         -DCMAKE_BUILD_TYPE=Release \
-        -DJXL_OXIDE_C_BUILD_TOOLS=ON \
-        -DJXL_OXIDE_C_BUILD_TESTS=OFF >/dev/null
+        -DJXL_C_BUILD_TOOLS=ON \
+        -DJXL_C_BUILD_TESTS=OFF >/dev/null
     cmake --build "$C_BUILD" --target bench_decode -j"$(nproc)" >/dev/null
 
     echo "==> Build Rust bench_decode_st (release, no default features) -> $CARGO_TARGET_DIR"

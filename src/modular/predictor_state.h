@@ -7,7 +7,7 @@
 #include "modular/predictor.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct {
     int64_t prediction;

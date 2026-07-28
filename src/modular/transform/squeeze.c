@@ -5,7 +5,7 @@
 #include "allocator.h"
 #include "render/simd/features.h"
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 #include <string.h>
 
 jxl_inline int32_t wrap_add_i32(int32_t a, int32_t b) {

@@ -1,10 +1,10 @@
-/* Encoder-facing types. Avoid including jxl_oxide/jxl_types.h here — its
- * colour enums / jxl_color_encoding collide with include/jxl/color_encoding.h.
+/* Encoder-facing types. Avoid including jxl/decode_types.h here — its
+ * colour enums / jxl_colour_encoding collide with include/jxl/color_encoding.h.
  */
 #ifndef JXL_TYPES_H_
 #define JXL_TYPES_H_
 
-#include "jxl_oxide/jxl_allocator.h"
+#include <jxl/allocator.h>
 
 #include <stddef.h>
 #include <stdint.h>

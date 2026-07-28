@@ -2,7 +2,7 @@
 #include "render_buffer.h"
 
 #include "allocator.h"
-#include "jxl_oxide/jxl_context.h"
+#include "jxl/context.h"
 #include "frame/frame_header.h"
 #include "image/image_internal.h"
 #include "render/features/noise.h"

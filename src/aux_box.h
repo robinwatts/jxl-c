@@ -7,7 +7,7 @@
 #include "bitstream/container/parser.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef enum {
     JXL_AUX_BOX_DECODING = 0,
@@ -33,7 +33,7 @@ jxl_aux_box_data jxl_aux_box_list_first_of_type(const jxl_aux_box_list *list, jx
 jxl_aux_box_data jxl_aux_box_list_first_exif(const jxl_aux_box_list *list);
 jxl_aux_box_data jxl_aux_box_list_first_xml(const jxl_aux_box_list *list);
 
-#if defined(JXL_OXIDE_C_ENABLE_JBR) && JXL_OXIDE_C_ENABLE_JBR
+#if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
 typedef struct jxl_jbr_data jxl_jbr_data;
 
 typedef enum {

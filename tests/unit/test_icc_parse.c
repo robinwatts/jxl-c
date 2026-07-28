@@ -2,8 +2,8 @@
 #include "test_paths.h"
 
 #include "image/icc_parse.h"
-#include "jxl_oxide/jxl_status.h"
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/status.h"
+#include "jxl/decode_types.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +16,7 @@ int main(void) {
     if (hash == NULL || hash[0] == '\0') {
         hash = "80a1d9ea2892c89ab10a05fcbd1d752069557768fac3159ecd91c33be0d74a19";
     }
-    snprintf(path, sizeof(path), "%s/%s.icc", JXL_OXIDE_CACHE_DIR, hash);
+    snprintf(path, sizeof(path), "%s/%s.icc", JXL_C_CACHE_DIR, hash);
     FILE *f = fopen(path, "rb");
     if (f == NULL) {
         return 1;

@@ -522,7 +522,7 @@ int jxl_render_noise(jxl_allocator_state *alloc, const jxl_frame_header *header,
     return 1;
 }
 
-#ifdef JXL_OXIDE_TESTING
+#ifdef JXL_C_TESTING
 uint64_t jxl_noise_planes_ch0_checksum(const jxl_frame_header *header, uint32_t visible_frames,
                                        uint32_t invisible_frames) {
                                            size_t i;

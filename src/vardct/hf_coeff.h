@@ -12,7 +12,7 @@
 #include "vardct/lf.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct {
     int32_t *data;

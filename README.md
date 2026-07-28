@@ -37,7 +37,7 @@ If bootstrap reports missing oracle files (unlikely — they are vendored):
 Override the submodule location:
 
 ```bash
-export JXL_OXIDE_RUST_ROOT=/path/to/jxl-oxide
+export JXL_C_RUST_ROOT=/path/to/jxl-oxide
 ```
 
 Regenerate oracle files after decoder changes (C-only, no Rust toolchain):
@@ -62,7 +62,7 @@ scripts/bench_st_compare.sh --iters 40 --rounds 3
 
 ```
 jxl-c/
-  include/jxl_oxide/       # public C API
+  include/jxl/             # public C API (decode + encode)
   src/                     # library sources
   tests/oracle/decode/     # vendored/regenerated parity oracles
   tools/                   # bench_decode, gen_decode_oracles
@@ -75,12 +75,12 @@ See [PLAN.md](PLAN.md) for the port roadmap.
 
 | Option | Default | Notes |
 |--------|---------|-------|
-| `JXL_OXIDE_RUST_ROOT` | `third_party/jxl-oxide` | Submodule root |
-| `JXL_OXIDE_DECODE_ORACLE_DIR` | `tests/oracle/decode` | Local parity oracle files |
-| `JXL_OXIDE_C_ENABLE_JBR` | ON | JPEG bitstream reconstruction |
-| `JXL_OXIDE_C_ENABLE_SIMPLE_LOSSLESS` | ON | Simple lossless encoder |
-| `JXL_OXIDE_C_ENABLE_JPEG_ENCODER` | ON | JPEG→JXL recompression encoder |
-| `JXL_OXIDE_C_BUILD_TOOLS` | OFF | `bench_decode` |
-| `JXL_OXIDE_C_BUILD_FUZZ` | OFF | libFuzzer target (Clang) |
+| `JXL_C_RUST_ROOT` | `third_party/jxl-oxide` | Submodule root |
+| `JXL_C_DECODE_ORACLE_DIR` | `tests/oracle/decode` | Local parity oracle files |
+| `JXL_C_ENABLE_JBR` | ON | JPEG bitstream reconstruction |
+| `JXL_C_ENABLE_SIMPLE_LOSSLESS` | ON | Simple lossless encoder |
+| `JXL_C_ENABLE_JPEG_ENCODER` | ON | JPEG→JXL recompression encoder |
+| `JXL_C_BUILD_TOOLS` | OFF | `bench_decode` |
+| `JXL_C_BUILD_FUZZ` | OFF | libFuzzer target (Clang) |
 
 Dual-licensed under MIT and Apache 2.0 (same as jxl-oxide).

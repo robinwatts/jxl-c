@@ -7,7 +7,7 @@
 #include "coding/error.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 /* Ported from libjxl; repr(C) layout must be 8 bytes. */
 typedef struct jxl_ans_bucket {

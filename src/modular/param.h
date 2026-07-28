@@ -8,7 +8,7 @@
 #include "image/image_internal.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef enum {
     JXL_CHANNEL_SHIFT_JPEG_UPSAMPLING = 0,

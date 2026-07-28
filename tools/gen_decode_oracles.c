@@ -4,8 +4,8 @@
  *
  * Usage: gen_decode_oracles <decode-fixtures-dir> <oracle-output-dir>
  */
-#include "jxl_oxide/jxl_context.h"
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/context.h"
+#include "jxl/decode_types.h"
 
 #include "allocator.h"
 #include "bitstream/bitstream.h"

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#ifndef JXL_OXIDE_CONTEXT_H_
-#define JXL_OXIDE_CONTEXT_H_
+#ifndef JXL_CONTEXT_H_
+#define JXL_CONTEXT_H_
 
-#include "jxl_status.h"
-#include "jxl_allocator.h"
+#include <jxl/allocator.h>
+#include <jxl/status.h>
 
 #include <stddef.h>
 
@@ -33,7 +33,7 @@ typedef struct jxl_context jxl_context;
  * ---------
  * opts->alloc supplies alloc/free (required). calloc and realloc may be NULL;
  * the library supplies portable defaults (zero-fill and copy-on-grow). All
- * heap use in jxl-oxide routes through this vtable, including LCMS2 transform
+ * heap use in jxl-c routes through this vtable, including LCMS2 transform
  * setup and Brotli container decompression when those subsystems are used.
  * Pair every successful allocation with a free through the same context.
  */
@@ -52,4 +52,4 @@ void jxl_context_destroy(jxl_context *ctx);
 }
 #endif
 
-#endif /* JXL_OXIDE_CONTEXT_H_ */
+#endif /* JXL_CONTEXT_H_ */

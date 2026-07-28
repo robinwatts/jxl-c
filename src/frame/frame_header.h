@@ -8,7 +8,7 @@
 #include "image/image_internal.h"
 #include "allocator.h"
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef enum {
     JXL_FRAME_TYPE_REGULAR = 0,

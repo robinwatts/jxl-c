@@ -4,7 +4,7 @@
 #include "render/simd/features.h"
 
 #include <math.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 #include <string.h>
 
 static const float k_pow2f_numer[3] = {1.01749063e1f, 4.88687798e1f, 9.85506591e1f};

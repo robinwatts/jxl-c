@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "frame/pass_group.h"
-#include "jxl_oxide/jxl_context.h"
+#include "jxl/context.h"
 
 #include "allocator.h"
 #include <assert.h>

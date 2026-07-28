@@ -4,7 +4,7 @@
  * captured from the scalar minimal encoder for JPEG lossless recompression.
  */
 
-#include <jxl_oxide/jxl_context.h>
+#include <jxl/context.h>
 #include <jxl/encode.h>
 
 #include <stdio.h>

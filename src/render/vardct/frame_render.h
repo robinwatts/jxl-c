@@ -5,7 +5,7 @@
 #include "allocator.h"
 #include "frame/frame.h"
 #include "image/image_internal.h"
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 #include "context.h"
 #include "modular/region.h"
 #include "render/patch_render.h"

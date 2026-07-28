@@ -51,7 +51,7 @@ static void test_fixture(const char *name) {
     size_t cs_len;
     jxl_bs bs;
     jxl_parsed_image_header parsed;
-    snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_OXIDE_CONFORMANCE_DIR, name);
+    snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_C_CONFORMANCE_DIR, name);
 
     uint8_t *file = NULL;
     file_len = 0;
@@ -99,7 +99,7 @@ static void test_ec_bit_depth(const char *name) {
     size_t cs_len;
     jxl_bs bs;
     jxl_parsed_image_header parsed;
-    snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_OXIDE_CONFORMANCE_DIR, name);
+    snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_C_CONFORMANCE_DIR, name);
 
     uint8_t *file = NULL;
     file_len = 0;

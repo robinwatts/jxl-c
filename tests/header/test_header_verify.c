@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "test_paths.h"
 
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,7 +57,7 @@ int main(void) {
     for (i = 0; i < k_header_field_count; ++i) {
         char path[1024];
         size_t file_len;
-        snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_OXIDE_FIXTURES_DIR,
+        snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_C_FIXTURES_DIR,
                  k_header_fields[i].name);
 
         uint8_t *file = NULL;

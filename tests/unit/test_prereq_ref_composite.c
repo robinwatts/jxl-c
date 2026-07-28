@@ -72,7 +72,7 @@ int main(void) {
     jxl_reference_store refs;
     jxl_progressive_lf_store lf_store;
     int any_ref;
-    snprintf(path, sizeof(path), "%s/blendmodes_5/input.jxl", JXL_OXIDE_CONFORMANCE_DIR);
+    snprintf(path, sizeof(path), "%s/blendmodes_5/input.jxl", JXL_C_CONFORMANCE_DIR);
 
     uint8_t *input = NULL;
     input_len = 0;

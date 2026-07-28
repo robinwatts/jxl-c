@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#include "jxl_oxide/jxl_status.h"
+#include "jxl/status.h"
 
 const char *jxl_status_string(jxl_status_t status) {
     switch (status) {

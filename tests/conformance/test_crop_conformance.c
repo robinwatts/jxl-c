@@ -8,7 +8,7 @@
  * Fixed crops mirror testcase_with_crop!; random crops mirror testcase! (4 regions).
  * crop_upsampling_0 is omitted — Rust marks it #[ignore] on emulated aarch64 CI.
  */
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -321,7 +321,7 @@ static const fixed_crop_case *find_fixed_case(const char *label) {
 
 static int run_fixed_case(jxl_context *ctx, const fixed_crop_case *tc) {
     char path[1024];
-    int n = snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_OXIDE_CONFORMANCE_DIR, tc->fixture);
+    int n = snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_C_CONFORMANCE_DIR, tc->fixture);
     size_t len;
     if (n < 0 || (size_t)n >= sizeof(path)) {
         return -1;
@@ -344,7 +344,7 @@ static int run_fixed_case(jxl_context *ctx, const fixed_crop_case *tc) {
 static int run_random_fixture(jxl_context *ctx, const char *fixture, int only_index) {
     int i;
     char path[1024];
-    int n = snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_OXIDE_CONFORMANCE_DIR, fixture);
+    int n = snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_C_CONFORMANCE_DIR, fixture);
     size_t len;
     uint32_t width;
     uint32_t height;

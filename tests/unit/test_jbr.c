@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 #include "allocator.h"
 #include "context.h"
@@ -33,7 +33,7 @@ static const jbr_case k_jbr_cases[] = {
 
 static void jbr_fixture_path(const jbr_case *tc, char *buf, size_t len) {
     const char *base =
-        tc->use_decode_fixtures ? JXL_OXIDE_FIXTURES_DIR : JXL_OXIDE_CONFORMANCE_DIR;
+        tc->use_decode_fixtures ? JXL_C_FIXTURES_DIR : JXL_C_CONFORMANCE_DIR;
     snprintf(buf, len, "%s/%s/input.jxl", base, tc->name);
 }
 

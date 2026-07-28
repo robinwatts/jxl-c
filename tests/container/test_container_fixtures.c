@@ -47,7 +47,7 @@ static int read_file(const char *path, uint8_t **out_data, size_t *out_len) {
 
 static int process_fixture(const char *name, const char *update_path) {
     char path[1024];
-    int n = snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_OXIDE_FIXTURES_DIR, name);
+    int n = snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_C_FIXTURES_DIR, name);
     size_t file_len;
     size_t cs_len;
     char digest[65];
@@ -106,9 +106,9 @@ int main(void) {
         fclose(out);
     }
 
-    DIR *dir = opendir(JXL_OXIDE_FIXTURES_DIR);
+    DIR *dir = opendir(JXL_C_FIXTURES_DIR);
     if (dir == NULL) {
-        fprintf(stderr, "cannot open fixtures dir %s\n", JXL_OXIDE_FIXTURES_DIR);
+        fprintf(stderr, "cannot open fixtures dir %s\n", JXL_C_FIXTURES_DIR);
         return 1;
     }
 
@@ -123,7 +123,7 @@ int main(void) {
         if (strcmp(ent->d_name, "benchmark-data") == 0 || strcmp(ent->d_name, "README.md") == 0) {
             continue;
         }
-        snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_OXIDE_FIXTURES_DIR, ent->d_name);
+        snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_C_FIXTURES_DIR, ent->d_name);
         FILE *f = fopen(path, "rb");
         if (f == NULL) {
             continue;

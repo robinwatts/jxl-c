@@ -7,7 +7,7 @@
 #include <emmintrin.h>
 #include <string.h>
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 #if defined(JXL_HAVE_SIMD_AVX2)
 

@@ -3,6 +3,6 @@
 #ifndef JXL_ENCODER_SIMPLE_LOSSLESS_INTERNAL_H_
 #define JXL_ENCODER_SIMPLE_LOSSLESS_INTERNAL_H_
 
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 #endif /* JXL_ENCODER_SIMPLE_LOSSLESS_INTERNAL_H_ */

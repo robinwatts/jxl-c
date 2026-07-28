@@ -7,7 +7,7 @@
 #include "vardct/lf.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 /* Rust ImageBuffer::convert_to_float_modular_xyb / convert_to_float_modular. */
 float jxl_modular_sample_color_float(const jxl_modular_image_destination *dest, size_t first_plane,

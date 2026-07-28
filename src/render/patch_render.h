@@ -10,9 +10,9 @@
 #include "render/subgrid_f32.h"
 
 #include "allocator.h"
-#include "jxl_oxide/jxl_status.h"
+#include "jxl/status.h"
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct {
     int valid;

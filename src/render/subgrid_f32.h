@@ -2,7 +2,7 @@
 #ifndef JXL_RENDER_SUBGRID_F32_H_
 #define JXL_RENDER_SUBGRID_F32_H_
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 #include <stddef.h>
 

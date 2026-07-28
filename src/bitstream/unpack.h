@@ -2,7 +2,7 @@
 #ifndef JXL_BITSTREAM_UNPACK_H_
 #define JXL_BITSTREAM_UNPACK_H_
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 jxl_inline int32_t jxl_unpack_signed(uint32_t x) {
     uint32_t bit = x & 1u;

@@ -9,7 +9,7 @@
 #include "image/image_internal.h"
 #include "modular/subimage_decode.h"
 #include "test_helpers.h"
-#include "jxl_oxide/jxl_context.h"
+#include "jxl/context.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,7 +80,7 @@ int main(void) {
     jxl_frame_init(&frame);
     jxl_lf_global_init(&lf);
 
-    n = snprintf(path, sizeof(path), "%s/benchmark-data/srgb.d0-e1.jxl", JXL_OXIDE_FIXTURES_DIR);
+    n = snprintf(path, sizeof(path), "%s/benchmark-data/srgb.d0-e1.jxl", JXL_C_FIXTURES_DIR);
     if (n < 0 || (size_t)n >= sizeof(path)) {
         fprintf(stderr, "path too long\n");
         return 1;

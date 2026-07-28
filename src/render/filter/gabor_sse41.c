@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "render/filter/gabor_sse41.h"
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 #if defined(JXL_HAVE_SIMD_SSE41)
 

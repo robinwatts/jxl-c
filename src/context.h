@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#ifndef JXL_OXIDE_CONTEXT_INTERNAL_H_
-#define JXL_OXIDE_CONTEXT_INTERNAL_H_
+#ifndef JXL_CONTEXT_INTERNAL_H_
+#define JXL_CONTEXT_INTERNAL_H_
 
 #include "allocator.h"
-#include "jxl_oxide/jxl_context.h"
-#include "jxl_oxide/jxl_status.h"
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/context.h"
+#include "jxl/status.h"
+#include "jxl/decode_types.h"
 #include "render/simd/features.h"
 #include "vardct/dequant.h"
 #include "vardct/hf_pass.h"
@@ -89,7 +89,7 @@ typedef struct jxl_context {
     jxl_context_cpu_features_cache cpu_features;
     jxl_context_dequant dequant;
     jxl_context_hf_orders hf_orders;
-#if defined(JXL_OXIDE_C_ENABLE_JPEG_ENCODER)
+#if defined(JXL_C_ENABLE_JPEG_ENCODER)
     /* Opaque JPEG-encoder session (mm bridge, LCMS, sRGB encodings). */
     struct jxl_jpeg_encoder_context *jpeg_enc;
 #endif
@@ -102,4 +102,4 @@ void jxl_context_dequant_free(jxl_context *ctx);
 jxl_allocator_state *jxl_context_alloc_state(jxl_context *ctx);
 const jxl_allocator_state *jxl_context_alloc_state_const(const jxl_context *ctx);
 
-#endif /* JXL_OXIDE_CONTEXT_INTERNAL_H_ */
+#endif /* JXL_CONTEXT_INTERNAL_H_ */

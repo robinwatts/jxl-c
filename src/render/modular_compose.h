@@ -11,7 +11,7 @@
 #include "vardct/lf.h"
 
 #include "allocator.h"
-#include "jxl_oxide/jxl_status.h"
+#include "jxl/status.h"
 
 typedef struct {
     jxl_context *ctx;

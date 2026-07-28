@@ -4,7 +4,7 @@
 
 #include "vardct/dct_select.h"
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef enum {
     JXL_BLOCK_INFO_UNINIT = 0,

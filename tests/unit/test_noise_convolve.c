@@ -56,7 +56,7 @@ int main(void) {
     jxl_bs bs;
     jxl_parsed_image_header parsed;
     jxl_frame frame;
-    snprintf(path, sizeof(path), "%s/noise/input.jxl", JXL_OXIDE_CONFORMANCE_DIR);
+    snprintf(path, sizeof(path), "%s/noise/input.jxl", JXL_C_CONFORMANCE_DIR);
 
     uint8_t *file = NULL;
     file_len = 0;

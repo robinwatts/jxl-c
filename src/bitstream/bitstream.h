@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 #include <string.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct {
     const uint8_t *bytes;

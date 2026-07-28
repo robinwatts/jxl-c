@@ -5,7 +5,7 @@
 #include "bitstream/bitstream.h"
 #include "codestream_collect.h"
 #include "image/image_internal.h"
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 #include "test_helpers.h"
 
 #include <stdio.h>
@@ -58,7 +58,7 @@ static int decode_fixture(jxl_context *ctx, const char *name) {
     jxl_decoder *dec = NULL;
     jxl_render *render = NULL;
 
-    snprintf(path, sizeof(path), "%s/benchmark-data/%s.jxl", JXL_OXIDE_FIXTURES_DIR, name);
+    snprintf(path, sizeof(path), "%s/benchmark-data/%s.jxl", JXL_C_FIXTURES_DIR, name);
     if (read_fixture(path, &file, &file_len) != 0) {
         fprintf(stderr, "%s: read failed\n", name);
         return 0;

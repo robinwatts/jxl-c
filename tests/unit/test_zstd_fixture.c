@@ -4,7 +4,7 @@
 /* Smoke test: read Rust decode golden (.buf.zst) via libzstd. */
 #include <zstd.h>
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,7 +46,7 @@ static int read_file(const char *path, uint8_t **out, size_t *out_len) {
 
 int main(void) {
     char path[1024];
-    int n = snprintf(path, sizeof(path), "%s/grayalpha/output.buf.zst", JXL_OXIDE_FIXTURES_DIR);
+    int n = snprintf(path, sizeof(path), "%s/grayalpha/output.buf.zst", JXL_C_FIXTURES_DIR);
     size_t compressed_len;
     if (n < 0 || (size_t)n >= sizeof(path)) {
         return 1;

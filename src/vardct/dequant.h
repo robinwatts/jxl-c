@@ -9,7 +9,7 @@
 #include "vardct/error.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct jxl_context jxl_context;
 

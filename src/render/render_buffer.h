@@ -6,7 +6,7 @@
 #include "frame/frame_header.h"
 #include "frame/lf_global.h"
 #include "image/image_internal.h"
-#include "jxl_oxide/jxl_status.h"
+#include "jxl/status.h"
 #include "modular/image.h"
 #include "modular/param.h"
 #include "modular/region.h"
@@ -16,7 +16,7 @@
 #include "render/subgrid_f32.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct jxl_render jxl_render;
 

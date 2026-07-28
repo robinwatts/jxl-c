@@ -7,7 +7,7 @@
 #include "vardct/dct_select.h"
 
 #include <math.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 static void dequant_varblock(jxl_context *ctx, jxl_subgrid_f32 coeff, jxl_transform_type dct_select,
                              int32_t hf_mul, size_t channel,

@@ -11,7 +11,7 @@ import sys
 import urllib.request
 
 def rust_root() -> str:
-    env = os.environ.get("JXL_OXIDE_RUST_ROOT")
+    env = os.environ.get("JXL_C_RUST_ROOT")
     if env:
         return os.path.abspath(env)
     here = os.path.dirname(__file__)

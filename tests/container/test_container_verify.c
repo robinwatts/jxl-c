@@ -53,7 +53,7 @@ int main(void) {
         size_t file_len;
         size_t cs_len;
         char digest[65];
-        int n = snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_OXIDE_FIXTURES_DIR,
+        int n = snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_C_FIXTURES_DIR,
                          k_digests[i].name);
         if (n < 0 || (size_t)n >= sizeof(path)) {
             fprintf(stderr, "path too long for %s\n", k_digests[i].name);

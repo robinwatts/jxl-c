@@ -9,7 +9,7 @@
 #include "allocator.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 #if defined(JXL_HAVE_SIMD_WASM128)
 

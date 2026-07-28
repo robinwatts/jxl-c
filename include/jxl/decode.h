@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#ifndef JXL_OXIDE_H_
-#define JXL_OXIDE_H_
+#ifndef JXL_DECODE_H_
+#define JXL_DECODE_H_
 
-#include "jxl_context.h"
-#include "jxl_status.h"
-#include "jxl_types.h"
+#include <jxl/context.h>
+#include <jxl/decode_types.h>
+#include <jxl/status.h>
 
 #include <stddef.h>
 
@@ -97,7 +97,7 @@ void jxl_render_destroy(jxl_context *ctx, jxl_render *r);
 
 const char *jxl_decoder_last_error(const jxl_decoder *dec);
 
-#if defined(JXL_OXIDE_C_ENABLE_JBR) && JXL_OXIDE_C_ENABLE_JBR
+#if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
 typedef enum {
     JXL_JPEG_RECONSTRUCTION_UNAVAILABLE = 0,
     JXL_JPEG_RECONSTRUCTION_DECODING,
@@ -115,7 +115,7 @@ jxl_jpeg_reconstruction_status jxl_decoder_jpeg_reconstruction_status(const jxl_
 jxl_status_t jxl_decoder_reconstruct_jpeg(jxl_decoder *dec, uint8_t **jpeg_out, size_t *jpeg_len);
 #endif
 
-#if defined(JXL_OXIDE_C_ENABLE_SIMPLE_LOSSLESS) && JXL_OXIDE_C_ENABLE_SIMPLE_LOSSLESS
+#if defined(JXL_C_ENABLE_SIMPLE_LOSSLESS) && JXL_C_ENABLE_SIMPLE_LOSSLESS
 typedef struct {
     uint32_t width;
     uint32_t height;
@@ -143,4 +143,4 @@ jxl_status_t jxl_simple_lossless_encode(jxl_context *ctx,
 }
 #endif
 
-#endif /* JXL_OXIDE_H_ */
+#endif /* JXL_DECODE_H_ */

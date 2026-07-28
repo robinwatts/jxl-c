@@ -3,7 +3,7 @@
 #define JXL_RENDER_COLOR_TONE_MAP_H_
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct jxl_context jxl_context;
 

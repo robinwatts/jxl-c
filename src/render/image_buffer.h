@@ -5,7 +5,7 @@
 #include "allocator.h"
 #include "modular/image.h"
 
-#include "jxl_oxide/jxl_status.h"
+#include "jxl/status.h"
 
 #include <stddef.h>
 #include <stdint.h>

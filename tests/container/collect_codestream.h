@@ -5,7 +5,7 @@
 #include "bitstream/error.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 jxl_bs_status_t jxl_test_extract_codestream(const uint8_t *file_data, size_t file_len,
                                             uint8_t **out_data, size_t *out_len);

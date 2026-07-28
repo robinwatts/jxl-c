@@ -6,7 +6,7 @@
 #include "box_type.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct {
     jxl_box_type ty;

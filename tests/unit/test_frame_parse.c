@@ -23,7 +23,7 @@
 
 static int read_fixture(const char *name, uint8_t **file_out, size_t *file_len_out) {
     char path[512];
-    snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_OXIDE_FIXTURES_DIR, name);
+    snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_C_FIXTURES_DIR, name);
     FILE *f = fopen(path, "rb");
     if (f == NULL) {
         return -1;

@@ -8,7 +8,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS // Shut up, MSVC
 
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 #include <stdio.h>
 #include <stdlib.h>

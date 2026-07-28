@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#ifndef JXL_OXIDE_TYPES_H_
-#define JXL_OXIDE_TYPES_H_
+#ifndef JXL_DECODE_TYPES_H_
+#define JXL_DECODE_TYPES_H_
 
-#include "jxl_allocator.h"
+#include <jxl/allocator.h>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -124,4 +124,4 @@ typedef struct {
 }
 #endif
 
-#endif /* JXL_OXIDE_TYPES_H_ */
+#endif /* JXL_DECODE_TYPES_H_ */

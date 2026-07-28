@@ -27,7 +27,7 @@ jobs:
         run: >
           cmake -S . -B build-san
           -DCMAKE_BUILD_TYPE=RelWithDebInfo
-          -DJXL_OXIDE_C_ENABLE_SANITIZERS=ON
+          -DJXL_C_ENABLE_SANITIZERS=ON
       - name: Build
         run: cmake --build build-san --config RelWithDebInfo -j2
       - name: Prefetch conformance references
@@ -43,8 +43,8 @@ jobs:
           cmake -S . -B build-fuzz \
             -DCMAKE_C_COMPILER=clang \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DJXL_OXIDE_C_BUILD_FUZZ=ON \
-            -DJXL_OXIDE_C_BUILD_TESTS=OFF
+            -DJXL_C_BUILD_FUZZ=ON \
+            -DJXL_C_BUILD_TESTS=OFF
           cmake --build build-fuzz --target decode_fuzzer -j2
           mkdir -p /tmp/jxl-corpus
           curl -sSfL 'https://jxl-oxide-fixtures.tirr.dev/fuzz-corpus.tar.zst' | zstd -d | tar -xC /tmp/jxl-corpus

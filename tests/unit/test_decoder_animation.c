@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "test_paths.h"
 
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 #include <assert.h>
 #include "test_helpers.h"
@@ -54,7 +54,7 @@ static int rational_near_seconds(uint32_t numer, uint32_t denom, double seconds,
 
 static void test_still_image_animation_unsupported(void) {
     char path[1024];
-    int n = snprintf(path, sizeof(path), "%s/grayalpha/input.jxl", JXL_OXIDE_FIXTURES_DIR);
+    int n = snprintf(path, sizeof(path), "%s/grayalpha/input.jxl", JXL_C_FIXTURES_DIR);
     assert(n > 0 && (size_t)n < sizeof(path));
 
     uint8_t *data = NULL;
@@ -88,7 +88,7 @@ static void test_animation_newtons_cradle(void) {
     char path[1024];
     size_t len;
     int n = snprintf(path, sizeof(path), "%s/animation_newtons_cradle/input.jxl",
-                     JXL_OXIDE_CONFORMANCE_DIR);
+                     JXL_C_CONFORMANCE_DIR);
     assert(n > 0 && (size_t)n < sizeof(path));
 
     uint8_t *data = NULL;

@@ -109,7 +109,7 @@ int main(void) {
     jxl_pass_group_vardct_params vparams = {0};
     jxl_opsin_inverse_matrix opsin;
     jxl_hf_global_dequant hf_dequant;
-    snprintf(path, sizeof(path), "%s/minecraft_vardct_e7/input.jxl", JXL_OXIDE_FIXTURES_DIR);
+    snprintf(path, sizeof(path), "%s/minecraft_vardct_e7/input.jxl", JXL_C_FIXTURES_DIR);
 
     uint8_t *file = NULL;
     file_len = 0;

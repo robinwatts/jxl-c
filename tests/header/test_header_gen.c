@@ -56,7 +56,7 @@ static int process_one(const char *name, const char *update_path) {
     size_t cs_len;
     jxl_bs bs;
     jxl_parsed_image_header parsed;
-    snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_OXIDE_FIXTURES_DIR, name);
+    snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_C_FIXTURES_DIR, name);
 
     uint8_t *file = NULL;
     file_len = 0;
@@ -117,7 +117,7 @@ int main(void) {
     fprintf(hdr, "} k_header_fields[] = {\n");
     fclose(hdr);
 
-    DIR *dir = opendir(JXL_OXIDE_FIXTURES_DIR);
+    DIR *dir = opendir(JXL_C_FIXTURES_DIR);
     if (dir == NULL) {
         return 1;
     }
@@ -133,7 +133,7 @@ int main(void) {
         if (strcmp(ent->d_name, "benchmark-data") == 0 || strcmp(ent->d_name, "README.md") == 0) {
             continue;
         }
-        snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_OXIDE_FIXTURES_DIR, ent->d_name);
+        snprintf(path, sizeof(path), "%s/%s/input.jxl", JXL_C_FIXTURES_DIR, ent->d_name);
         FILE *f = fopen(path, "rb");
         if (f == NULL) {
             continue;

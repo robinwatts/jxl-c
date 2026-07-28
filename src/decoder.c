@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 #include "allocator.h"
 #include "aux_box.h"
@@ -41,7 +41,7 @@ jxl_status_t jxl_decoder_init_from_input(jxl_allocator_state *alloc, const uint8
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 #include <string.h>
 
 static void crop_size_with_orientation(uint32_t orientation, uint32_t w, uint32_t h,
@@ -1288,7 +1288,7 @@ jxl_status_t jxl_decoder_first_exif(const jxl_decoder *dec, jxl_exif_metadata *o
     return JXL_ERROR_INVALID_INPUT;
 }
 
-#if defined(JXL_OXIDE_C_ENABLE_JBR) && JXL_OXIDE_C_ENABLE_JBR
+#if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
 #include "jbr/reconstruct.h"
 
 static jxl_status_t frame_status_to_jxl(jxl_frame_status_t st) {

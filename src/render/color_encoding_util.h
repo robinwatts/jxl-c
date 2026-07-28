@@ -3,9 +3,9 @@
 #define JXL_RENDER_COLOR_ENCODING_UTIL_H_
 
 #include "image/image_internal.h"
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
-#include "jxl_oxide/jxl_status.h"
+#include "jxl/status.h"
 
 void jxl_colour_encoding_default_srgb(jxl_colour_encoding *out);
 

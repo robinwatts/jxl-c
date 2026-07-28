@@ -2,7 +2,7 @@
 #ifndef JXL_FRAME_FILTER_H_
 #define JXL_FRAME_FILTER_H_
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct {
     float w0;

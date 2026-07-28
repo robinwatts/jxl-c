@@ -8,10 +8,10 @@
  * Fixtures not in JXL_ORACLE_PASSING_FIXTURES are registered with WILL_FAIL as progress trackers.
  */
 #include "golden_buf_zst.h"
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 #include <stdio.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -61,7 +61,7 @@ int main(void) {
     jxl_golden_buf golden;
     size_t len;
     int n = snprintf(input_path, sizeof(input_path), "%s/%s/input.jxl",
-                     JXL_OXIDE_FIXTURES_DIR, JXL_ORACLE_FIXTURE_NAME);
+                     JXL_C_FIXTURES_DIR, JXL_ORACLE_FIXTURE_NAME);
     if (n < 0 || (size_t)n >= sizeof(input_path)) {
         fprintf(stderr, "fixture path too long\n");
         return 1;
@@ -69,7 +69,7 @@ int main(void) {
 
     memset(&golden, 0, sizeof(golden));
     const int have_golden =
-        jxl_golden_load_fixture(JXL_OXIDE_FIXTURES_DIR, JXL_ORACLE_FIXTURE_NAME, &golden) == 0;
+        jxl_golden_load_fixture(JXL_C_FIXTURES_DIR, JXL_ORACLE_FIXTURE_NAME, &golden) == 0;
     if (!have_golden) {
         return 1;
     }

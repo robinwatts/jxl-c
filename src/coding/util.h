@@ -5,7 +5,7 @@
 #include "bitstream/bitstream.h"
 #include "coding/error.h"
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 uint32_t jxl_coding_add_log2_ceil(uint32_t x);
 

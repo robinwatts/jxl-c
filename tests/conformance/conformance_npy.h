@@ -3,7 +3,7 @@
 #define JXL_CONFORMANCE_NPY_H_
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct {
     float *samples;
@@ -18,7 +18,7 @@ int jxl_conformance_npy_load(const char *path, jxl_conformance_npy *out);
 
 void jxl_conformance_npy_free(jxl_conformance_npy *npy);
 
-/* Resolve crates/jxl-oxide-tests/tests/cache/<hash>.npy from JXL_OXIDE_CACHE_DIR. */
+/* Resolve crates/jxl-oxide-tests/tests/cache/<hash>.npy from JXL_C_CACHE_DIR. */
 int jxl_conformance_cache_npy_path(const char *hash, char *out, size_t out_len);
 
 int jxl_conformance_cache_icc_path(const char *hash, char *out, size_t out_len);

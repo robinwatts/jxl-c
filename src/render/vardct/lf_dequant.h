@@ -6,7 +6,7 @@
 #include "vardct/hf_coeff.h"
 #include "vardct/lf.h"
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 void jxl_copy_lf_dequant(jxl_subgrid_f32 grid, const jxl_quantizer *quantizer, float m_lf,
                          const jxl_lf_quant_subgrid_u32 *channel_data, uint8_t extra_precision);

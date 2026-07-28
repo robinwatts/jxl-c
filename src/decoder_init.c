@@ -3,7 +3,7 @@
 #include "codestream_collect.h"
 
 #include "bitstream/error.h"
-#include "jxl_oxide/jxl_status.h"
+#include "jxl/status.h"
 
 static jxl_status_t bs_to_jxl(jxl_bs_status_t st) {
     switch (st) {

@@ -4,7 +4,7 @@
 #include "frame/frame_header.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 jxl_modular_region jxl_modular_region_with_size(uint32_t width, uint32_t height) {
     jxl_modular_region result;

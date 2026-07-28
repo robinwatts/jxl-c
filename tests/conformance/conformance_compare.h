@@ -3,7 +3,7 @@
 #define JXL_CONFORMANCE_COMPARE_H_
 
 #include "conformance_npy.h"
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 /* Compare one keyframe. Returns 0 on match, 1 on pixel mismatch, -1 on error. */
 int jxl_conformance_compare_render(const jxl_conformance_npy *reference, uint32_t frame_index,

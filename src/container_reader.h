@@ -7,7 +7,7 @@
 #include "bitstream/container/parser.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct jxl_container_reader jxl_container_reader;
 

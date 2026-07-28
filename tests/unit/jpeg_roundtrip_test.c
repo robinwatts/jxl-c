@@ -4,7 +4,7 @@
  * well-formed.
  */
 
-#include <jxl_oxide/jxl_context.h>
+#include <jxl/context.h>
 #include <jxl/encode.h>
 
 #include <stdio.h>

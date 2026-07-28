@@ -11,7 +11,7 @@
 #include "prefix.h"
 #include "util.h"
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

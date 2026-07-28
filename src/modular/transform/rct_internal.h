@@ -5,7 +5,7 @@
 #include "render/simd/features.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 void jxl_rct_inverse_row_i16_base(uint32_t ty, int16_t *ra, int16_t *rb, int16_t *rc, size_t width);
 void jxl_rct_inverse_row_i32_base(uint32_t ty, int32_t *ra, int32_t *rb, int32_t *rc, size_t width);

@@ -7,7 +7,7 @@
 #include "coding/error.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 #define JXL_PREFIX_MAX_PREFIX_BITS 15
 #define JXL_PREFIX_MAX_TOPLEVEL_BITS 10

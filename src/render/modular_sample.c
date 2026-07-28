@@ -5,7 +5,7 @@
 #include "render/simd/features.h"
 #include "vardct/lf.h"
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 #if defined(JXL_HAVE_SIMD_AVX2)
 void jxl_modular_blit_i16_row_to_plane_avx2(const int16_t *src, float *dst, size_t n,

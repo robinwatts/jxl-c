@@ -4,10 +4,10 @@
 
 #include "allocator.h"
 #include "bitstream/container/parser.h"
-#include "jxl_oxide/jxl_status.h"
+#include "jxl/status.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 jxl_status_t jxl_collect_codestream(jxl_allocator_state *alloc, const uint8_t *file_data,
                                     size_t file_len, uint8_t **out_data, size_t *out_len);

@@ -94,7 +94,7 @@ int main(void) {
     uint32_t skip_count;
     jxl_lf_global_params lp = {0};
     jxl_hf_global_params hp = {0};
-    snprintf(path, sizeof(path), "%s/progressive_5/input.jxl", JXL_OXIDE_CONFORMANCE_DIR);
+    snprintf(path, sizeof(path), "%s/progressive_5/input.jxl", JXL_C_CONFORMANCE_DIR);
 
     uint8_t *file = NULL;
     file_len = 0;

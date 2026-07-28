@@ -9,7 +9,7 @@
 #ifndef LIB_JXL_CONTEXT_INTERNAL_H_
 #define LIB_JXL_CONTEXT_INTERNAL_H_
 
-#include <jxl_oxide/jxl_context.h>
+#include <jxl/context.h>
 #include <jxl/memory_manager.h>
 
 #include "allocator.h"

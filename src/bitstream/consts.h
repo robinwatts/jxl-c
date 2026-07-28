@@ -3,7 +3,7 @@
 #define JXL_BITSTREAM_CONSTS_H_
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 #define JXL_CODESTREAM_SIG_LEN 2u
 #define JXL_CONTAINER_SIG_LEN 12u

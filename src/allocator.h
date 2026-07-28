@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#ifndef JXL_OXIDE_ALLOCATOR_H_
-#define JXL_OXIDE_ALLOCATOR_H_
+#ifndef JXL_ALLOCATOR_INTERNAL_H_
+#define JXL_ALLOCATOR_INTERNAL_H_
 
-#include "jxl_oxide/jxl_allocator.h"
+#include "jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -56,4 +56,4 @@ void jxl_ctx_free(jxl_context *ctx, void *ptr);
 void jxl_ctx_free_aligned(jxl_context *ctx, void *ptr);
 char *jxl_ctx_strdup(jxl_context *ctx, const char *src);
 
-#endif /* JXL_OXIDE_ALLOCATOR_H_ */
+#endif /* JXL_ALLOCATOR_INTERNAL_H_ */

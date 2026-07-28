@@ -46,7 +46,7 @@ int jxl_conformance_cache_npy_path(const char *hash, char *out, size_t out_len) 
     if (hash == NULL || out == NULL || out_len == 0) {
         return -1;
     }
-    int n = snprintf(out, out_len, "%s/%s.npy", JXL_OXIDE_CACHE_DIR, hash);
+    int n = snprintf(out, out_len, "%s/%s.npy", JXL_C_CACHE_DIR, hash);
     if (n < 0 || (size_t)n >= out_len) {
         return -1;
     }
@@ -57,7 +57,7 @@ int jxl_conformance_cache_icc_path(const char *hash, char *out, size_t out_len) 
     if (hash == NULL || out == NULL || out_len == 0) {
         return -1;
     }
-    int n = snprintf(out, out_len, "%s/%s.icc", JXL_OXIDE_CACHE_DIR, hash);
+    int n = snprintf(out, out_len, "%s/%s.icc", JXL_C_CACHE_DIR, hash);
     if (n < 0 || (size_t)n >= out_len) {
         return -1;
     }

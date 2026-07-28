@@ -5,7 +5,7 @@
 #include "allocator.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 void jxl_squeeze_inverse_h_i16_base(jxl_allocator_state *alloc, int16_t *merged, size_t width,
                                     size_t height, size_t row_stride);

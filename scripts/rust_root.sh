@@ -4,8 +4,8 @@ set -euo pipefail
 
 JXL_C_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
-if [[ -n "${JXL_OXIDE_RUST_ROOT:-}" ]]; then
-    cd "$JXL_OXIDE_RUST_ROOT" && pwd
+if [[ -n "${JXL_C_RUST_ROOT:-}" ]]; then
+    cd "$JXL_C_RUST_ROOT" && pwd
     exit 0
 fi
 

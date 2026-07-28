@@ -8,7 +8,7 @@
 #include "jbr/huffman.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct {
     uint32_t ty;

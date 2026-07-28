@@ -2,7 +2,7 @@
 #ifndef JXL_MODULAR_SAMPLE_H_
 #define JXL_MODULAR_SAMPLE_H_
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 #include "bitstream/unpack.h"
 

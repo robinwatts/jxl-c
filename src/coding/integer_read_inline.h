@@ -5,7 +5,7 @@
 #include "bitstream/bitstream.h"
 #include "coding/cdecoder_private.h"
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 #if defined(__GNUC__) || defined(__clang__)
 #define JXL_INTEGER_READ_INLINE static __attribute__((always_inline)) inline

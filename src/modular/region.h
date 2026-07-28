@@ -5,7 +5,7 @@
 #include "frame/frame_header.h"
 #include "modular/image.h"
 
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct {
     int32_t left;

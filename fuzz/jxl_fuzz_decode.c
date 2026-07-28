@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "jxl_fuzz_decode.h"
 
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 void jxl_fuzz_decode(const uint8_t *data, size_t len, uint32_t dim_limit) {
     jxl_context *ctx = NULL;

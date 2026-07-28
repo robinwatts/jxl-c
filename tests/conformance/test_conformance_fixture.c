@@ -9,7 +9,7 @@
  */
 #include "conformance_compare.h"
 #include "conformance_npy.h"
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,7 +84,7 @@ int main(void) {
     }
 
     int n = snprintf(input_path, sizeof(input_path), "%s/%s/input.jxl",
-                     JXL_OXIDE_CONFORMANCE_DIR, expect->name);
+                     JXL_C_CONFORMANCE_DIR, expect->name);
     if (n < 0 || (size_t)n >= sizeof(input_path)) {
         return 1;
     }

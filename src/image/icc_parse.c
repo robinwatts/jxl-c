@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "icc_parse.h"
 
-#include "jxl_oxide/jxl_status.h"
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/status.h"
+#include "jxl/decode_types.h"
 
 #include <string.h>
 

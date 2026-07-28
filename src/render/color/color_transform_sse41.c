@@ -5,7 +5,7 @@
 #include <immintrin.h>
 #include <smmintrin.h>
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 #if defined(JXL_HAVE_SIMD_SSE41)
 

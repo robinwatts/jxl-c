@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "allocator.h"
-#include "jxl_oxide/jxl_status.h"
+#include "jxl/status.h"
 #include "render/cms_lcms.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#if defined(JXL_OXIDE_C_HAVE_LCMS2)
+#if defined(JXL_C_HAVE_LCMS2)
 #include "linear_srgb_icc.inc"
 
 typedef struct {
@@ -71,7 +71,7 @@ static void test_lcms_routes_through_custom_allocator(void) {
 #endif
 
 int main(void) {
-#if defined(JXL_OXIDE_C_HAVE_LCMS2)
+#if defined(JXL_C_HAVE_LCMS2)
     test_lcms_routes_through_custom_allocator();
     printf("test_cms_alloc: ok\n");
 #else

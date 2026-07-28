@@ -3,7 +3,7 @@
 
 #include "bitstream/container/brotli_decode.h"
 
-#if defined(JXL_OXIDE_C_ENABLE_JBR) && JXL_OXIDE_C_ENABLE_JBR
+#if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
 #include "jbr/data.h"
 #endif
 
@@ -41,7 +41,7 @@ struct jxl_aux_box_list {
     jxl_box_type current_box_ty;
     int has_current_box_ty;
     int last_box;
-#if defined(JXL_OXIDE_C_ENABLE_JBR) && JXL_OXIDE_C_ENABLE_JBR
+#if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
     jxl_jbr_data *jbrd;
     uint8_t *jbrd_staging;
     size_t jbrd_staging_len;
@@ -185,7 +185,7 @@ static int is_jbrd_box(jxl_box_type ty) {
     return jxl_box_type_eq(ty, JXL_BOX_JPEG_RECONSTRUCTION);
 }
 
-#if defined(JXL_OXIDE_C_ENABLE_JBR) && JXL_OXIDE_C_ENABLE_JBR
+#if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
 static jxl_bs_status_t jbr_status_to_bs(jxl_jbr_status st) {
     switch (st) {
     case JXL_JBR_OK:
@@ -291,7 +291,7 @@ static jxl_bs_status_t aux_box_list_finalize(jxl_aux_box_list *list) {
     }
 
     if (is_jbrd_box(list->current_box_ty)) {
-#if defined(JXL_OXIDE_C_ENABLE_JBR) && JXL_OXIDE_C_ENABLE_JBR
+#if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
         jxl_bs_status_t st = jbrd_finalize(list);
         if (st != JXL_BS_OK) {
             return st;
@@ -348,7 +348,7 @@ void jxl_aux_box_list_destroy(jxl_allocator_state *alloc, jxl_aux_box_list *list
     }
     jxl_free(a, list->boxes);
     aux_box_reader_reset(&list->current_box);
-#if defined(JXL_OXIDE_C_ENABLE_JBR) && JXL_OXIDE_C_ENABLE_JBR
+#if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
     jxl_jbr_data_destroy(a, list->jbrd);
     jxl_free(a, list->jbrd_staging);
 #endif
@@ -385,7 +385,7 @@ jxl_bs_status_t jxl_aux_box_list_handle_event(jxl_aux_box_list *list,
         list->has_current_box_ty = 1;
         list->current_box_ty = event->box_type;
         if (is_jbrd_box(event->box_type)) {
-#if defined(JXL_OXIDE_C_ENABLE_JBR) && JXL_OXIDE_C_ENABLE_JBR
+#if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
             return jbrd_feed_bytes(list, event->data, event->data_len);
 #else
             return JXL_BS_OK;
@@ -443,7 +443,7 @@ jxl_aux_box_data jxl_aux_box_list_first_xml(const jxl_aux_box_list *list) {
     return first_of_type(list, JXL_BOX_XML);
 }
 
-#if defined(JXL_OXIDE_C_ENABLE_JBR) && JXL_OXIDE_C_ENABLE_JBR
+#if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
 jxl_aux_jbrd_data jxl_aux_box_list_jbrd(const jxl_aux_box_list *list) {
     jxl_aux_jbrd_data result;
 

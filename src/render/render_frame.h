@@ -20,7 +20,7 @@
 #include "render/vardct/vardct_encode.h"
 
 #include "allocator.h"
-#include "jxl_oxide/jxl_status.h"
+#include "jxl/status.h"
 
 /*
  * Pre-features stage (Rust render.rs after encode, before prepare_color_upsampling):

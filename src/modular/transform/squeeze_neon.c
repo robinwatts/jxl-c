@@ -3,7 +3,7 @@
 #include "allocator.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 #include <string.h>
 
 #if defined(JXL_HAVE_SIMD_NEON)

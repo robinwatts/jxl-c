@@ -10,7 +10,7 @@
 #include "bitstream/bitstream.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef enum {
     JXL_PATCH_BLEND_NONE = 0,

@@ -2,10 +2,10 @@
 #ifndef JXL_ORACLE_GOLDEN_BUF_ZST_H_
 #define JXL_ORACLE_GOLDEN_BUF_ZST_H_
 
-#include "jxl_oxide/jxl_oxide.h"
+#include "jxl/decode.h"
 
 #include <stddef.h>
-#include "jxl_oxide/jxl_types.h"
+#include "jxl/decode_types.h"
 
 typedef struct {
     uint8_t *data;
