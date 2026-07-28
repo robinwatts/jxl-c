@@ -6,7 +6,8 @@
 #ifndef LIB_JXL_AC_STRATEGY_H_
 #define LIB_JXL_AC_STRATEGY_H_
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -175,7 +176,7 @@ typedef struct jxl_ac_strategy_image {
   jxl_image_b layers_;
 } jxl_ac_strategy_image;
 
-jxl_status jxl_ac_strategy_image_create(jxl_memory_manager* memory_manager, size_t xsize,
+jxl_status jxl_ac_strategy_image_create(jxl_context* ctx, size_t xsize,
                              size_t ysize, jxl_ac_strategy_image* out);
 static inline void jxl_ac_strategy_image_construct_empty(jxl_ac_strategy_image* self) {
   jxl_image_b_construct_empty(&self->layers_);
@@ -187,9 +188,9 @@ static inline void jxl_ac_strategy_image_fill_dct8(jxl_ac_strategy_image* self) 
   jxl_fill_plane(((uint8_t)(kAcStrategyDCT) << 1) | 1, &self->layers_,
             jxl_rect_from_size(jxl_image_b_x_size(&self->layers_), jxl_image_b_y_size(&self->layers_)));
 }
-static inline jxl_memory_manager* jxl_ac_strategy_image_memory_manager(
+static inline jxl_context* jxl_ac_strategy_image_ctx(
     const jxl_ac_strategy_image* self) {
-  return jxl_image_b_memory_manager(&self->layers_);
+  return jxl_image_b_ctx(&self->layers_);
 }
 static inline jxl_ac_strategy_row jxl_ac_strategy_image_const_row(const jxl_ac_strategy_image* self,
                                              size_t y, size_t x_prefix) {

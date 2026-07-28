@@ -21,7 +21,8 @@
 #include "lib/jxl/cms/jxl_cms_internal.h"
 #include "lib/jxl/color_encoding_internal.h"
 #include "lib/jxl/context_internal.h"
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 #include "lcms2.h"
 #include "lcms2_plugin.h"
 
@@ -397,7 +398,7 @@ static jxl_status jxl_detect_transfer_function(const cmsContext context, const j
 
   if (gamma != 0 && jxl_status_ok(jxl_cms_custom_transfer_function_set_gamma(&c->tf, gamma))) {
     jxl_icc_bytes icc_test;
-    jxl_array_construct_empty(&icc_test, (jxl_memory_manager*)cmsGetContextUserData(context));
+    jxl_array_construct_empty(&icc_test, (jxl_context*)cmsGetContextUserData(context));
     jxl_color_encoding external = jxl_cms_color_encoding_to_external(c);
     if (jxl_status_ok(jxl_maybe_create_profile(&external, &icc_test)) &&
         jxl_status_ok(jxl_profile_equivalent_to_icc(context, profile, &icc_test, c))) {
@@ -414,7 +415,7 @@ static jxl_status jxl_detect_transfer_function(const cmsContext context, const j
     jxl_cms_custom_transfer_function_set_transfer_function(&c->tf, tf);
 
     jxl_icc_bytes icc_test;
-    jxl_array_construct_empty(&icc_test, (jxl_memory_manager*)cmsGetContextUserData(context));
+    jxl_array_construct_empty(&icc_test, (jxl_context*)cmsGetContextUserData(context));
     jxl_color_encoding external = jxl_cms_color_encoding_to_external(c);
     if (jxl_status_ok(jxl_maybe_create_profile(&external, &icc_test)) &&
         jxl_status_ok(jxl_profile_equivalent_to_icc(context, profile, &icc_test, c))) {
@@ -494,7 +495,7 @@ static JXL_BOOL jxl_cms_set_fields_from_icc(void* user_data, const uint8_t* icc_
     return JXL_FALSE;
   }
   const cmsContext context = (cmsContext)user_data;
-  jxl_memory_manager* mm = (jxl_memory_manager*)cmsGetContextUserData(context);
+  jxl_context* mm = (jxl_context*)cmsGetContextUserData(context);
   jxl_cms_color_encoding c_enc;
   jxl_cms_color_encoding_construct_empty(&c_enc, mm);
 
@@ -565,30 +566,30 @@ static JXL_BOOL jxl_cms_set_fields_from_icc(void* user_data, const uint8_t* icc_
   return JXL_TRUE;
 }
 
-/* LCMS allocations go through the jxl_memory_manager stored as context user data. */
-static jxl_memory_manager* jxl_cms_mm(cmsContext ctx) {
-  return (jxl_memory_manager*)cmsGetContextUserData(ctx);
+/* LCMS allocations go through the jxl_context stored as context user data. */
+static jxl_context* jxl_cms_mm(cmsContext ctx) {
+  return (jxl_context*)cmsGetContextUserData(ctx);
 }
 
 static void* jxl_cms_lcms_malloc(cmsContext ctx, cmsUInt32Number size) {
-  jxl_memory_manager* mm = jxl_cms_mm(ctx);
+  jxl_context* mm = jxl_cms_mm(ctx);
   size_t* block;
   if (mm == NULL || size == 0) return NULL;
-  block = (size_t*)mm->alloc(mm->opaque, (size_t)size + sizeof(size_t));
+  block = (size_t*)jxl_alloc(mm, (size_t)size + sizeof(size_t));
   if (block == NULL) return NULL;
   *block = (size_t)size;
   return block + 1;
 }
 
 static void jxl_cms_lcms_free(cmsContext ctx, void* ptr) {
-  jxl_memory_manager* mm = jxl_cms_mm(ctx);
+  jxl_context* mm = jxl_cms_mm(ctx);
   if (mm == NULL || ptr == NULL) return;
-  mm->free(mm->opaque, (size_t*)ptr - 1);
+  jxl_free(mm, (size_t*)ptr - 1);
 }
 
 static void* jxl_cms_lcms_realloc(cmsContext ctx, void* ptr,
                                   cmsUInt32Number new_size) {
-  jxl_memory_manager* mm = jxl_cms_mm(ctx);
+  jxl_context* mm = jxl_cms_mm(ctx);
   size_t old_size;
   size_t copy;
   void* grown;
@@ -662,16 +663,11 @@ JXL_CMS_EXPORT const jxl_cms_interface* jxl_get_default_cms() {
 }
 
 JXL_CMS_EXPORT void* jxl_cms_create_lcms_context(jxl_context* ctx) {
-  jxl_memory_manager* mm;
   cmsContext lcms;
   if (ctx == NULL) {
     return NULL;
   }
-  mm = jxl_context_memory_manager(ctx);
-  if (mm == NULL || mm->alloc == NULL || mm->free == NULL) {
-    return NULL;
-  }
-  lcms = cmsCreateContext(&k_jxl_cms_mem_plugin, mm);
+  lcms = cmsCreateContext(&k_jxl_cms_mem_plugin, ctx);
   if (lcms != NULL) {
     cmsSetLogErrorHandlerTHR(lcms, &jxl_error_handler);
   }

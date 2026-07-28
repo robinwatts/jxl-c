@@ -8,7 +8,8 @@
 
 // Encoder-only parameter needed for ANS entropy encoding methods.
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -165,7 +166,7 @@ float jxl_histogram_shannon_entropy(jxl_histogram* h, const jxl_array_i32* count
 // Move-only list of per-context histogram count arrays (was
 // MoveArray<jxl_array_i32>).
 typedef struct jxl_hist_count_streams {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_array_i32* ptr;
   size_t len;
   size_t capacity;
@@ -188,7 +189,7 @@ static inline const jxl_array_i32* jxl_hist_count_streams_at_const(const jxl_his
 }
 
 static inline void jxl_hist_count_streams_construct_empty(jxl_hist_count_streams* self) {
-  self->memory_manager = NULL;
+  self->ctx = NULL;
   self->ptr = NULL;
   self->len = 0;
   self->capacity = 0;
@@ -221,21 +222,21 @@ static inline jxl_status jxl_hist_count_streams_reserve(jxl_hist_count_streams* 
       return JXL_FAILURE("jxl_hist_count_streams::reserve: size overflow");
     }
     jxl_array_i32* neu;
-    if (self->memory_manager == NULL) {
+    if (self->ctx == NULL) {
       return JXL_FAILURE("jxl_hist_count_streams::reserve: missing memory manager");
     }
     neu = (jxl_array_i32*)(
-        self->memory_manager->alloc(self->memory_manager->opaque, bytes));
+        jxl_alloc(self->ctx, bytes));
     if (neu == NULL) {
       return JXL_FAILURE("jxl_hist_count_streams::reserve: allocation failed");
     }
     for (size_t i = 0; i < self->len; ++i) {
-      jxl_array_construct_empty(neu + i, self->memory_manager);
+      jxl_array_construct_empty(neu + i, self->ctx);
       jxl_array_swap(neu + i, &self->ptr[i]);
       jxl_array_destroy(self->ptr + i);
     }
     if (self->ptr != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+      jxl_free(self->ctx, self->ptr);
     }
     self->ptr = neu;
     self->capacity = grown;
@@ -252,7 +253,7 @@ static inline jxl_status jxl_hist_count_streams_resize(jxl_hist_count_streams* s
     }
     JXL_RETURN_IF_ERROR(jxl_hist_count_streams_reserve(self, n));
     while (self->len < n) {
-      jxl_array_construct_empty(self->ptr + self->len, self->memory_manager);
+      jxl_array_construct_empty(self->ptr + self->len, self->ctx);
       ++self->len;
     }
     return jxl_ok_status();
@@ -261,8 +262,8 @@ static inline jxl_status jxl_hist_count_streams_resize(jxl_hist_count_streams* s
 static inline void jxl_hist_count_streams_destroy(jxl_hist_count_streams* self) {
   jxl_hist_count_streams_clear(self);
   if (self->ptr != NULL) {
-    if (self->memory_manager != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    if (self->ctx != NULL) {
+      jxl_free(self->ctx, self->ptr);
     }
   }
   self->ptr = NULL;
@@ -271,9 +272,9 @@ static inline void jxl_hist_count_streams_destroy(jxl_hist_count_streams* self) 
 
 static inline void jxl_hist_count_streams_create(jxl_hist_count_streams* self,
                                                  size_t n,
-                                                 jxl_memory_manager* mm) {
+                                                 jxl_context* mm) {
   jxl_hist_count_streams_construct_empty(self);
-  self->memory_manager = mm;
+  self->ctx = mm;
   if (!jxl_status_ok(jxl_hist_count_streams_resize(self, n))) JXL_CRASH();
 }
 
@@ -290,7 +291,7 @@ static inline jxl_status jxl_hist_count_streams_emplace_back(jxl_hist_count_stre
       }
       JXL_RETURN_IF_ERROR(jxl_hist_count_streams_reserve(self, need));
     }
-    jxl_array_construct_empty(self->ptr + self->len, self->memory_manager);
+    jxl_array_construct_empty(self->ptr + self->len, self->ctx);
     jxl_array_swap(self->ptr + self->len, value);
     ++self->len;
     return jxl_ok_status();
@@ -305,16 +306,16 @@ static inline jxl_status jxl_hist_count_streams_push_back(jxl_hist_count_streams
       }
       JXL_RETURN_IF_ERROR(jxl_hist_count_streams_reserve(self, need));
     }
-    jxl_array_construct_empty(self->ptr + self->len, self->memory_manager);
+    jxl_array_construct_empty(self->ptr + self->len, self->ctx);
     JXL_RETURN_IF_ERROR(jxl_array_copy_from(self->ptr + self->len, value));
     ++self->len;
     return jxl_ok_status();
   }
 
 static inline void jxl_hist_count_streams_swap(jxl_hist_count_streams* self, jxl_hist_count_streams* other) {
-    jxl_memory_manager* tmp_mm = self->memory_manager;
-    self->memory_manager = other->memory_manager;
-    other->memory_manager = tmp_mm;
+    jxl_context* tmp_mm = self->ctx;
+    self->ctx = other->ctx;
+    other->ctx = tmp_mm;
     jxl_array_i32* tmp_ptr = self->ptr;
     self->ptr = other->ptr;
     other->ptr = tmp_ptr;

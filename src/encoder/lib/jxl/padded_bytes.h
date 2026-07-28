@@ -7,10 +7,11 @@
 #define LIB_JXL_BASE_PADDED_BYTES_H_
 
 // Growable byte buffer with +8 capacity padding so jxl_bit_writer can write 64 bits
-// without bounds checks. Backed by jxl_array_u8; bind a memory_manager via
+// without bounds checks. Backed by jxl_array_u8; bind a ctx via
 // jxl_padded_bytes_make before growing.
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -53,10 +54,10 @@ static inline void jxl_padded_bytes_destroy(jxl_padded_bytes* self) {
   self->capacity_ = 0;
 }
 
-static inline void jxl_padded_bytes_make(jxl_memory_manager* memory_manager,
+static inline void jxl_padded_bytes_make(jxl_context* ctx,
                                    jxl_padded_bytes* out) {
   jxl_padded_bytes_construct_empty(out);
-  out->data_.memory_manager = memory_manager;
+  out->data_.ctx = ctx;
 }
 
 static inline void jxl_padded_bytes_bounds_check(const jxl_padded_bytes* self, size_t i) {
@@ -95,7 +96,7 @@ static inline jxl_status jxl_padded_bytes_change_capacity(jxl_padded_bytes* self
     return JXL_FAILURE("jxl_padded_bytes capacity too large");
   }
 
-  jxl_array_construct_empty(&neu, self->data_.memory_manager);
+  jxl_array_construct_empty(&neu, self->data_.ctx);
   JXL_RETURN_IF_ERROR(jxl_array_reserve(&neu, padded_capacity));
 
   old_size = jxl_array_len(&self->data_);
@@ -168,14 +169,14 @@ static inline jxl_status jxl_padded_bytes_init(jxl_padded_bytes* self, size_t si
   return jxl_ok_status();
 }
 
-static inline jxl_memory_manager* jxl_padded_bytes_memory_manager(
+static inline jxl_context* jxl_padded_bytes_ctx(
     const jxl_padded_bytes* self) {
-  return self->data_.memory_manager;
+  return self->data_.ctx;
 }
 
 static inline jxl_status jxl_padded_bytes_with_initial_space(
-    jxl_memory_manager* memory_manager, size_t size, jxl_padded_bytes* out) {
-  jxl_padded_bytes_make(memory_manager, out);
+    jxl_context* ctx, size_t size, jxl_padded_bytes* out) {
+  jxl_padded_bytes_make(ctx, out);
   return jxl_padded_bytes_init(out, size);
 }
 

@@ -5,7 +5,8 @@
 
 #include "lib/jxl/enc_ans.h"
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <math.h>
 #include <stddef.h>
@@ -164,7 +165,7 @@ struct jxl_ans_encoding_histogram {
 };
 
 static inline void jxl_ans_encoding_histogram_construct_empty(
-    jxl_ans_encoding_histogram* self, jxl_memory_manager* mm) {
+    jxl_ans_encoding_histogram* self, jxl_context* mm) {
   self->cost_ = 0;
   self->method_ = 0;
   self->omit_pos_ = 0;
@@ -514,7 +515,7 @@ static bool jxl_ans_encoding_histogram_rebalance_histogram(jxl_ans_encoding_hist
     // Inc steps increase current bin, dec steps decrease.
     // Vector of adjustable bins from `jxl_ans_encoding_histogram_allowed_counts_table`
     jxl_array_entropy_delta bins;
-    jxl_array_construct_empty(&bins, self->counts_.memory_manager);
+    jxl_array_construct_empty(&bins, self->counts_.ctx);
 if (!jxl_status_ok(jxl_array_reserve(&bins, 256))) JXL_CRASH();
     double norm = (double)(table_size) / histo->total_count;
 
@@ -681,7 +682,7 @@ static jxl_status jxl_ans_encoding_histogram_compute_best(
     jxl_ans_histogram_strategy ans_histogram_strategy,
     jxl_ans_encoding_histogram* out){
     jxl_ans_encoding_histogram result;
-    jxl_ans_encoding_histogram_construct_empty(&result, counts->memory_manager);
+    jxl_ans_encoding_histogram_construct_empty(&result, counts->ctx);
 
     result.alphabet_size_ = jxl_histogram_alphabet_size(counts);
     if (result.alphabet_size_ > ANS_MAX_ALPHABET_SIZE)
@@ -693,7 +694,7 @@ static jxl_status jxl_ans_encoding_histogram_compute_best(
       result.num_symbols_ = result.alphabet_size_;
       JXL_RETURN_IF_ERROR(
           jxl_create_flat_histogram(&result.counts_, result.alphabet_size_,
-                              ANS_TAB_SIZE, counts->memory_manager));
+                              ANS_TAB_SIZE, counts->ctx));
       // in this case length can be non-suitable for SIMD - fix it
       JXL_RETURN_IF_ERROR(jxl_array_resize_zero(&result.counts_, jxl_array_len(counts)));
       jxl_size_writer writer;
@@ -736,7 +737,7 @@ static jxl_status jxl_ans_encoding_histogram_compute_best(
 
     // Here min 2 symbols
     jxl_ans_encoding_histogram normalized;
-    jxl_ans_encoding_histogram_construct_empty(&normalized, counts->memory_manager);
+    jxl_ans_encoding_histogram_construct_empty(&normalized, counts->ctx);
     if (!jxl_status_ok(jxl_ans_encoding_histogram_copy_from(&normalized, &result))) JXL_CRASH();
     switch (ans_histogram_strategy) {
       case kANSHistPrecise:
@@ -802,7 +803,7 @@ jxl_status jxl_histogram_ans_population_cost_impl(const jxl_histogram* h, const 
     return jxl_ok_status();
   }
   jxl_ans_encoding_histogram normalized;
-  jxl_ans_encoding_histogram_construct_empty(&normalized, counts->memory_manager);
+  jxl_ans_encoding_histogram_construct_empty(&normalized, counts->ctx);
   JXL_RETURN_IF_ERROR(jxl_ans_encoding_histogram_compute_best(
       h, counts, kANSHistFast,
       &normalized));
@@ -828,7 +829,7 @@ static jxl_status jxl_build_and_store_huffman_tree_body(void* opaque) {
 // Returns an estimate or exact cost of encoding this histogram and the
 // corresponding data.
 jxl_status jxl_entropy_encoding_data_build_and_store_ans_encoding_data(
-    jxl_entropy_encoding_data* self, jxl_memory_manager* memory_manager,
+    jxl_entropy_encoding_data* self, jxl_context* ctx,
     jxl_ans_histogram_strategy ans_histogram_strategy,
     const jxl_histogram* histogram, const jxl_array_i32* counts,
     jxl_bit_writer* writer, size_t* cost_out){
@@ -843,11 +844,11 @@ jxl_status jxl_entropy_encoding_data_build_and_store_ans_encoding_data(
       return jxl_ok_status();
     }
     jxl_array_u32 histo;
-    jxl_array_construct_empty(&histo, memory_manager);
+    jxl_array_construct_empty(&histo, ctx);
     jxl_array_u8 depths;
-    jxl_array_construct_empty(&depths, memory_manager);
+    jxl_array_construct_empty(&depths, ctx);
     jxl_array_u16 bits;
-    jxl_array_construct_empty(&bits, memory_manager);
+    jxl_array_construct_empty(&bits, ctx);
     jxl_status status = jxl_array_resize_zero(&histo, size);
     if (!jxl_status_ok(status)) {
       jxl_array_destroy(&histo);
@@ -875,7 +876,7 @@ jxl_status jxl_entropy_encoding_data_build_and_store_ans_encoding_data(
     }
     if (writer == NULL) {
       jxl_bit_writer tmp_writer;
-      jxl_bit_writer_make(memory_manager, &tmp_writer);
+      jxl_bit_writer_make(ctx, &tmp_writer);
       jxl_huff_ctx huff_ctx = {&histo, size, &depths, &bits, &tmp_writer};
       status = jxl_bit_writer_with_max_bits(&tmp_writer,
           8 * size + 8,  // safe upper bound
@@ -915,7 +916,7 @@ jxl_status jxl_entropy_encoding_data_build_and_store_ans_encoding_data(
     return jxl_ok_status();
   }
   jxl_ans_encoding_histogram normalized;
-  jxl_ans_encoding_histogram_construct_empty(&normalized, memory_manager);
+  jxl_ans_encoding_histogram_construct_empty(&normalized, ctx);
   JXL_RETURN_IF_ERROR(
       jxl_ans_encoding_histogram_compute_best(histogram, counts,
                                         ans_histogram_strategy, &normalized));
@@ -924,7 +925,7 @@ jxl_status jxl_entropy_encoding_data_build_and_store_ans_encoding_data(
   jxl_alias_table_entry a[ANS_MAX_ALPHABET_SIZE];
 
   JXL_RETURN_IF_ERROR(
-      jxl_init_alias_table(memory_manager,
+      jxl_init_alias_table(ctx,
                      jxl_array_data_const(jxl_ans_encoding_histogram_counts(&normalized)),
                      jxl_array_len(jxl_ans_encoding_histogram_counts(&normalized)),
                      ANS_LOG_TAB_SIZE, self->log_alpha_size, a));
@@ -974,7 +975,7 @@ static void jxl_histogram_from_symbol_info(const jxl_ans_enc_symbol_info* encodi
 }
 
 jxl_status jxl_entropy_encoding_data_choose_uint_configs_scratch(
-    jxl_entropy_encoding_data* self, jxl_memory_manager* memory_manager,
+    jxl_entropy_encoding_data* self, jxl_context* ctx,
     const jxl_histogram_params* params, const jxl_token_streams* tokens,
     jxl_array_histogram* clustered_histograms, jxl_hist_count_streams* clustered_counts,
     jxl_array_hybrid_uint_config* configs, jxl_array_u8* is_valid,
@@ -1019,7 +1020,7 @@ jxl_status jxl_entropy_encoding_data_choose_uint_configs_scratch(
       jxl_array_resize_zero(transposed, *jxl_array_at(histo_offset, num_histo * 2) + max_vec_size));
   {
     jxl_array_size next_offset;
-    jxl_array_construct_empty(&next_offset, memory_manager);
+    jxl_array_construct_empty(&next_offset, ctx);
     if (!jxl_status_ok(jxl_array_copy_from(&next_offset, histo_offset))) JXL_CRASH();
     for (size_t stream_i = 0; stream_i < jxl_token_streams_size(tokens); ++stream_i) {
       const jxl_token_stream* stream = jxl_token_streams_at_const(tokens, stream_i);
@@ -1047,7 +1048,7 @@ jxl_status jxl_entropy_encoding_data_choose_uint_configs_scratch(
   size_t max_alpha = ANS_MAX_ALPHABET_SIZE;
 
   jxl_status status = jxl_aligned_memory_create(
-      memory_manager, (max_histo_volume + max_vec_size) * sizeof(uint32_t), 0,
+      ctx, (max_histo_volume + max_vec_size) * sizeof(uint32_t), 0,
       tmp);
   if (!jxl_status_ok(status)) {
     return status;
@@ -1070,7 +1071,7 @@ jxl_status jxl_entropy_encoding_data_choose_uint_configs_scratch(
 
       jxl_histogram histo;
       jxl_array_i32 histo_counts;
-      jxl_array_construct_empty(&histo_counts, memory_manager);
+      jxl_array_construct_empty(&histo_counts, ctx);
       jxl_histogram_ensure_capacity(&histo_counts, capacity);
       size_t len = *jxl_array_at(histo_volume, h);
       uint32_t* data = jxl_array_data(transposed) + *jxl_array_at(histo_offset, h);
@@ -1141,7 +1142,7 @@ jxl_status jxl_entropy_encoding_data_choose_uint_configs_scratch(
 }
 
 jxl_status jxl_entropy_encoding_data_choose_uint_configs(
-    jxl_entropy_encoding_data* self, jxl_memory_manager* memory_manager,
+    jxl_entropy_encoding_data* self, jxl_context* ctx,
     const jxl_histogram_params* params, const jxl_token_streams* tokens,
     jxl_array_histogram* clustered_histograms,
     jxl_hist_count_streams* clustered_counts){
@@ -1164,21 +1165,21 @@ jxl_array_clear(&self->uint_config);
   }
 
   jxl_array_hybrid_uint_config configs;
-  jxl_array_construct_empty(&configs, memory_manager);
+  jxl_array_construct_empty(&configs, ctx);
   jxl_array_u8 is_valid;
-  jxl_array_construct_empty(&is_valid, memory_manager);
+  jxl_array_construct_empty(&is_valid, ctx);
   jxl_array_size histo_volume;
-  jxl_array_construct_empty(&histo_volume, memory_manager);
+  jxl_array_construct_empty(&histo_volume, ctx);
   jxl_array_size histo_offset;
-  jxl_array_construct_empty(&histo_offset, memory_manager);
+  jxl_array_construct_empty(&histo_offset, ctx);
   jxl_array_u32 max_value_per_histo;
-  jxl_array_construct_empty(&max_value_per_histo, memory_manager);
+  jxl_array_construct_empty(&max_value_per_histo, ctx);
   jxl_array_u32 transposed;
-  jxl_array_construct_empty(&transposed, memory_manager);
+  jxl_array_construct_empty(&transposed, ctx);
   jxl_aligned_memory tmp;
   jxl_aligned_memory_construct_empty(&tmp);
   jxl_status status = jxl_entropy_encoding_data_choose_uint_configs_scratch(
-      self, memory_manager, params, tokens, clustered_histograms,
+      self, ctx, params, tokens, clustered_histograms,
       clustered_counts, &configs, &is_valid, &histo_volume, &histo_offset,
       &max_value_per_histo, &transposed, &tmp);
   jxl_array_destroy(&configs);
@@ -1193,7 +1194,7 @@ jxl_array_clear(&self->uint_config);
 
 typedef struct jxl_store_ans_sym_ctx {
   jxl_entropy_encoding_data* self;
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_ans_histogram_strategy ans_histogram_strategy;
   jxl_histogram* clustered_histogram;
   jxl_array_i32* clustered_count;
@@ -1205,7 +1206,7 @@ jxl_status jxl_store_ans_symbol_encoding_body(void* opaque) {
   jxl_store_ans_sym_ctx* x = (jxl_store_ans_sym_ctx*)(opaque);
   size_t ans_cost;
   JXL_RETURN_IF_ERROR(jxl_entropy_encoding_data_build_and_store_ans_encoding_data(x->self, 
-      x->memory_manager, x->ans_histogram_strategy, x->clustered_histogram,
+      x->ctx, x->ans_histogram_strategy, x->clustered_histogram,
       x->clustered_count, x->writer, &ans_cost));
   *x->cost += ans_cost;
   return jxl_ok_status();
@@ -1213,7 +1214,7 @@ jxl_status jxl_store_ans_symbol_encoding_body(void* opaque) {
 
 // Returns cost (in bits).
 jxl_status jxl_entropy_encoding_data_build_and_store_entropy_codes_body(
-    jxl_entropy_encoding_data* self, jxl_memory_manager* memory_manager,
+    jxl_entropy_encoding_data* self, jxl_context* ctx,
     const jxl_histogram_params* params, const jxl_token_streams* tokens,
     const jxl_array_histogram* builder, const jxl_hist_count_streams* builder_counts,
     jxl_bit_writer* writer, jxl_layer_type layer, size_t* cost_out,
@@ -1228,7 +1229,7 @@ jxl_status jxl_entropy_encoding_data_build_and_store_entropy_codes_body(
   for (size_t i = 0; i < prev_histograms; ++i) {
     jxl_histogram histo;
     jxl_array_i32 counts;
-    jxl_array_construct_empty(&counts, memory_manager);
+    jxl_array_construct_empty(&counts, ctx);
     jxl_histogram_from_symbol_info(jxl_array_data(&self->encoding_info) + *jxl_array_at(&self->encoding_info_starts, i),
                             jxl_entropy_encoding_data_alphabet_size(self, i), self->use_prefix_code, &histo, &counts);
     if (!jxl_status_ok(jxl_array_histogram_push_back(clustered_histograms, histo))) JXL_CRASH();
@@ -1239,7 +1240,7 @@ jxl_status jxl_entropy_encoding_data_build_and_store_entropy_codes_body(
   JXL_RETURN_IF_ERROR(jxl_array_resize_zero(&self->context_map, context_offset + jxl_array_len(builder)));
   if (jxl_array_len(builder) > 1) {
     jxl_array_u32 histogram_symbols;
-    jxl_array_construct_empty(&histogram_symbols, memory_manager);
+    jxl_array_construct_empty(&histogram_symbols, ctx);
     jxl_status cluster_status = jxl_cluster_histograms(
         params, builder, builder_counts, kClustersLimit, clustered_histograms,
         clustered_counts, &histogram_symbols);
@@ -1263,7 +1264,7 @@ jxl_status jxl_entropy_encoding_data_build_and_store_entropy_codes_body(
         clustered_counts, jxl_hist_count_streams_at_const(builder_counts, 0)));
   }
 
-  JXL_RETURN_IF_ERROR(jxl_entropy_encoding_data_choose_uint_configs(self, memory_manager, params, tokens,
+  JXL_RETURN_IF_ERROR(jxl_entropy_encoding_data_choose_uint_configs(self, ctx, params, tokens,
                                         clustered_histograms,
                                         clustered_counts));
 
@@ -1302,7 +1303,7 @@ jxl_status jxl_entropy_encoding_data_build_and_store_entropy_codes_body(
       JXL_CRASH();
     }
     jxl_store_ans_sym_ctx ans_sym_ctx = {
-        self, memory_manager, params->ans_histogram_strategy,
+        self, ctx, params->ans_histogram_strategy,
         jxl_array_at(clustered_histograms, c), jxl_hist_count_streams_at(clustered_counts, c), writer, &cost};
     if (writer) {
       JXL_RETURN_IF_ERROR(jxl_bit_writer_with_max_bits(writer, 
@@ -1317,17 +1318,17 @@ jxl_status jxl_entropy_encoding_data_build_and_store_entropy_codes_body(
 }
 
 jxl_status jxl_entropy_encoding_data_build_and_store_entropy_codes(
-    jxl_entropy_encoding_data* self, jxl_memory_manager* memory_manager,
+    jxl_entropy_encoding_data* self, jxl_context* ctx,
     const jxl_histogram_params* params, const jxl_token_streams* tokens,
     const jxl_array_histogram* builder, const jxl_hist_count_streams* builder_counts,
     jxl_bit_writer* writer, jxl_layer_type layer, size_t* cost_out){
   jxl_array_histogram clustered_histograms;
-  jxl_array_construct_empty(&clustered_histograms, memory_manager);
+  jxl_array_construct_empty(&clustered_histograms, ctx);
   jxl_hist_count_streams clustered_counts;
   jxl_hist_count_streams_construct_empty(&clustered_counts);
-  clustered_counts.memory_manager = memory_manager;
+  clustered_counts.ctx = ctx;
   jxl_status status = jxl_entropy_encoding_data_build_and_store_entropy_codes_body(
-      self, memory_manager, params, tokens, builder, builder_counts, writer,
+      self, ctx, params, tokens, builder, builder_counts, writer,
       layer, cost_out, &clustered_histograms, &clustered_counts);
   jxl_array_destroy(&clustered_histograms);
   jxl_hist_count_streams_destroy(&clustered_counts);
@@ -1357,7 +1358,7 @@ void jxl_encode_uint_configs(const jxl_array_hybrid_uint_config* uint_config,
 }
 
 jxl_status jxl_build_and_encode_histograms_body(
-    jxl_memory_manager* memory_manager, const jxl_histogram_params* params,
+    jxl_context* ctx, const jxl_histogram_params* params,
     size_t* num_contexts, jxl_token_streams* tokens, jxl_token_streams* tokens_lz77,
     jxl_entropy_encoding_data* codes, jxl_bit_writer* writer, jxl_layer_type layer,
     size_t* cost) {
@@ -1389,11 +1390,11 @@ jxl_status jxl_build_and_encode_histograms_body(
   size_t total_tokens = 0;
   // Build histograms.
   jxl_array_histogram builder;
-  jxl_array_construct_empty(&builder, memory_manager);
+  jxl_array_construct_empty(&builder, ctx);
   jxl_histogram hist_empty = jxl_histogram_empty();
   if (!jxl_status_ok(jxl_array_histogram_resize_fill(&builder, *num_contexts, hist_empty))) JXL_CRASH();
   jxl_hist_count_streams builder_counts;
-  jxl_hist_count_streams_create(&builder_counts, *num_contexts, memory_manager);
+  jxl_hist_count_streams_create(&builder_counts, *num_contexts, ctx);
   jxl_hybrid_uint_config uint_config = jxl_histogram_params_uint_config(params);
   for (size_t si = 0; si < jxl_token_streams_size(tokens); ++si) {
     const jxl_token_stream* stream = jxl_token_streams_at(tokens, si);
@@ -1451,7 +1452,7 @@ jxl_status jxl_build_and_encode_histograms_body(
   // Encode histograms.
   size_t entropy_bits;
   jxl_status status = jxl_entropy_encoding_data_build_and_store_entropy_codes(codes, 
-      memory_manager, params, tokens, &builder, &builder_counts, writer, layer,
+      ctx, params, tokens, &builder, &builder_counts, writer, layer,
       &entropy_bits);
   jxl_hist_count_streams_destroy(&builder_counts);
   jxl_array_destroy(&builder);
@@ -1461,7 +1462,7 @@ jxl_status jxl_build_and_encode_histograms_body(
 }
 
 jxl_status jxl_build_and_encode_histograms(
-    jxl_memory_manager* memory_manager, const jxl_histogram_params* params,
+    jxl_context* ctx, const jxl_histogram_params* params,
     size_t num_contexts, jxl_token_streams* tokens,
     jxl_entropy_encoding_data* codes, jxl_bit_writer* writer, jxl_layer_type layer,
     const jxl_array_size* image_widths, size_t* cost_out){
@@ -1487,7 +1488,7 @@ jxl_status jxl_build_and_encode_histograms(
       return allotment_status;
     }
     jxl_status body_status = jxl_build_and_encode_histograms_body(
-        memory_manager, params, &num_contexts, tokens, &tokens_lz77, codes,
+        ctx, params, &num_contexts, tokens, &tokens_lz77, codes,
         writer, layer, &cost);
     allotment_status = jxl_bit_writer_allotment_reclaim(&allotment, writer);
     jxl_bit_writer_allotment_destroy(&allotment);
@@ -1498,7 +1499,7 @@ jxl_status jxl_build_and_encode_histograms(
     status = body_status;
   } else {
     status = jxl_build_and_encode_histograms_body(
-        memory_manager, params, &num_contexts, tokens, &tokens_lz77, codes,
+        ctx, params, &num_contexts, tokens, &tokens_lz77, codes,
         writer, layer, &cost);
   }
 
@@ -1555,7 +1556,7 @@ size_t jxl_write_tokens_with_allotment(const jxl_token_stream* tokens,
     }
     return num_extra_bits;
   }
-  jxl_memory_manager* mm = jxl_bit_writer_memory_manager(writer);
+  jxl_context* mm = jxl_bit_writer_ctx(writer);
   jxl_array_u64 out;
   jxl_array_construct_empty(&out, mm);
   jxl_array_u8 out_nbits;

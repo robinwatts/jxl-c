@@ -42,7 +42,7 @@ jxl_status jxl_init_alias_table_body(const int32_t* counts, size_t counts_size,
                           jxl_alias_table_entry* JXL_RESTRICT a,
                           jxl_array_i32* distribution, jxl_array_u32* underfull_posn,
                           jxl_array_u32* overfull_posn, jxl_array_u32* cutoffs) {
-  JXL_RETURN_IF_ERROR(jxl_array_init(distribution, distribution->memory_manager));
+  JXL_RETURN_IF_ERROR(jxl_array_init(distribution, distribution->ctx));
   JXL_RETURN_IF_ERROR(jxl_array_append(distribution, counts, counts_size));
 
   const uint32_t range = 1 << log_range;
@@ -87,9 +87,9 @@ jxl_status jxl_init_alias_table_body(const int32_t* counts, size_t counts_size,
     return jxl_ok_status();
   }
 
-  JXL_RETURN_IF_ERROR(jxl_array_init(underfull_posn, underfull_posn->memory_manager));
-  JXL_RETURN_IF_ERROR(jxl_array_init(overfull_posn, overfull_posn->memory_manager));
-  JXL_RETURN_IF_ERROR(jxl_array_init(cutoffs, cutoffs->memory_manager));
+  JXL_RETURN_IF_ERROR(jxl_array_init(underfull_posn, underfull_posn->ctx));
+  JXL_RETURN_IF_ERROR(jxl_array_init(overfull_posn, overfull_posn->ctx));
+  JXL_RETURN_IF_ERROR(jxl_array_init(cutoffs, cutoffs->ctx));
   JXL_RETURN_IF_ERROR(jxl_array_resize(cutoffs, (size_t)(1) << log_alpha_size));
   // Initialize entries.
   for (size_t i = 0; i < jxl_array_len(distribution); i++) {
@@ -150,7 +150,7 @@ jxl_status jxl_init_alias_table_body(const int32_t* counts, size_t counts_size,
   return jxl_ok_status();
 }
 
-jxl_status jxl_init_alias_table(jxl_memory_manager* mm, const int32_t* counts,
+jxl_status jxl_init_alias_table(jxl_context* mm, const int32_t* counts,
                       size_t counts_size, uint32_t log_range,
                       size_t log_alpha_size,
                       jxl_alias_table_entry* JXL_RESTRICT a) {

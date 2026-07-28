@@ -8,7 +8,8 @@
 
 // jxl_bit_writer: unbuffered writes using unaligned 64-bit stores.
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -77,15 +78,15 @@ static inline void jxl_bit_writer_destroy(jxl_bit_writer* self) {
   self->current_allotment_ = NULL;
 }
 
-static inline void jxl_bit_writer_init(jxl_bit_writer* self, jxl_memory_manager* memory_manager) {
+static inline void jxl_bit_writer_init(jxl_bit_writer* self, jxl_context* ctx) {
   self->bits_written_ = 0;
-  jxl_padded_bytes_make(memory_manager, &self->storage_);
+  jxl_padded_bytes_make(ctx, &self->storage_);
   self->current_allotment_ = NULL;
 }
 
-static inline void jxl_bit_writer_make(jxl_memory_manager* memory_manager, jxl_bit_writer* out) {
+static inline void jxl_bit_writer_make(jxl_context* ctx, jxl_bit_writer* out) {
   jxl_bit_writer_construct_empty(out);
-  jxl_bit_writer_init(out, memory_manager);
+  jxl_bit_writer_init(out, ctx);
 }
 
 static inline void jxl_bit_writer_swap(jxl_bit_writer* self, jxl_bit_writer* other) {
@@ -102,8 +103,8 @@ static inline size_t jxl_bit_writer_bits_written(const jxl_bit_writer* self) {
   return self->bits_written_;
 }
 
-static inline jxl_memory_manager* jxl_bit_writer_memory_manager(const jxl_bit_writer* self) {
-  return jxl_padded_bytes_memory_manager(&self->storage_);
+static inline jxl_context* jxl_bit_writer_ctx(const jxl_bit_writer* self) {
+  return jxl_padded_bytes_ctx(&self->storage_);
 }
 
 static inline jxl_bytes jxl_bit_writer_get_span(const jxl_bit_writer* self) {
@@ -121,7 +122,7 @@ static inline void jxl_bit_writer_take_bytes(jxl_bit_writer* self, jxl_padded_by
   JXL_DASSERT(jxl_status_ok(status));
   // Can never fail, because we are resizing to a lower size.
   (void)status;
-  jxl_padded_bytes_make(jxl_padded_bytes_memory_manager(&self->storage_), out);
+  jxl_padded_bytes_make(jxl_padded_bytes_ctx(&self->storage_), out);
   jxl_padded_bytes_swap(&self->storage_, out);
   self->bits_written_ = 0;
 }
@@ -154,7 +155,7 @@ static inline jxl_status jxl_bit_writer_with_max_bits(jxl_bit_writer* self, size
 
 // Growable list of jxl_bit_writers (was MoveArray<jxl_bit_writer>).
 typedef struct jxl_bit_writers {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_bit_writer* ptr;
   size_t len;
   size_t capacity;
@@ -167,16 +168,16 @@ static inline jxl_bit_writer* jxl_bit_writers_at(jxl_bit_writers* self, size_t i
 static inline const jxl_bit_writer* jxl_bit_writers_at_const(const jxl_bit_writers* self, size_t i) { return &self->ptr[i]; }
 
 static inline void jxl_bit_writers_construct_empty(jxl_bit_writers* self) {
-  self->memory_manager = NULL;
+  self->ctx = NULL;
   self->ptr = NULL;
   self->len = 0;
   self->capacity = 0;
 }
 
 static inline void jxl_bit_writers_swap(jxl_bit_writers* self, jxl_bit_writers* other) {
-  jxl_memory_manager* tmp_mm = self->memory_manager;
-  self->memory_manager = other->memory_manager;
-  other->memory_manager = tmp_mm;
+  jxl_context* tmp_mm = self->ctx;
+  self->ctx = other->ctx;
+  other->ctx = tmp_mm;
   jxl_bit_writer* tmp_ptr = self->ptr;
   self->ptr = other->ptr;
   other->ptr = tmp_ptr;
@@ -191,8 +192,8 @@ static inline void jxl_bit_writers_destroy(jxl_bit_writers* self) {
   }
   self->len = 0;
   if (self->ptr != NULL) {
-    if (self->memory_manager != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    if (self->ctx != NULL) {
+      jxl_free(self->ctx, self->ptr);
     }
   }
   self->ptr = NULL;
@@ -221,22 +222,22 @@ static inline jxl_status jxl_bit_writers_reserve(jxl_bit_writers* self, size_t n
   if (!jxl_safe_mul(grown, sizeof(jxl_bit_writer), &bytes)) {
     return JXL_FAILURE("jxl_bit_writers::reserve: size overflow");
   }
-  if (self->memory_manager == NULL) {
+  if (self->ctx == NULL) {
     return JXL_FAILURE("jxl_bit_writers::reserve: missing memory manager");
   }
   neu = (jxl_bit_writer*)(
-      self->memory_manager->alloc(self->memory_manager->opaque, bytes));
+      jxl_alloc(self->ctx, bytes));
   if (neu == NULL) {
     return JXL_FAILURE("jxl_bit_writers::reserve: allocation failed");
   }
   for (i = 0; i < self->len; ++i) {
     jxl_bit_writer_construct_empty(neu + i);
-    jxl_bit_writer_init(neu + i, jxl_bit_writer_memory_manager(&self->ptr[i]));
+    jxl_bit_writer_init(neu + i, jxl_bit_writer_ctx(&self->ptr[i]));
     jxl_bit_writer_swap(neu + i, &self->ptr[i]);
     jxl_bit_writer_destroy(self->ptr + i);
   }
   if (self->ptr != NULL) {
-    self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    jxl_free(self->ctx, self->ptr);
   }
   self->ptr = neu;
   self->capacity = grown;
@@ -244,7 +245,7 @@ static inline jxl_status jxl_bit_writers_reserve(jxl_bit_writers* self, size_t n
 }
 
 static inline jxl_status jxl_bit_writers_emplace_back(jxl_bit_writers* self,
-                                           jxl_memory_manager* mm) {
+                                           jxl_context* mm) {
   if (self->len == self->capacity) {
     size_t need;
     if (!jxl_safe_add(self->capacity, (size_t)(1), &need)) {

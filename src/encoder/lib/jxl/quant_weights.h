@@ -6,7 +6,8 @@
 #ifndef LIB_JXL_QUANT_WEIGHTS_H_
 #define LIB_JXL_QUANT_WEIGHTS_H_
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stdint.h>
 
@@ -118,7 +119,7 @@ typedef struct jxl_dequant_matrices {
 } jxl_dequant_matrices;
 
 void jxl_dequant_matrices_init(jxl_dequant_matrices* self,
-                               jxl_memory_manager* memory_manager);
+                               jxl_context* ctx);
 
 static const int kDequantMatricesRequiredSizeX[kNumQuantTables] = {
     1, 1, 1, 1, 2, 4, 1, 1, 2, 1, 1, 8, 4, 16, 8, 32, 16};

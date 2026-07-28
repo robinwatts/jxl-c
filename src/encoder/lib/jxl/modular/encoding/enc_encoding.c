@@ -3,7 +3,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -54,7 +55,7 @@ static void jxl_make_fixed_tree(int property, const jxl_array_i32 *cutoffs, jxl_
   }
   const int shift = bitdepth > 11 ? JXL_MIN(4, bitdepth - 11) : 0;
   const int mul = 1 << shift;
-  jxl_memory_manager* mm = out->memory_manager;
+  jxl_context* mm = out->ctx;
   jxl_tree tree;
   jxl_array_construct_empty(&tree, mm);
   jxl_array_fixed_tree_node_info q;
@@ -117,7 +118,7 @@ static jxl_status jxl_gather_tree_data(const jxl_image *image, pixel_type chan, 
                       const jxl_modular_options *options, jxl_tree_samples *tree_samples,
                       size_t *total_pixels) {
   const jxl_channel *channel = jxl_channels_at_const(&image->channel, chan);
-  jxl_memory_manager *memory_manager = jxl_channel_memory_manager(channel);
+  jxl_context *ctx = jxl_channel_ctx(channel);
 
   JXL_DEBUG_V(7, "Learning %" jxl_pr_iu_s "x%" jxl_pr_iu_s " channel %d", channel->w,
               channel->h, chan);
@@ -125,7 +126,7 @@ static jxl_status jxl_gather_tree_data(const jxl_image *image, pixel_type chan, 
   pixel_type static_props[kNumStaticProperties] = {
       chan, (int)(group_id)};
   jxl_properties properties;
-  jxl_array_construct_empty(&properties, memory_manager);
+  jxl_array_construct_empty(&properties, ctx);
   jxl_status status = jxl_array_resize_zero(&properties, kNumNonrefProperties);
   if (!jxl_status_ok(status)) {
     jxl_array_destroy(&properties);
@@ -145,7 +146,7 @@ static jxl_status jxl_gather_tree_data(const jxl_image *image, pixel_type chan, 
   // JPEG encoder trees never use reference-channel properties.
   jxl_channel references;
   jxl_channel_construct_empty(&references);
-  status = jxl_channel_create(memory_manager, /*iw=*/0, /*ih=*/1, 0, 0,
+  status = jxl_channel_create(ctx, /*iw=*/0, /*ih=*/1, 0, 0,
                                 &references);
   if (!jxl_status_ok(status)) {
     jxl_array_destroy(&properties);
@@ -154,7 +155,7 @@ static jxl_status jxl_gather_tree_data(const jxl_image *image, pixel_type chan, 
   }
   jxl_weighted_state wp_state;
   jxl_weighted_state_init(&wp_state, wp_header, channel->w, channel->h,
-                          memory_manager);
+                          ctx);
   jxl_tree_samples_prepare_for_samples(tree_samples, pixel_fraction * channel->h * channel->w + 64);
   jxl_gather_sample_ctx sample_ctx = {
       &properties,
@@ -217,7 +218,7 @@ static jxl_status jxl_learn_tree_from_samples(jxl_tree_samples *tree_samples, si
                  const jxl_array_modular_multiplier_info *multiplier_info,
                  jxl_static_prop_range static_prop_range, jxl_tree *out) {
   jxl_tree tree;
-  jxl_array_construct_empty(&tree, out->memory_manager);
+  jxl_array_construct_empty(&tree, out->ctx);
   for (size_t i = 0; i < kNumStaticProperties; i++) {
     if (jxl_static_prop_range_at(&static_prop_range, i)[1] == 0) {
       jxl_static_prop_range_at(&static_prop_range, i)[1] = UINT32_MAX;
@@ -251,7 +252,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
                                  const jxl_tree *global_tree, jxl_token **tokenpp,
                                  size_t group_id) {
   const jxl_channel *channel = jxl_channels_at_const(&image->channel, chan);
-  jxl_memory_manager *memory_manager = jxl_channel_memory_manager(channel);
+  jxl_context *ctx = jxl_channel_ctx(channel);
   jxl_token *tokenp = *tokenpp;
   JXL_ENSURE(channel->w != 0 && channel->h != 0);
 
@@ -267,7 +268,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
   bool is_gradient_only;
   size_t num_props;
   jxl_flat_tree tree;
-  jxl_array_construct_empty(&tree, memory_manager);
+  jxl_array_construct_empty(&tree, ctx);
   jxl_filter_tree(global_tree, static_props, &num_props, &use_wp,
              &is_gradient_only, &tree);
   jxl_ma_tree_lookup tree_lookup = jxl_ma_tree_lookup_make(&tree);
@@ -275,9 +276,9 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
 
   // Initialized to avoid clang-tidy complaining.
   jxl_tree_lut tree_lut;
-  jxl_array_construct_empty(&tree_lut.context_lookup, memory_manager);
+  jxl_array_construct_empty(&tree_lut.context_lookup, ctx);
   if (is_gradient_only) {
-    jxl_status lut_status = jxl_tree_lut_init(&tree_lut, memory_manager);
+    jxl_status lut_status = jxl_tree_lut_init(&tree_lut, ctx);
     if (!jxl_status_ok(lut_status)) {
       jxl_tree_lut_destroy(&tree_lut);
       jxl_array_destroy(&tree);
@@ -363,7 +364,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
   } else if (!use_wp) {
     const ptrdiff_t onerow = jxl_image_i_pixels_per_row(&channel->plane);
     jxl_properties properties;
-    jxl_array_construct_empty(&properties, memory_manager);
+    jxl_array_construct_empty(&properties, ctx);
     jxl_status status = jxl_array_resize_zero(&properties, num_props);
     if (!jxl_status_ok(status)) {
       jxl_array_destroy(&properties);
@@ -373,7 +374,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
     }
     jxl_channel references;
     jxl_channel_construct_empty(&references);
-    status = jxl_channel_create(memory_manager, /*iw=*/0, /*ih=*/1, 0, 0,
+    status = jxl_channel_create(ctx, /*iw=*/0, /*ih=*/1, 0, 0,
                                   &references);
     if (!jxl_status_ok(status)) {
       jxl_array_destroy(&properties);
@@ -399,7 +400,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
   } else {
     const ptrdiff_t onerow = jxl_image_i_pixels_per_row(&channel->plane);
     jxl_properties properties;
-    jxl_array_construct_empty(&properties, memory_manager);
+    jxl_array_construct_empty(&properties, ctx);
     jxl_status status = jxl_array_resize_zero(&properties, num_props);
     if (!jxl_status_ok(status)) {
       jxl_array_destroy(&properties);
@@ -409,7 +410,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
     }
     jxl_channel references;
     jxl_channel_construct_empty(&references);
-    status = jxl_channel_create(memory_manager, /*iw=*/0, /*ih=*/1, 0, 0,
+    status = jxl_channel_create(ctx, /*iw=*/0, /*ih=*/1, 0, 0,
                                   &references);
     if (!jxl_status_ok(status)) {
       jxl_array_destroy(&properties);
@@ -420,7 +421,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
     }
     jxl_weighted_state wp_state;
     jxl_weighted_state_init(&wp_state, wp_header, channel->w, channel->h,
-                          memory_manager);
+                          ctx);
     for (size_t y = 0; y < channel->h; y++) {
       const pixel_type *JXL_RESTRICT p = jxl_channel_row_const(channel, y);
       jxl_init_props_row(&properties, static_props, y);
@@ -446,7 +447,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
 
 void jxl_predefined_tree_impl(jxl_modular_tree_kind tree_kind, size_t total_pixels,
                     int bitdepth, jxl_tree *out) {
-  jxl_memory_manager* mm = out->memory_manager;
+  jxl_context* mm = out->ctx;
   switch (tree_kind) {
     case kJpegTranscodeACMeta: {
       // All the data is 0, so no need for a fancy tree.
@@ -504,7 +505,7 @@ jxl_status jxl_learn_tree_impl(const jxl_image *images, const jxl_modular_option
                  const uint32_t start, const uint32_t stop,
                  const jxl_array_modular_multiplier_info *multiplier_info,
                  jxl_tree *out) {
-  jxl_memory_manager* mm = out->memory_manager;
+  jxl_context* mm = out->ctx;
   jxl_tree_samples tree_samples;
   jxl_tree_samples_construct_empty(&tree_samples, mm);
   jxl_array_i32 pixel_samples;
@@ -715,7 +716,7 @@ jxl_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_m
 
   size_t bits = jxl_bit_writer_bits_written(writer);
 
-  jxl_memory_manager *memory_manager = jxl_image_memory_manager(image);
+  jxl_context *ctx = jxl_image_ctx(image);
   JXL_DEBUG_V(
       2, "Encoding %" jxl_pr_iu_s "-channel, %i-bit, %" jxl_pr_iu_s "x%" jxl_pr_iu_s " image.",
       nb_channels, image->bitdepth, image->w, image->h);
@@ -730,7 +731,7 @@ jxl_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_m
   JXL_RETURN_IF_ERROR(jxl_bundle_write(&header.fields, writer, layer));
 
   // Compute tree.
-  jxl_memory_manager* mm = jxl_bit_writer_memory_manager(writer);
+  jxl_context* mm = jxl_bit_writer_ctx(writer);
   jxl_tree tree;
   jxl_array_construct_empty(&tree, mm);
   if (options.tree_kind == kLearn) {
@@ -765,9 +766,9 @@ jxl_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_m
   jxl_token_streams tokens;
   jxl_token_streams_create(&tokens, 1, mm);
   jxl_entropy_encoding_data code;
-  jxl_entropy_encoding_data_init(&code, memory_manager);
+  jxl_entropy_encoding_data_init(&code, ctx);
   jxl_array_size empty_widths;
-  jxl_array_construct_empty(&empty_widths, memory_manager);
+  jxl_array_construct_empty(&empty_widths, ctx);
   jxl_array_size image_widths;
   jxl_array_construct_empty(&image_widths, mm);
   jxl_status status = jxl_tokenize_tree(&tree, jxl_token_streams_data(&tree_tokens), &decoded_tree);
@@ -787,7 +788,7 @@ jxl_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_m
   // Write tree
   size_t cost;
   status =
-      jxl_build_and_encode_histograms(memory_manager, &options.histogram_params,
+      jxl_build_and_encode_histograms(ctx, &options.histogram_params,
                                kNumTreeContexts, &tree_tokens, &code, writer,
                                kLayerModularTree, &empty_widths, &cost);
   if (jxl_status_ok(status)) {
@@ -806,13 +807,13 @@ jxl_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_m
   // Write data
   if (jxl_status_ok(status)) {
     jxl_entropy_encoding_data_destroy(&code);
-    jxl_entropy_encoding_data_construct_empty(&code, memory_manager);
-    jxl_entropy_encoding_data_init(&code, memory_manager);
+    jxl_entropy_encoding_data_construct_empty(&code, ctx);
+    jxl_entropy_encoding_data_init(&code, ctx);
     jxl_histogram_params histo_params = options.histogram_params;
     status = jxl_array_size_push_back(&image_widths, image_width);
     if (jxl_status_ok(status)) {
       status = jxl_build_and_encode_histograms(
-          memory_manager, &histo_params, (jxl_array_len(&tree) + 1) / 2, &tokens,
+          ctx, &histo_params, (jxl_array_len(&tree) + 1) / 2, &tokens,
           &code, writer, layer, &image_widths, &cost);
     }
     if (jxl_status_ok(status)) {

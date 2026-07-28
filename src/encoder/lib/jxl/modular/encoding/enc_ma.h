@@ -89,7 +89,7 @@ bool jxl_tree_samples_add_to_table_and_merge(jxl_tree_samples* self, size_t a);
 void jxl_tree_samples_add_to_table(jxl_tree_samples* self, size_t a);
 
 static inline void jxl_tree_samples_construct_empty(jxl_tree_samples* self,
-                                                     jxl_memory_manager* mm) {
+                                                     jxl_context* mm) {
   for (size_t i = 0; i < kNumModularPredictors; ++i) {
     jxl_array_construct_empty(&self->residuals[i], mm);
   }

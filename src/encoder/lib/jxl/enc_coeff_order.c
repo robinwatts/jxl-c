@@ -3,7 +3,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <math.h>
 #include <stddef.h>
@@ -102,7 +103,7 @@ jxl_status jxl_compute_coeff_order_body(jxl_speed_tier speed, const jxl_ac_image
                              coeff_order_t* JXL_RESTRICT order,
                              jxl_array_i64* num_zeros,
                              jxl_array_u32* natural_order_buffer) {
-  jxl_memory_manager* memory_manager = jxl_ac_strategy_image_memory_manager(ac_strategy);
+  jxl_context* ctx = jxl_ac_strategy_image_ctx(ac_strategy);
   JXL_RETURN_IF_ERROR(jxl_array_resize_zero(num_zeros, kCoeffOrderMaxSize));
   // If compressing at high speed and only using 8x8 DCTs, only consider a
   // subset of blocks.
@@ -168,7 +169,7 @@ jxl_status jxl_compute_coeff_order_body(jxl_speed_tier speed, const jxl_ac_image
   size_t mem_bytes = kAcStrategyMaxCoeffArea * sizeof(jxl_pos_and_count);
   jxl_aligned_memory mem;
   jxl_aligned_memory_construct_empty(&mem);
-  jxl_status status = jxl_aligned_memory_create(memory_manager, mem_bytes, 0, &mem);
+  jxl_status status = jxl_aligned_memory_create(ctx, mem_bytes, 0, &mem);
   if (!jxl_status_ok(status)) {
     jxl_aligned_memory_destroy(&mem);
     return status;
@@ -251,7 +252,7 @@ jxl_status jxl_compute_coeff_order_body(jxl_speed_tier speed, const jxl_ac_image
   return jxl_ok_status();
 }
 
-jxl_status jxl_compute_coeff_order(jxl_memory_manager* memory_manager,
+jxl_status jxl_compute_coeff_order(jxl_context* ctx,
                          jxl_speed_tier speed, const jxl_ac_image* ac_image,
                          const jxl_ac_strategy_image* ac_strategy,
                          const jxl_frame_dimensions* frame_dim,
@@ -260,9 +261,9 @@ jxl_status jxl_compute_coeff_order(jxl_memory_manager* memory_manager,
                          uint32_t current_used_orders,
                          coeff_order_t* JXL_RESTRICT order){
   jxl_array_i64 num_zeros;
-  jxl_array_construct_empty(&num_zeros, memory_manager);
+  jxl_array_construct_empty(&num_zeros, ctx);
   jxl_array_u32 natural_order_buffer;
-  jxl_array_construct_empty(&natural_order_buffer, memory_manager);
+  jxl_array_construct_empty(&natural_order_buffer, ctx);
   jxl_status status = jxl_compute_coeff_order_body(
       speed, ac_image, ac_strategy, frame_dim, all_used_orders, prev_used_acs,
       current_used_acs, current_used_orders, order, &num_zeros,
@@ -296,7 +297,7 @@ last = *jxl_array_at(lehmer, i);
 
 static jxl_status jxl_tokenize_permutation(const coeff_order_t* JXL_RESTRICT order, size_t skip,
                            size_t size, jxl_token_stream* tokens) {
-  jxl_memory_manager* mm = tokens->memory_manager;
+  jxl_context* mm = tokens->ctx;
   jxl_array_u32 lehmer;
   jxl_array_construct_empty(&lehmer, mm);
   jxl_array_u32 temp;
@@ -347,16 +348,16 @@ jxl_status jxl_encode_coeff_orders_body_inner(uint16_t used_orders,
   }
   // Do not write anything if no order is used.
   if (used_orders != 0) {
-    jxl_memory_manager* memory_manager = jxl_bit_writer_memory_manager(writer);
+    jxl_context* ctx = jxl_bit_writer_ctx(writer);
     jxl_entropy_encoding_data codes;
-    jxl_entropy_encoding_data_init(&codes, memory_manager);
+    jxl_entropy_encoding_data_init(&codes, ctx);
     jxl_histogram_params hist_params;
     jxl_histogram_params_construct_empty(&hist_params);
     jxl_array_size empty_widths;
-    jxl_array_construct_empty(&empty_widths, memory_manager);
+    jxl_array_construct_empty(&empty_widths, ctx);
     size_t cost;
     jxl_status status = jxl_build_and_encode_histograms(
-        memory_manager, &hist_params, kPermutationContexts, tokens, &codes,
+        ctx, &hist_params, kPermutationContexts, tokens, &codes,
         writer, layer, &empty_widths, &cost);
     (void)cost;
     if (jxl_status_ok(status)) {
@@ -373,13 +374,13 @@ jxl_status jxl_encode_coeff_orders_body(uint16_t used_orders,
                              const coeff_order_t* JXL_RESTRICT order,
                              jxl_bit_writer* writer, jxl_layer_type layer,
                              jxl_aligned_memory* mem) {
-  jxl_memory_manager* memory_manager = jxl_bit_writer_memory_manager(writer);
+  jxl_context* ctx = jxl_bit_writer_ctx(writer);
   jxl_token_streams tokens;
   jxl_token_streams_construct_empty(&tokens);
-  tokens.memory_manager = memory_manager;
+  tokens.ctx = ctx;
   if (!jxl_status_ok(jxl_token_streams_resize(&tokens, 1))) JXL_CRASH();
   jxl_array_u32 natural_order_lut;
-  jxl_array_construct_empty(&natural_order_lut, memory_manager);
+  jxl_array_construct_empty(&natural_order_lut, ctx);
   jxl_status status = jxl_encode_coeff_orders_body_inner(used_orders, order, writer, layer,
                                              mem, &tokens, &natural_order_lut);
   jxl_array_destroy(&natural_order_lut);
@@ -390,11 +391,11 @@ jxl_status jxl_encode_coeff_orders_body(uint16_t used_orders,
 jxl_status jxl_encode_coeff_orders(uint16_t used_orders,
                          const coeff_order_t* JXL_RESTRICT order,
                          jxl_bit_writer* writer, jxl_layer_type layer) {
-  jxl_memory_manager* memory_manager = jxl_bit_writer_memory_manager(writer);
+  jxl_context* ctx = jxl_bit_writer_ctx(writer);
   size_t mem_bytes = kAcStrategyMaxCoeffArea * sizeof(coeff_order_t);
   jxl_aligned_memory mem;
   jxl_aligned_memory_construct_empty(&mem);
-  jxl_status status = jxl_aligned_memory_create(memory_manager, mem_bytes, 0, &mem);
+  jxl_status status = jxl_aligned_memory_create(ctx, mem_bytes, 0, &mem);
   if (!jxl_status_ok(status)) {
     jxl_aligned_memory_destroy(&mem);
     return status;

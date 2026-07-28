@@ -5,7 +5,8 @@
 
 #include "lib/jxl/image.h"
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -53,7 +54,7 @@ void jxl_plane_base_init(jxl_plane_base* self, const uint32_t xsize, const uint3
   self->sizeof_t_ = sizeof_t;
 }
 
-jxl_status jxl_plane_base_allocate(jxl_plane_base* self, jxl_memory_manager* memory_manager,
+jxl_status jxl_plane_base_allocate(jxl_plane_base* self, jxl_context* ctx,
                          size_t pre_padding) {
   JXL_ENSURE(jxl_aligned_memory_address(&self->bytes_) == NULL);
   JXL_ENSURE(self->bytes_per_row_ == 0);
@@ -72,7 +73,7 @@ jxl_status jxl_plane_base_allocate(jxl_plane_base* self, jxl_memory_manager* mem
     return JXL_FAILURE("jxl_image dimensions are too large");
   }
 
-  JXL_RETURN_IF_ERROR(jxl_aligned_memory_create(memory_manager, total_bytes,
+  JXL_RETURN_IF_ERROR(jxl_aligned_memory_create(ctx, total_bytes,
                                               pre_padding * self->sizeof_t_,
                                               &self->bytes_));
 

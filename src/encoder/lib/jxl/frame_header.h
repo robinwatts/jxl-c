@@ -270,7 +270,7 @@ static inline void jxl_blending_info_swap(jxl_blending_info* self, jxl_blending_
 
 // Growable list of jxl_blending_info (was MoveArray<jxl_blending_info>).
 typedef struct jxl_blending_infos {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_blending_info* ptr;
   size_t len;
   size_t capacity;
@@ -298,7 +298,7 @@ static inline const jxl_blending_info* jxl_blending_infos_at_const(
 }
 
 static inline void jxl_blending_infos_construct_empty(jxl_blending_infos* self) {
-  self->memory_manager = NULL;
+  self->ctx = NULL;
   self->ptr = NULL;
   self->len = 0;
   self->capacity = 0;
@@ -306,9 +306,9 @@ static inline void jxl_blending_infos_construct_empty(jxl_blending_infos* self) 
 
 static inline void jxl_blending_infos_swap(jxl_blending_infos* self,
                                      jxl_blending_infos* other) {
-  jxl_memory_manager* tmp_mm = self->memory_manager;
-  self->memory_manager = other->memory_manager;
-  other->memory_manager = tmp_mm;
+  jxl_context* tmp_mm = self->ctx;
+  self->ctx = other->ctx;
+  other->ctx = tmp_mm;
   jxl_blending_info* tmp_ptr = self->ptr;
   self->ptr = other->ptr;
   other->ptr = tmp_ptr;
@@ -323,8 +323,8 @@ static inline void jxl_blending_infos_destroy(jxl_blending_infos* self) {
   }
   self->len = 0;
   if (self->ptr != NULL) {
-    if (self->memory_manager != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    if (self->ctx != NULL) {
+      jxl_free(self->ctx, self->ptr);
     }
   }
   self->ptr = NULL;
@@ -353,11 +353,11 @@ static inline jxl_status jxl_blending_infos_reserve(jxl_blending_infos* self,
   if (!jxl_safe_mul(grown, sizeof(jxl_blending_info), &bytes)) {
     return JXL_FAILURE("jxl_blending_infos::reserve: size overflow");
   }
-  if (self->memory_manager == NULL) {
+  if (self->ctx == NULL) {
     return JXL_FAILURE("jxl_blending_infos::reserve: missing memory manager");
   }
   neu = (jxl_blending_info*)(
-      self->memory_manager->alloc(self->memory_manager->opaque, bytes));
+      jxl_alloc(self->ctx, bytes));
   if (neu == NULL) {
     return JXL_FAILURE("jxl_blending_infos::reserve: allocation failed");
   }
@@ -368,7 +368,7 @@ static inline jxl_status jxl_blending_infos_reserve(jxl_blending_infos* self,
     jxl_blending_info_destroy(self->ptr + i);
   }
   if (self->ptr != NULL) {
-    self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    jxl_free(self->ctx, self->ptr);
   }
   self->ptr = neu;
   self->capacity = grown;
@@ -629,8 +629,8 @@ static inline bool jxl_frame_header_can_be_referenced(const jxl_frame_header* se
 
 static inline void jxl_frame_header_init(jxl_frame_header* self,
                                    const jxl_codec_metadata* metadata) {
-  jxl_memory_manager* mm =
-      metadata != NULL ? metadata->m.color_encoding.storage_.icc.memory_manager
+  jxl_context* mm =
+      metadata != NULL ? metadata->m.color_encoding.storage_.icc.ctx
                        : NULL;
   self->encoding = kModular;
   self->frame_type = kRegularFrame;
@@ -642,7 +642,7 @@ static inline void jxl_frame_header_init(jxl_frame_header* self,
   jxl_passes_init(&self->passes);
   jxl_blending_info_init(&self->blending_info);
   jxl_blending_infos_construct_empty(&self->extra_channel_blending_info);
-  self->extra_channel_blending_info.memory_manager = mm;
+  self->extra_channel_blending_info.ctx = mm;
   jxl_animation_frame_init(&self->animation_frame, metadata);
   jxl_loop_filter_init(&self->loop_filter);
   self->nonserialized_metadata = metadata;

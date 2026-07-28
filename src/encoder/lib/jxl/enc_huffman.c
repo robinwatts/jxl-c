@@ -125,7 +125,7 @@ static void jxl_store_simple_huffman_tree(const uint8_t* depths, size_t symbols[
 static jxl_status jxl_store_huffman_tree_body(const uint8_t* depths, size_t num, jxl_bit_writer* writer,
                             jxl_array_u8* arena) {
   // Write the Huffman tree into the compact representation.
-  JXL_RETURN_IF_ERROR(jxl_array_init(arena, jxl_bit_writer_memory_manager(writer)));
+  JXL_RETURN_IF_ERROR(jxl_array_init(arena, jxl_bit_writer_ctx(writer)));
   JXL_RETURN_IF_ERROR(jxl_array_resize(arena, 2 * num));
   uint8_t* huffman_tree = jxl_array_data(arena);
   uint8_t* huffman_tree_extra_bits = jxl_array_data(arena) + num;
@@ -157,7 +157,7 @@ static jxl_status jxl_store_huffman_tree_body(const uint8_t* depths, size_t num,
   // earlier Huffman tree with.
   uint8_t code_length_bitdepth[kCodeLengthCodes] = {0};
   uint16_t code_length_bitdepth_symbols[kCodeLengthCodes] = {0};
-  jxl_create_huffman_tree(jxl_bit_writer_memory_manager(writer),
+  jxl_create_huffman_tree(jxl_bit_writer_ctx(writer),
                     &huffman_tree_histogram[0], kCodeLengthCodes, 5,
                     &code_length_bitdepth[0]);
   jxl_convert_bit_depths_to_symbols(code_length_bitdepth, kCodeLengthCodes,
@@ -180,7 +180,7 @@ static jxl_status jxl_store_huffman_tree_body(const uint8_t* depths, size_t num,
 
 static jxl_status jxl_store_huffman_tree(const uint8_t* depths, size_t num, jxl_bit_writer* writer) {
   jxl_array_u8 arena;
-  jxl_array_construct_empty(&arena, jxl_bit_writer_memory_manager(writer));
+  jxl_array_construct_empty(&arena, jxl_bit_writer_ctx(writer));
   jxl_status status = jxl_store_huffman_tree_body(depths, num, writer, &arena);
   jxl_array_destroy(&arena);
   return status;
@@ -216,7 +216,7 @@ jxl_status jxl_build_and_store_huffman_tree(const uint32_t* histogram, const siz
     return jxl_ok_status();
   }
 
-  jxl_create_huffman_tree(jxl_bit_writer_memory_manager(writer), histogram,
+  jxl_create_huffman_tree(jxl_bit_writer_ctx(writer), histogram,
                     length, 15, depth);
   jxl_convert_bit_depths_to_symbols(depth, length, bits);
 

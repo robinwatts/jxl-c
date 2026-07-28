@@ -237,8 +237,16 @@ void *jxl_realloc(jxl_context *ctx, void *ptr, size_t size) {
     return jxl_realloc_state(jxl_context_alloc_state(ctx), ptr, size);
 }
 
+const void *jxl_realloc_const(jxl_context *ctx, const void *ptr, size_t size) {
+    return jxl_realloc_const_state(jxl_context_alloc_state(ctx), ptr, size);
+}
+
 void jxl_free(jxl_context *ctx, void *ptr) {
     jxl_free_state(jxl_context_alloc_state(ctx), ptr);
+}
+
+void jxl_free_const(jxl_context *ctx, const void *ptr) {
+    jxl_free_const_state(jxl_context_alloc_state(ctx), ptr);
 }
 
 void jxl_free_aligned(jxl_context *ctx, void *ptr) {

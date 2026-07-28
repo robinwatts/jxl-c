@@ -80,7 +80,7 @@ static void jxl_huffman_tree_sort(jxl_array_huffman_tree* tree) {
 // we are not planning to use this with extremely long blocks.
 //
 // See http://en.wikipedia.org/wiki/Huffman_coding
-void jxl_create_huffman_tree(jxl_memory_manager* mm, const uint32_t* data,
+void jxl_create_huffman_tree(jxl_context* mm, const uint32_t* data,
                        const size_t length, const int tree_limit,
                        uint8_t* depth) {
   // For block sizes below 64 kB, we never need to do a second iteration

@@ -6,7 +6,8 @@
 #ifndef LIB_JXL_MODULAR_MODULAR_IMAGE_H_
 #define LIB_JXL_MODULAR_MODULAR_IMAGE_H_
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -32,7 +33,7 @@ typedef struct jxl_channel {
   int component;
 } jxl_channel;
 
-jxl_status jxl_channel_create(jxl_memory_manager* memory_manager, size_t iw, size_t ih,
+jxl_status jxl_channel_create(jxl_context* ctx, size_t iw, size_t ih,
                      int hsh, int vsh, jxl_channel* out);
 
 static inline void jxl_channel_construct_empty(jxl_channel* self) {
@@ -61,15 +62,15 @@ static inline pixel_type* jxl_channel_row(jxl_channel* self, size_t y) {
 static inline const pixel_type* jxl_channel_row_const(const jxl_channel* self, size_t y) {
   return jxl_image_i_const_row(&self->plane, y);
 }
-static inline jxl_memory_manager* jxl_channel_memory_manager(const jxl_channel* self) {
-  return jxl_image_i_memory_manager(&self->plane);
+static inline jxl_context* jxl_channel_ctx(const jxl_channel* self) {
+  return jxl_image_i_ctx(&self->plane);
 }
 static inline jxl_status jxl_channel_shrink(jxl_channel* self) {
   if (jxl_image_i_x_size(&self->plane) == self->w && jxl_image_i_y_size(&self->plane) == self->h) {
     return jxl_ok_status();
   }
   JXL_RETURN_IF_ERROR(
-      jxl_image_i_create(jxl_channel_memory_manager(self), self->w, self->h, 0,
+      jxl_image_i_create(jxl_channel_ctx(self), self->w, self->h, 0,
                      &self->plane));
   return jxl_ok_status();
 }
@@ -100,7 +101,7 @@ static inline void jxl_channel_swap(jxl_channel* self, jxl_channel* other) {
 
 // Move-only list of jxl_channels (was MoveArray<jxl_channel>).
 typedef struct jxl_channels {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_channel* ptr;
   size_t len;
   size_t capacity;
@@ -115,7 +116,7 @@ static inline jxl_channel* jxl_channels_at(jxl_channels* self, size_t i) { retur
 static inline const jxl_channel* jxl_channels_at_const(const jxl_channels* self, size_t i) { return &self->ptr[i]; }
 
 static inline void jxl_channels_construct_empty(jxl_channels* self) {
-  self->memory_manager = NULL;
+  self->ctx = NULL;
   self->ptr = NULL;
   self->len = 0;
   self->capacity = 0;
@@ -148,11 +149,11 @@ static inline jxl_status jxl_channels_reserve(jxl_channels* self, size_t new_cap
     return JXL_FAILURE("jxl_channels::reserve: size overflow");
   }
   jxl_channel* neu;
-  if (self->memory_manager == NULL) {
+  if (self->ctx == NULL) {
     return JXL_FAILURE("jxl_channels::reserve: missing memory manager");
   }
   neu = (jxl_channel*)(
-      self->memory_manager->alloc(self->memory_manager->opaque, bytes));
+      jxl_alloc(self->ctx, bytes));
   if (neu == NULL) {
     return JXL_FAILURE("jxl_channels::reserve: allocation failed");
   }
@@ -162,7 +163,7 @@ static inline jxl_status jxl_channels_reserve(jxl_channels* self, size_t new_cap
     jxl_channel_destroy(self->ptr + i);
   }
   if (self->ptr != NULL) {
-    self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    jxl_free(self->ctx, self->ptr);
   }
   self->ptr = neu;
   self->capacity = grown;
@@ -172,8 +173,8 @@ static inline jxl_status jxl_channels_reserve(jxl_channels* self, size_t new_cap
 static inline void jxl_channels_destroy(jxl_channels* self) {
   jxl_channels_clear(self);
   if (self->ptr != NULL) {
-    if (self->memory_manager != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    if (self->ctx != NULL) {
+      jxl_free(self->ctx, self->ptr);
     }
   }
   self->ptr = NULL;
@@ -221,9 +222,9 @@ static inline void jxl_channels_swap(jxl_channels* self, jxl_channels* other) {
   size_t tc = self->capacity;
   self->capacity = other->capacity;
   other->capacity = tc;
-  jxl_memory_manager* tm = self->memory_manager;
-  self->memory_manager = other->memory_manager;
-  other->memory_manager = tm;
+  jxl_context* tm = self->ctx;
+  self->ctx = other->ctx;
+  other->ctx = tm;
 }
 
 
@@ -241,13 +242,13 @@ typedef struct jxl_image {
   bool error;            // true if a fatal error occurred, false otherwise
 
 
-  jxl_memory_manager* memory_manager_;
+  jxl_context* ctx_;
 } jxl_image;
 
-void jxl_image_init(jxl_image* self, jxl_memory_manager* memory_manager);
-void jxl_image_init_dims(jxl_image* self, jxl_memory_manager* memory_manager, size_t iw,
+void jxl_image_init(jxl_image* self, jxl_context* ctx);
+void jxl_image_init_dims(jxl_image* self, jxl_context* ctx, size_t iw,
                    size_t ih, int bitdepth);
-jxl_status jxl_image_create(jxl_memory_manager* memory_manager, size_t iw, size_t ih,
+jxl_status jxl_image_create(jxl_context* ctx, size_t iw, size_t ih,
                    int bitdepth, int nb_chans, jxl_image* out);
 
 static inline void jxl_image_construct_empty(jxl_image* self) {
@@ -257,7 +258,7 @@ static inline void jxl_image_construct_empty(jxl_image* self) {
   self->bitdepth = 8;
   self->nb_meta_channels = 0;
   self->error = true;
-  self->memory_manager_ = NULL;
+  self->ctx_ = NULL;
 }
 static inline void jxl_image_destroy(jxl_image* self) {
   jxl_channels_destroy(&self->channel);
@@ -266,7 +267,7 @@ static inline void jxl_image_destroy(jxl_image* self) {
   self->bitdepth = 8;
   self->nb_meta_channels = 0;
   self->error = true;
-  self->memory_manager_ = NULL;
+  self->ctx_ = NULL;
 }
 static inline bool jxl_image_empty(const jxl_image* self) {
   for (size_t ch_i = 0; ch_i < jxl_channels_size(&self->channel); ++ch_i) {
@@ -275,8 +276,8 @@ static inline bool jxl_image_empty(const jxl_image* self) {
   }
   return true;
 }
-static inline jxl_memory_manager* jxl_image_memory_manager(const jxl_image* self) {
-  return self->memory_manager_;
+static inline jxl_context* jxl_image_ctx(const jxl_image* self) {
+  return self->ctx_;
 }
 static inline void jxl_image_swap(jxl_image* self, jxl_image* other) {
     size_t tw = self->w;
@@ -295,15 +296,15 @@ static inline void jxl_image_swap(jxl_image* self, jxl_image* other) {
     self->error = other->error;
     other->error = te;
     jxl_channels_swap(&self->channel, &other->channel);
-    jxl_memory_manager* tm = self->memory_manager_;
-    self->memory_manager_ = other->memory_manager_;
-    other->memory_manager_ = tm;
+    jxl_context* tm = self->ctx_;
+    self->ctx_ = other->ctx_;
+    other->ctx_ = tm;
   }
 
 
 // Move-only list of modular jxl_images (was MoveArray<jxl_image>).
 typedef struct jxl_images {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_image* ptr;
   size_t len;
   size_t capacity;
@@ -318,7 +319,7 @@ static inline jxl_image* jxl_images_at(jxl_images* self, size_t i) { return &sel
 static inline const jxl_image* jxl_images_at_const(const jxl_images* self, size_t i) { return &self->ptr[i]; }
 
 static inline void jxl_images_construct_empty(jxl_images* self) {
-  self->memory_manager = NULL;
+  self->ctx = NULL;
   self->ptr = NULL;
   self->len = 0;
   self->capacity = 0;
@@ -344,11 +345,11 @@ static inline jxl_status jxl_images_reserve(jxl_images* self, size_t new_capacit
     return JXL_FAILURE("jxl_images::reserve: size overflow");
   }
   jxl_image* neu;
-  if (self->memory_manager == NULL) {
+  if (self->ctx == NULL) {
     return JXL_FAILURE("jxl_images::reserve: missing memory manager");
   }
   neu = (jxl_image*)(
-      self->memory_manager->alloc(self->memory_manager->opaque, bytes));
+      jxl_alloc(self->ctx, bytes));
   if (neu == NULL) {
     return JXL_FAILURE("jxl_images::reserve: allocation failed");
   }
@@ -359,7 +360,7 @@ static inline jxl_status jxl_images_reserve(jxl_images* self, size_t new_capacit
     jxl_image_destroy(self->ptr + i);
   }
   if (self->ptr != NULL) {
-    self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    jxl_free(self->ctx, self->ptr);
   }
   self->ptr = neu;
   self->capacity = grown;
@@ -372,14 +373,14 @@ static inline void jxl_images_destroy(jxl_images* self) {
   }
   self->len = 0;
   if (self->ptr != NULL) {
-    if (self->memory_manager != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    if (self->ctx != NULL) {
+      jxl_free(self->ctx, self->ptr);
     }
   }
   self->ptr = NULL;
   self->capacity = 0;
 }
-static inline jxl_status jxl_images_emplace_back(jxl_images* self, jxl_memory_manager* mm) {
+static inline jxl_status jxl_images_emplace_back(jxl_images* self, jxl_context* mm) {
   if (self->len == self->capacity) {
     size_t need;
     if (!jxl_safe_add(self->capacity, (size_t)(1), &need)) {
@@ -403,9 +404,9 @@ static inline void jxl_images_swap(jxl_images* self, jxl_images* other) {
   size_t tc = self->capacity;
   self->capacity = other->capacity;
   other->capacity = tc;
-  jxl_memory_manager* tm = self->memory_manager;
-  self->memory_manager = other->memory_manager;
-  other->memory_manager = tm;
+  jxl_context* tm = self->ctx;
+  self->ctx = other->ctx;
+  other->ctx = tm;
 }
 
 

@@ -35,7 +35,7 @@ void jxl_filter_tree(const jxl_tree *global_tree,
   *num_props = 0;
   bool has_wp = false;
   *gradient_only = true;
-  jxl_memory_manager* mm = out->memory_manager;
+  jxl_context* mm = out->ctx;
   jxl_flat_tree output;
   jxl_array_construct_empty(&output, mm);
   jxl_array_size nodes;

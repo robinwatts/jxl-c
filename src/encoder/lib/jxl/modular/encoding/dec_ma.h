@@ -10,7 +10,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/common.h"
@@ -68,13 +69,13 @@ typedef jxl_array_property_decision_node jxl_tree;
 
 // Empty jxl_tree: prefer jxl_array_construct_empty(&tree, mm) at the call site.
 static inline void jxl_tree_construct_empty(jxl_tree* tree,
-                                            jxl_memory_manager* mm) {
+                                            jxl_context* mm) {
   jxl_array_construct_empty(tree, mm);
 }
 
 // Move-free list of jxl_trees (was MoveArray<jxl_tree>); avoids nested Array<Array<…>>.
 typedef struct jxl_trees {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_tree* ptr;
   size_t len;
   size_t capacity;
@@ -94,7 +95,7 @@ static inline jxl_tree* jxl_trees_at(jxl_trees* self, size_t i) { return &self->
 static inline const jxl_tree* jxl_trees_at_const(const jxl_trees* self, size_t i) { return &self->ptr[i]; }
 
 static inline void jxl_trees_construct_empty(jxl_trees* self) {
-  self->memory_manager = NULL;
+  self->ctx = NULL;
   self->ptr = NULL;
   self->len = 0;
   self->capacity = 0;
@@ -120,21 +121,21 @@ static inline jxl_status jxl_trees_reserve(jxl_trees* self, size_t new_capacity)
       return JXL_FAILURE("jxl_trees::reserve: size overflow");
     }
     jxl_tree* neu;
-    if (self->memory_manager == NULL) {
+    if (self->ctx == NULL) {
       return JXL_FAILURE("jxl_trees::reserve: missing memory manager");
     }
     neu = (jxl_tree*)(
-        self->memory_manager->alloc(self->memory_manager->opaque, bytes));
+        jxl_alloc(self->ctx, bytes));
     if (neu == NULL) {
       return JXL_FAILURE("jxl_trees::reserve: allocation failed");
     }
     for (size_t i = 0; i < self->len; ++i) {
-      jxl_array_construct_empty(neu + i, self->memory_manager);
+      jxl_array_construct_empty(neu + i, self->ctx);
       jxl_array_swap(neu + i, &self->ptr[i]);
       jxl_array_destroy(self->ptr + i);
     }
     if (self->ptr != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+      jxl_free(self->ctx, self->ptr);
     }
     self->ptr = neu;
     self->capacity = grown;
@@ -151,16 +152,16 @@ static inline jxl_status jxl_trees_resize(jxl_trees* self, size_t n) {
     }
     JXL_RETURN_IF_ERROR(jxl_trees_reserve(self, n));
     while (self->len < n) {
-      jxl_array_construct_empty(self->ptr + self->len, self->memory_manager);
+      jxl_array_construct_empty(self->ptr + self->len, self->ctx);
       ++self->len;
     }
     return jxl_ok_status();
   }
 
 static inline void jxl_trees_create(jxl_trees* self, size_t n,
-                                    jxl_memory_manager* mm) {
+                                    jxl_context* mm) {
   jxl_trees_construct_empty(self);
-  self->memory_manager = mm;
+  self->ctx = mm;
   if (!jxl_status_ok(jxl_trees_resize(self, n))) JXL_CRASH();
 }
 
@@ -170,8 +171,8 @@ static inline void jxl_trees_destroy(jxl_trees* self) {
   }
   self->len = 0;
   if (self->ptr != NULL) {
-    if (self->memory_manager != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    if (self->ctx != NULL) {
+      jxl_free(self->ctx, self->ptr);
     }
   }
   self->ptr = NULL;
@@ -179,9 +180,9 @@ static inline void jxl_trees_destroy(jxl_trees* self) {
 }
 
 static inline void jxl_trees_swap(jxl_trees* self, jxl_trees* other) {
-  jxl_memory_manager* tmp_mm = self->memory_manager;
-  self->memory_manager = other->memory_manager;
-  other->memory_manager = tmp_mm;
+  jxl_context* tmp_mm = self->ctx;
+  self->ctx = other->ctx;
+  other->ctx = tmp_mm;
   jxl_tree* tmp_ptr = self->ptr;
   self->ptr = other->ptr;
   other->ptr = tmp_ptr;

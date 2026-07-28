@@ -74,7 +74,7 @@ typedef struct jxl_symbol_cost_estimator {
 static void jxl_symbol_cost_estimator_init(jxl_symbol_cost_estimator* self, size_t num_contexts,
                              const jxl_token_streams* tokens, const jxl_lz77_params* lz77,
                              bool with_add_symbol_cost) {
-  jxl_memory_manager* mm = tokens->memory_manager;
+  jxl_context* mm = tokens->ctx;
   jxl_array_construct_empty(&self->bits_, mm);
   jxl_array_construct_empty(&self->add_symbol_cost_, mm);
   self->max_alphabet_size_ = 0;
@@ -174,14 +174,14 @@ static float jxl_symbol_cost_estimator_add_symbol_cost(const jxl_symbol_cost_est
 
 static void ApplyLZ77_RLE(size_t num_contexts, const jxl_token_streams* tokens,
                    const jxl_lz77_params* lz77, jxl_token_streams* out) {
-  jxl_token_streams_create(out, jxl_token_streams_size(tokens), tokens->memory_manager);
+  jxl_token_streams_create(out, jxl_token_streams_size(tokens), tokens->ctx);
   // TODO(veluca): tune heuristics here.
   jxl_symbol_cost_estimator sce;
   jxl_symbol_cost_estimator_init(&sce, num_contexts, tokens, lz77, false);
   float bit_decrease = 0;
   size_t total_symbols = 0;
   jxl_array_float sym_cost;
-  jxl_array_construct_empty(&sym_cost, tokens->memory_manager);
+  jxl_array_construct_empty(&sym_cost, tokens->ctx);
   jxl_hybrid_uint_config uint_config = jxl_hybrid_uint_config_default();
   for (size_t stream = 0; stream < jxl_token_streams_size(tokens); stream++) {
     const jxl_token_stream* in = jxl_token_streams_at_const(tokens, stream);
@@ -333,7 +333,7 @@ static void jxl_hash_chain_destroy(jxl_hash_chain* self) {
 
 static void jxl_hash_chain_init(jxl_hash_chain* self, const jxl_token* data, size_t size,
                    size_t window_size, size_t min_length, size_t max_length,
-                   size_t distance_multiplier, jxl_memory_manager* mm) {
+                   size_t distance_multiplier, jxl_context* mm) {
   jxl_array_construct_empty(&self->data_, mm);
   jxl_array_construct_empty(&self->head, mm);
   jxl_array_construct_empty(&self->chain, mm);
@@ -605,7 +605,7 @@ static void ApplyLZ77_LZ77(
     const jxl_histogram_params* params, size_t num_contexts,
     const jxl_token_streams* tokens, const jxl_lz77_params* lz77,
     const jxl_array_size* image_widths, jxl_token_streams* out) {
-  jxl_token_streams_create(out, jxl_token_streams_size(tokens), tokens->memory_manager);
+  jxl_token_streams_create(out, jxl_token_streams_size(tokens), tokens->ctx);
   // TODO(veluca): tune heuristics here.
   jxl_symbol_cost_estimator sce;
   jxl_symbol_cost_estimator_init(&sce, num_contexts, tokens, lz77, true);
@@ -613,7 +613,7 @@ static void ApplyLZ77_LZ77(
   size_t total_symbols = 0;
   jxl_hybrid_uint_config uint_config = jxl_hybrid_uint_config_default();
   jxl_array_float sym_cost;
-  jxl_array_construct_empty(&sym_cost, tokens->memory_manager);
+  jxl_array_construct_empty(&sym_cost, tokens->ctx);
   for (size_t stream = 0; stream < jxl_token_streams_size(tokens); stream++) {
     size_t distance_multiplier =
         jxl_array_len(image_widths) > stream ? *jxl_array_at_const(image_widths, stream) : 0;
@@ -642,7 +642,7 @@ static void ApplyLZ77_LZ77(
 
     jxl_hash_chain chain;
     jxl_hash_chain_init(&chain, jxl_array_data_const(in), jxl_array_len(in), window_size, min_length,
-                  max_length, distance_multiplier, tokens->memory_manager);
+                  max_length, distance_multiplier, tokens->ctx);
     size_t len;
     size_t dist_symbol;
 
@@ -738,12 +738,12 @@ static void ApplyLZ77_Optimal(
   jxl_symbol_cost_estimator sce;
   jxl_symbol_cost_estimator_init(&sce, num_contexts + 1, &tokens_for_cost_estimate, lz77,
                           false);
-  jxl_token_streams_create(out, jxl_token_streams_size(tokens), tokens->memory_manager);
+  jxl_token_streams_create(out, jxl_token_streams_size(tokens), tokens->ctx);
   jxl_hybrid_uint_config uint_config = jxl_hybrid_uint_config_default();
   jxl_array_float sym_cost;
-  jxl_array_construct_empty(&sym_cost, tokens->memory_manager);
+  jxl_array_construct_empty(&sym_cost, tokens->ctx);
   jxl_array_u32 dist_symbols;
-  jxl_array_construct_empty(&dist_symbols, tokens->memory_manager);
+  jxl_array_construct_empty(&dist_symbols, tokens->ctx);
   for (size_t stream = 0; stream < jxl_token_streams_size(tokens); stream++) {
     size_t distance_multiplier =
         jxl_array_len(image_widths) > stream ? *jxl_array_at_const(image_widths, stream) : 0;
@@ -771,11 +771,11 @@ static void ApplyLZ77_Optimal(
 
     jxl_hash_chain chain;
     jxl_hash_chain_init(&chain, jxl_array_data_const(in), jxl_array_len(in), window_size, min_length,
-                  max_length, distance_multiplier, tokens->memory_manager);
+                  max_length, distance_multiplier, tokens->ctx);
 
     // Total cost to encode the first N symbols.
     jxl_array_lz77_match_info prefix_costs;
-    jxl_array_construct_empty(&prefix_costs, tokens->memory_manager);
+    jxl_array_construct_empty(&prefix_costs, tokens->ctx);
     jxl_lz77_match_info match_init;
     match_init.len = 0;
     match_init.dist_symbol = 0;

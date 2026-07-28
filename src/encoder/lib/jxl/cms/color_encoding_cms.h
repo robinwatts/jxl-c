@@ -342,7 +342,7 @@ typedef struct jxl_cms_color_encoding {
 } jxl_cms_color_encoding;
 
 static inline void jxl_cms_color_encoding_construct_empty(
-    jxl_cms_color_encoding* self, jxl_memory_manager* mm) {
+    jxl_cms_color_encoding* self, jxl_context* mm) {
   self->white_point = kWhitePointD65;
   self->primaries = kPrimariesSRGB;
   self->rendering_intent = kRelative;

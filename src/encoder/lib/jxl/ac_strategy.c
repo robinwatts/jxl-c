@@ -5,7 +5,8 @@
 
 #include "lib/jxl/ac_strategy.h"
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include "lib/jxl/base/bits.h"
 #include "lib/jxl/base/common.h"
@@ -79,12 +80,12 @@ void jxl_ac_strategy_compute_natural_coeff_order_lut(jxl_ac_strategy self,
   jxl_coeff_order_and_lut(/*is_lut=*/true, self, lut);
 }
 
-jxl_status jxl_ac_strategy_image_create(jxl_memory_manager* memory_manager, size_t xsize,
+jxl_status jxl_ac_strategy_image_create(jxl_context* ctx, size_t xsize,
                                size_t ysize, jxl_ac_strategy_image* out) {
   jxl_ac_strategy_image img;
   jxl_ac_strategy_image_construct_empty(&img);
   jxl_status status =
-      jxl_image_b_create(memory_manager, xsize, ysize, 0, &img.layers_);
+      jxl_image_b_create(ctx, xsize, ysize, 0, &img.layers_);
   if (!jxl_status_ok(status)) {
     jxl_ac_strategy_image_destroy(&img);
     return status;

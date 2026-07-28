@@ -36,8 +36,6 @@ typedef struct jxl_context jxl_context;
  * heap use in jxl-c routes through this vtable, including LCMS2 transform
  * setup and Brotli container decompression when those subsystems are used.
  * Pair every successful allocation with a free through the same context.
- * Encoder code may still pass an internal jxl_memory_manager view of this
- * allocator; new code should prefer jxl_alloc/jxl_free on the context.
  */
 typedef struct {
     jxl_allocator_t alloc;

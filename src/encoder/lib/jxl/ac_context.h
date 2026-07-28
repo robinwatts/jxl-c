@@ -94,7 +94,7 @@ typedef struct jxl_block_ctx_map {
 } jxl_block_ctx_map;
 
 static inline void jxl_block_ctx_map_init(jxl_block_ctx_map* self,
-                                          jxl_memory_manager* mm) {
+                                          jxl_context* mm) {
   for (size_t i = 0; i < 3; ++i) {
     jxl_array_construct_empty(&self->dc_thresholds[i], mm);
   }

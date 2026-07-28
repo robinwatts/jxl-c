@@ -5,51 +5,18 @@
 
 #include "lib/jxl/memory_manager_internal.h"
 
-#include "lib/jxl/memory_manager.h"
-
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
-#include <string.h>     // memcpy
+#include <string.h>  // memcpy
 
 #include "lib/jxl/allocator.h"
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/base/status.h"
 #include "lib/jxl/simd_util.h"
 
-
-static void* jxl_memory_manager_default_alloc(void* opaque, size_t size) {
-  return malloc(size);
-}
-
-static void jxl_memory_manager_default_free(void* opaque, void* address) { free(address); }
-
-void* jxl_memory_manager_alloc(const jxl_memory_manager* memory_manager, size_t size) {
-  return memory_manager->alloc(memory_manager->opaque, size);
-}
-
-void jxl_memory_manager_free(const jxl_memory_manager* memory_manager, void* address) {
-  memory_manager->free(memory_manager->opaque, address);
-}
-
-jxl_status jxl_memory_manager_init(jxl_memory_manager* self,
-                         const jxl_memory_manager* memory_manager) {
-  if (memory_manager) {
-    *self = *memory_manager;
-  } else {
-    memset(self, 0, sizeof(*self));
-  }
-  bool is_default_alloc = (self->alloc == NULL);
-  bool is_default_free = (self->free == NULL);
-  if (is_default_alloc != is_default_free) {
-    return jxl_error_status();
-  }
-  if (is_default_alloc) self->alloc = jxl_memory_manager_default_alloc;
-  if (is_default_free) self->free = jxl_memory_manager_default_free;
-
-  return jxl_ok_status();
-}
-
-jxl_status jxl_bytes_per_row(const size_t xsize, const size_t sizeof_t, size_t* out) {
+jxl_status jxl_bytes_per_row(const size_t xsize, const size_t sizeof_t,
+                             size_t* out) {
   // Special case: we don't allow any ops -> don't need extra padding/
   if (xsize == 0) {
     *out = 0;
@@ -97,39 +64,37 @@ jxl_status jxl_bytes_per_row(const size_t xsize, const size_t sizeof_t, size_t* 
   return jxl_ok_status();
 }
 
-jxl_status jxl_aligned_memory_create(jxl_memory_manager* memory_manager, size_t size,
-                           size_t pre_padding, jxl_aligned_memory* out) {
+jxl_status jxl_aligned_memory_create(jxl_context* ctx, size_t size,
+                                     size_t pre_padding,
+                                     jxl_aligned_memory* out) {
   JXL_ENSURE(pre_padding <= kMemoryAlias);
   size_t allocation_size;
   if (!jxl_safe_add(size, pre_padding, &allocation_size) ||
       !jxl_safe_add(allocation_size, kMemoryAlias, &allocation_size)) {
     return JXL_FAILURE("Requested allocation is too large");
   }
-  JXL_ENSURE(memory_manager);
-  void* allocated =
-      memory_manager->alloc(memory_manager->opaque, allocation_size);
+  JXL_ENSURE(ctx);
+  void* allocated = jxl_alloc(ctx, allocation_size);
   if (allocated == NULL) {
     return JXL_FAILURE("Allocation failed");
   }
   jxl_aligned_memory mem;
   jxl_aligned_memory_construct_empty(&mem);
-  jxl_aligned_memory_init(&mem, memory_manager, allocated, pre_padding);
+  jxl_aligned_memory_init(&mem, ctx, allocated, pre_padding);
   jxl_aligned_memory_swap(out, &mem);
   jxl_aligned_memory_destroy(&mem);
   return jxl_ok_status();
 }
 
-void jxl_aligned_memory_init(jxl_aligned_memory* self, jxl_memory_manager* memory_manager,
-                       void* allocation, size_t pre_padding) {
+void jxl_aligned_memory_init(jxl_aligned_memory* self, jxl_context* ctx,
+                             void* allocation, size_t pre_padding) {
   self->allocation_ = allocation;
-  self->memory_manager_ = memory_manager;
+  self->ctx_ = ctx;
   // Congruence to `offset` (mod kAlias) reduces cache conflicts and load/store
   // stalls, especially with large allocations that would otherwise have similar
   // alignments.
   size_t group;
-  if (memory_manager != NULL && memory_manager->opaque != NULL) {
-    /* Bridged managers set opaque to jxl_context*; alignment group lives on its allocator. */
-    jxl_context* ctx = (jxl_context*)memory_manager->opaque;
+  if (ctx != NULL) {
     jxl_allocator_state* state = jxl_context_alloc_state(ctx);
     group = (size_t)(state->next_align_group++);
   } else {
@@ -144,20 +109,17 @@ void jxl_aligned_memory_init(jxl_aligned_memory* self, jxl_memory_manager* memor
 
   // Aligned address, but might land before allocation (50%/50%) or not have
   // enough pre-padding.
-  uintptr_t aligned_address =
-      (address & ~(kMemoryAlias - 1)) + offset;
-  if (aligned_address < address)
-    aligned_address += kMemoryAlias;
+  uintptr_t aligned_address = (address & ~(kMemoryAlias - 1)) + offset;
+  if (aligned_address < address) aligned_address += kMemoryAlias;
 
   self->address_ = (void*)(aligned_address);  // NOLINT
 }
 
 void jxl_aligned_memory_destroy(jxl_aligned_memory* self) {
   if (self == NULL) return;
-  if (self->memory_manager_ == NULL) return;
-  self->memory_manager_->free(self->memory_manager_->opaque, self->allocation_);
-  self->memory_manager_ = NULL;
+  if (self->ctx_ == NULL) return;
+  jxl_free(self->ctx_, self->allocation_);
+  self->ctx_ = NULL;
   self->allocation_ = NULL;
   self->address_ = NULL;
 }
-

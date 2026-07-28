@@ -114,7 +114,7 @@ jxl_array_clear(histogram_symbols);
       histogram_symbols, jxl_array_len(in), (uint32_t)(max_histograms)));
 
   jxl_array_float dists;
-  jxl_memory_manager* mm = in->memory_manager;
+  jxl_context* mm = in->ctx;
   jxl_array_construct_empty(&dists, mm);
   jxl_status status = jxl_array_float_resize_fill(&dists, jxl_array_len(in), FLT_MAX);
   if (!jxl_status_ok(status)) {
@@ -213,12 +213,12 @@ jxl_array_clear(histogram_symbols);
 static void jxl_histogram_reindex(jxl_array_histogram* out, jxl_hist_count_streams* out_counts,
                       size_t prev_histograms, jxl_array_u32* symbols) {
   jxl_array_histogram tmp;
-  jxl_memory_manager* mm = out->memory_manager;
+  jxl_context* mm = out->ctx;
   jxl_array_construct_empty(&tmp, mm);
   if (!jxl_status_ok(jxl_array_copy_from(&tmp, out))) JXL_CRASH();
   jxl_hist_count_streams tmp_counts;
   jxl_hist_count_streams_construct_empty(&tmp_counts);
-  tmp_counts.memory_manager = out_counts->memory_manager;
+  tmp_counts.ctx = out_counts->ctx;
   jxl_hist_count_streams_swap(&tmp_counts, out_counts);
   if (!jxl_status_ok(jxl_hist_count_streams_resize(out_counts, jxl_hist_count_streams_size(&tmp_counts)))) JXL_CRASH();
   jxl_array_i32 new_index;
@@ -346,7 +346,7 @@ jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
           jxl_array_at(out, i), jxl_hist_count_streams_at(out_counts, i), &jxl_array_at(out, i)->entropy));
     }
     uint32_t next_version = 2;
-    jxl_memory_manager* mm = out->memory_manager;
+    jxl_context* mm = out->ctx;
     jxl_array_u32 version;
     jxl_array_construct_empty(&version, mm);
     jxl_array_u32 renumbering;

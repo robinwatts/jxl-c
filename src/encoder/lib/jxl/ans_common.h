@@ -34,7 +34,7 @@ jxl_get_population_count_precision(uint32_t logcount, uint32_t shift) {
 // of the histogram.
 static JXL_MAYBE_UNUSED JXL_INLINE jxl_status
 jxl_create_flat_histogram(jxl_array_i32* result, int length, int total_count,
-                          jxl_memory_manager* mm) {
+                          jxl_context* mm) {
   JXL_DASSERT(length > 0);
   JXL_DASSERT(length <= total_count);
   JXL_RETURN_IF_ERROR(jxl_array_init(result, mm));
@@ -141,7 +141,7 @@ static JXL_INLINE jxl_alias_table_symbol jxl_alias_table_lookup(
 }
 
 // Computes an alias table for a given distribution.
-jxl_status jxl_init_alias_table(jxl_memory_manager* mm, const int32_t* counts,
+jxl_status jxl_init_alias_table(jxl_context* mm, const int32_t* counts,
                       size_t counts_size, uint32_t log_range,
                       size_t log_alpha_size,
                       jxl_alias_table_entry* JXL_RESTRICT a);

@@ -160,7 +160,7 @@ static jxl_status jxl_ciexyz_from_white_ci_exy(double wx, double wy, jxl_color* 
 static void jxl_icc_compute_md5(const jxl_array_u8* data, uint8_t sum[16])
     JXL_NO_SANITIZE("unsigned-integer-overflow") {
   jxl_array_u8 data64;
-  jxl_array_construct_empty(&data64, data->memory_manager);
+  jxl_array_construct_empty(&data64, data->ctx);
   if (!jxl_status_ok(jxl_array_copy_from(&data64, data))) JXL_CRASH();
   if (!jxl_status_ok(jxl_array_u8_push_back(&data64, (uint8_t)(128)))) {
     JXL_CRASH();
@@ -752,7 +752,7 @@ jxl_array_clear(out);
 static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
                                      jxl_array_u8* icc) {
   jxl_status status = jxl_ok_status();
-  jxl_memory_manager* mm = icc->memory_manager;
+  jxl_context* mm = icc->ctx;
   jxl_array_u8 header;
   jxl_array_u8 tagtable;
   jxl_array_u8 tags;

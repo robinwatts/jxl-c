@@ -7,10 +7,10 @@
 #include <stddef.h>
 
 void jxl_dequant_matrices_init(jxl_dequant_matrices* self,
-                               jxl_memory_manager* memory_manager) {
-  jxl_array_construct_empty(&self->encodings_, memory_manager);
+                               jxl_context* ctx) {
+  jxl_array_construct_empty(&self->encodings_, ctx);
   for (size_t i = 0; i < kNumQuantTables; ++i) {
-    jxl_array_construct_empty(&self->raw_qtables_[i], memory_manager);
+    jxl_array_construct_empty(&self->raw_qtables_[i], ctx);
   }
   self->dc_quant_[0] = kDCQuant[0];
   self->dc_quant_[1] = kDCQuant[1];

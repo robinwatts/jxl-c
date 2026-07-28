@@ -10,10 +10,6 @@
 #include "vardct/dequant.h"
 #include "vardct/hf_pass.h"
 
-#if defined(JXL_C_ENABLE_JPEG_ENCODER)
-#include "encoder/lib/jxl/memory_manager.h"
-#endif
-
 typedef struct jxl_debug_flags {
     int debug_hf_trace;
     int debug_hf_coeff;
@@ -94,9 +90,6 @@ typedef struct jxl_context {
     jxl_context_dequant dequant;
     jxl_context_hf_orders hf_orders;
 #if defined(JXL_C_ENABLE_JPEG_ENCODER)
-    /* Bridge to legacy encoder APIs that still take jxl_memory_manager*.
-     * opaque points at the jxl_context; prefer jxl_alloc/jxl_free for new code. */
-    jxl_memory_manager mm;
     /* Opaque JPEG-encoder session (LCMS, sRGB encodings). */
     struct jxl_jpeg_encoder_context *jpeg_enc;
 #endif

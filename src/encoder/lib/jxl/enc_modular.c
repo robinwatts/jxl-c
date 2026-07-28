@@ -5,7 +5,8 @@
 
 #include "lib/jxl/enc_modular.h"
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <math.h>
 #include <stddef.h>
@@ -112,12 +113,12 @@ static jxl_status jxl_write_tree_flag_body(void* opaque) {
   return jxl_ok_status();
 }
 
-jxl_status jxl_modular_frame_encoder_create(jxl_memory_manager* memory_manager,
+jxl_status jxl_modular_frame_encoder_create(jxl_context* ctx,
                                    const jxl_frame_header* frame_header,
                                    const jxl_compress_params* cparams_orig,
                                    jxl_modular_frame_encoder* out){
   jxl_modular_frame_encoder self;
-  jxl_modular_frame_encoder_init_mm(&self, memory_manager);
+  jxl_modular_frame_encoder_init_mm(&self, ctx);
   jxl_status status =
       jxl_modular_frame_encoder_init(&self, frame_header, cparams_orig);
   if (!jxl_status_ok(status)) {
@@ -138,7 +139,7 @@ jxl_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self, const
       jxl_modular_stream_id_num(&self->frame_dim_, frame_header->passes.num_passes);
 
   for (size_t i = 0; i < num_streams; ++i) {
-    JXL_RETURN_IF_ERROR(jxl_images_emplace_back(&self->stream_images_, self->memory_manager_));
+    JXL_RETURN_IF_ERROR(jxl_images_emplace_back(&self->stream_images_, self->ctx_));
   }
 
   self->cparams_.options.splitting_heuristics_node_threshold =
@@ -148,7 +149,7 @@ jxl_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self, const
     static const uint32_t kPropOrder[] = {0, 1, 15, 9, 10, 11, 12, 13, 14,
                                          2, 3, 4,  5, 6,  7,  8};
     jxl_array_u32 prop_order;
-    jxl_array_construct_empty(&prop_order, self->memory_manager_);
+    jxl_array_construct_empty(&prop_order, self->ctx_);
     if (!jxl_status_ok(jxl_array_assign(&prop_order, kPropOrder,
                      sizeof(kPropOrder) / sizeof(kPropOrder[0])))) {
       jxl_array_destroy(&prop_order);
@@ -230,7 +231,7 @@ jxl_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self, const
     jxl_array_at(&self->stream_options_, 0)->tree_kind = kGradientFixedDC;
   }
   jxl_array_u8 empty_extra_dc_precision;
-  jxl_array_construct_empty(&empty_extra_dc_precision, self->memory_manager_);
+  jxl_array_construct_empty(&empty_extra_dc_precision, self->ctx_);
   jxl_array_at(&self->stream_options_, 0)->histogram_params =
       jxl_modular_histogram_params(&self->cparams_, &empty_extra_dc_precision);
   jxl_array_destroy(&empty_extra_dc_precision);
@@ -240,7 +241,7 @@ jxl_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self, const
 jxl_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* self) {
   // Avoid creating a tree with leaves that don't correspond to any pixels.
   jxl_array_size useful_splits;
-  jxl_array_construct_empty(&useful_splits, self->memory_manager_);
+  jxl_array_construct_empty(&useful_splits, self->ctx_);
   jxl_status status =
       jxl_array_reserve(&useful_splits, jxl_array_len(&self->tree_splits_));
   if (!jxl_status_ok(status)) {
@@ -274,7 +275,7 @@ jxl_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* sel
 
   jxl_trees trees;
   jxl_trees_create(&trees, jxl_array_len(&useful_splits) - 1,
-                   self->memory_manager_);
+                   self->ctx_);
   for (uint32_t chunk = 0; chunk < jxl_array_len(&useful_splits) - 1; ++chunk) {
     uint32_t start = *jxl_array_at(&useful_splits, chunk);
     uint32_t stop = *jxl_array_at(&useful_splits, chunk + 1);
@@ -286,7 +287,7 @@ jxl_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* sel
 
     if (jxl_array_at(&self->stream_options_, start)->tree_kind == kLearn) {
       jxl_array_modular_multiplier_info empty_multiplier_info;
-      jxl_array_construct_empty(&empty_multiplier_info, self->memory_manager_);
+      jxl_array_construct_empty(&empty_multiplier_info, self->ctx_);
       status = jxl_learn_tree(
           jxl_images_data(&self->stream_images_), jxl_array_data(&self->stream_options_),
           start, stop, &empty_multiplier_info, jxl_trees_at(&trees, chunk));
@@ -330,7 +331,7 @@ jxl_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* sel
   }
   jxl_array_clear(jxl_token_streams_at(&self->tree_tokens_, 0));
   jxl_tree decoded_tree;
-  jxl_array_construct_empty(&decoded_tree, self->memory_manager_);
+  jxl_array_construct_empty(&decoded_tree, self->ctx_);
   status = jxl_tokenize_tree(&self->tree_,
                         jxl_token_streams_data(&self->tree_tokens_), &decoded_tree);
   if (!jxl_status_ok(status)) {
@@ -369,7 +370,7 @@ jxl_array_clear(jxl_token_streams_at(&self->tokens_, stream_id));
 }
 
 jxl_status jxl_modular_frame_encoder_encode_global_info(jxl_modular_frame_encoder* self, jxl_bit_writer* writer) {
-  jxl_memory_manager* memory_manager = jxl_bit_writer_memory_manager(writer);
+  jxl_context* ctx = jxl_bit_writer_ctx(writer);
   bool skip_rest = false;
   jxl_tree_flag_ctx tree_ctx = {writer, &skip_rest,
                           jxl_token_streams_empty(&self->tree_tokens_) || jxl_array_empty(jxl_token_streams_at(&self->tree_tokens_, 0))};
@@ -382,12 +383,12 @@ jxl_status jxl_modular_frame_encoder_encode_global_info(jxl_modular_frame_encode
       jxl_modular_histogram_params(&self->cparams_, &self->extra_dc_precision);
   {
     jxl_entropy_encoding_data tree_code;
-    jxl_entropy_encoding_data_init(&tree_code, memory_manager);
+    jxl_entropy_encoding_data_init(&tree_code, ctx);
     jxl_array_size empty_widths;
-    jxl_array_construct_empty(&empty_widths, memory_manager);
+    jxl_array_construct_empty(&empty_widths, ctx);
     size_t cost;
     jxl_status tree_status = jxl_build_and_encode_histograms(
-        memory_manager, &params, kNumTreeContexts, &self->tree_tokens_, &tree_code,
+        ctx, &params, kNumTreeContexts, &self->tree_tokens_, &tree_code,
         writer, kLayerModularTree, &empty_widths, &cost);
     if (!jxl_status_ok(tree_status)) {
       jxl_array_destroy(&empty_widths);
@@ -405,7 +406,7 @@ jxl_status jxl_modular_frame_encoder_encode_global_info(jxl_modular_frame_encode
   // Write histograms.
   size_t cost;
   JXL_RETURN_IF_ERROR(jxl_build_and_encode_histograms(
-      memory_manager, &params, (jxl_array_len(&self->tree_) + 1) / 2, &self->tokens_, &self->code_, writer,
+      ctx, &params, (jxl_array_len(&self->tree_) + 1) / 2, &self->tokens_, &self->code_, writer,
       kLayerModularGlobal, &self->image_widths_, &cost));
   (void)cost;
   return jxl_ok_status();
@@ -430,7 +431,7 @@ jxl_status jxl_modular_frame_encoder_add_var_dctdc(jxl_modular_frame_encoder* se
                                         const jxl_image3_f* dc, const jxl_rect* r,
                                         size_t group_index,
                                         jxl_passes_encoder_state* enc_state){
-  jxl_memory_manager* memory_manager = jxl_image3_f_memory_manager(dc);
+  jxl_context* ctx = jxl_image3_f_ctx(dc);
   *jxl_array_at(&self->extra_dc_precision, group_index) = 0;
 
   size_t stream_id = jxl_modular_stream_id_id(jxl_modular_stream_id_var_dctdc(group_index), &self->frame_dim_);
@@ -451,7 +452,7 @@ jxl_status jxl_modular_frame_encoder_add_var_dctdc(jxl_modular_frame_encoder* se
   jxl_array_at(&self->stream_options_, stream_id)->histogram_params =
       jxl_array_at(&self->stream_options_, 0)->histogram_params;
 
-  JXL_RETURN_IF_ERROR(jxl_image_create(memory_manager, jxl_rect_x_size(r), jxl_rect_y_size(r), 8, 3,
+  JXL_RETURN_IF_ERROR(jxl_image_create(ctx, jxl_rect_x_size(r), jxl_rect_y_size(r), 8, 3,
                                     jxl_images_at(&self->stream_images_, stream_id)));
   const jxl_color_correlation* color_correlation = jxl_color_correlation_map_base(&enc_state->shared.cmap);
   if (jxl_y_cb_cr_chroma_subsampling_is444(&frame_header->chroma_subsampling)) {
@@ -513,7 +514,7 @@ jxl_status jxl_modular_frame_encoder_add_var_dctdc(jxl_modular_frame_encoder* se
 
 jxl_status jxl_modular_frame_encoder_add_ac_metadata(jxl_modular_frame_encoder* self, const jxl_rect* r, size_t group_index,
                                           jxl_passes_encoder_state* enc_state){
-  jxl_memory_manager* memory_manager = jxl_passes_encoder_state_memory_manager(enc_state);
+  jxl_context* ctx = jxl_passes_encoder_state_ctx(enc_state);
   size_t stream_id = jxl_modular_stream_id_id(jxl_modular_stream_id_ac_metadata(group_index), &self->frame_dim_);
   jxl_array_at(&self->stream_options_, stream_id)->max_chan_size = 0xFFFFFF;
   if (jxl_array_at(&self->stream_options_, stream_id)->predictor != kPredictorWeighted) {
@@ -530,15 +531,15 @@ jxl_status jxl_modular_frame_encoder_add_ac_metadata(jxl_modular_frame_encoder* 
   // YToX, YToB, ACS + QF, EPF
   jxl_image* image = jxl_images_at(&self->stream_images_, stream_id);
   JXL_RETURN_IF_ERROR(
-      jxl_image_create(memory_manager, jxl_rect_x_size(r), jxl_rect_y_size(r), 8, 4, image));
+      jxl_image_create(ctx, jxl_rect_x_size(r), jxl_rect_y_size(r), 8, 4, image));
   JXL_STATIC_ASSERT(kColorTileDimInBlocks == 8, "jxl_color tile size changed");
   jxl_rect cr = jxl_rect_make(jxl_rect_x0(r) >> 3, jxl_rect_y0(r) >> 3, (jxl_rect_x_size(r) + 7) >> 3,
                      (jxl_rect_y_size(r) + 7) >> 3);
-  JXL_RETURN_IF_ERROR(jxl_channel_create(memory_manager, jxl_rect_x_size(&cr), jxl_rect_y_size(&cr), 3,
+  JXL_RETURN_IF_ERROR(jxl_channel_create(ctx, jxl_rect_x_size(&cr), jxl_rect_y_size(&cr), 3,
                                       3, jxl_channels_at(&image->channel, 0)));
-  JXL_RETURN_IF_ERROR(jxl_channel_create(memory_manager, jxl_rect_x_size(&cr), jxl_rect_y_size(&cr), 3,
+  JXL_RETURN_IF_ERROR(jxl_channel_create(ctx, jxl_rect_x_size(&cr), jxl_rect_y_size(&cr), 3,
                                       3, jxl_channels_at(&image->channel, 1)));
-  JXL_RETURN_IF_ERROR(jxl_channel_create(memory_manager, jxl_rect_x_size(r) * jxl_rect_y_size(r), 2,
+  JXL_RETURN_IF_ERROR(jxl_channel_create(ctx, jxl_rect_x_size(r) * jxl_rect_y_size(r), 2,
                                       0, 0, jxl_channels_at(&image->channel, 2)));
   {
     jxl_rect to0 = jxl_rect_from_size(jxl_image_i_x_size(&jxl_channels_at(&image->channel, 0)->plane),
@@ -578,13 +579,13 @@ jxl_status jxl_modular_frame_encoder_add_ac_metadata(jxl_modular_frame_encoder* 
 }
 
 jxl_status jxl_modular_frame_encoder_encode_quant_table(
-    jxl_memory_manager* memory_manager, size_t size_x, size_t size_y,
+    jxl_context* ctx, size_t size_x, size_t size_y,
     jxl_bit_writer* writer, const jxl_quant_encoding* encoding, size_t idx,
     jxl_modular_frame_encoder* modular_frame_encoder){
   JXL_ENSURE(encoding->mode == kQuantModeRAW);
   JXL_ENSURE(idx < kNumQuantTables);
   JXL_ENSURE(modular_frame_encoder != NULL);
-  (void)memory_manager;
+  (void)ctx;
   (void)size_x;
   (void)size_y;
   JXL_RETURN_IF_ERROR(jxl_f16_coder_write(encoding->qtable_den, writer));
@@ -603,9 +604,9 @@ jxl_status jxl_modular_frame_encoder_add_quant_table(jxl_modular_frame_encoder* 
   JXL_ENSURE(size_x * size_y * 3 == jxl_array_len(qtable));
   const int* qtable_data = jxl_array_data_const(qtable);
   jxl_image* image = jxl_images_at(&self->stream_images_, stream_id);
-  jxl_memory_manager* memory_manager = jxl_image_memory_manager(image);
+  jxl_context* ctx = jxl_image_ctx(image);
   JXL_RETURN_IF_ERROR(
-      jxl_image_create(memory_manager, size_x, size_y, 8, 3, image));
+      jxl_image_create(ctx, size_x, size_y, 8, 3, image));
   for (size_t c = 0; c < 3; c++) {
     for (size_t y = 0; y < size_y; y++) {
       int32_t* JXL_RESTRICT row = jxl_channel_row(jxl_channels_at(&image->channel, c), y);

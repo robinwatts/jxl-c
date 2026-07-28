@@ -8,7 +8,8 @@
 
 // SIMD/multicore-friendly planar image representation with row accessors.
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -30,7 +31,7 @@ typedef struct jxl_plane_base {
   size_t sizeof_t_;
 } jxl_plane_base;
 
-jxl_status jxl_plane_base_allocate(jxl_plane_base* self, jxl_memory_manager* memory_manager,
+jxl_status jxl_plane_base_allocate(jxl_plane_base* self, jxl_context* ctx,
                          size_t pre_padding);
 void jxl_plane_base_init(jxl_plane_base* self, uint32_t xsize, uint32_t ysize,
                    size_t sizeof_t);
@@ -93,8 +94,8 @@ static inline void jxl_plane_base_swap(jxl_plane_base* self, jxl_plane_base* oth
   jxl_aligned_memory_swap(&self->bytes_, &other->bytes_);
 }
 
-static inline jxl_memory_manager* jxl_plane_base_memory_manager(const jxl_plane_base* self) {
-  return jxl_aligned_memory_memory_manager(&self->bytes_);
+static inline jxl_context* jxl_plane_base_ctx(const jxl_plane_base* self) {
+  return jxl_aligned_memory_ctx(&self->bytes_);
 }
 
 // Single channel, aligned rows separated by padding.
@@ -145,16 +146,16 @@ static inline jxl_memory_manager* jxl_plane_base_memory_manager(const jxl_plane_
   static inline void NAME##_swap(NAME* self, NAME* other) {                   \
     jxl_plane_base_swap(&self->plane, &other->plane);                         \
   }                                                                           \
-  static inline jxl_memory_manager* NAME##_memory_manager(const NAME* self) { \
-    return jxl_plane_base_memory_manager(&self->plane);                       \
+  static inline jxl_context* NAME##_ctx(const NAME* self) { \
+    return jxl_plane_base_ctx(&self->plane);                       \
   }                                                                           \
   static inline jxl_status NAME##_allocate(NAME* self,                        \
-                                      jxl_memory_manager* memory_manager,     \
+                                      jxl_context* ctx,     \
                                       size_t pre_padding) {                   \
-    return jxl_plane_base_allocate(&self->plane, memory_manager,              \
+    return jxl_plane_base_allocate(&self->plane, ctx,              \
                                    pre_padding);                              \
   }                                                                           \
-  static inline jxl_status NAME##_create(jxl_memory_manager* memory_manager,  \
+  static inline jxl_status NAME##_create(jxl_context* ctx,  \
                                     const size_t xsize, const size_t ysize,   \
                                     const size_t pre_padding, NAME* out) {    \
     uint32_t xsize32 = (uint32_t)(xsize);                                     \
@@ -165,7 +166,7 @@ static inline jxl_memory_manager* jxl_plane_base_memory_manager(const jxl_plane_
     JXL_ENSURE(ysize32 == ysize);                                             \
     NAME##_construct_empty(&image);                                           \
     jxl_plane_base_init(&image.plane, xsize32, ysize32, sizeof(TYPE));        \
-    status = NAME##_allocate(&image, memory_manager, pre_padding);            \
+    status = NAME##_allocate(&image, ctx, pre_padding);            \
     if (!jxl_status_ok(status)) {                                             \
       NAME##_destroy(&image);                                                 \
       return status;                                                          \
@@ -241,8 +242,8 @@ static inline const jxl_image_i* jxl_image3_i_plane_const(const jxl_image3_i* se
   return &self->planes_[idx];
 }
 
-static inline jxl_memory_manager* jxl_image3_i_memory_manager(const jxl_image3_i* self) {
-  return jxl_image_i_memory_manager(&self->planes_[0]);
+static inline jxl_context* jxl_image3_i_ctx(const jxl_image3_i* self) {
+  return jxl_image_i_ctx(&self->planes_[0]);
 }
 static inline void jxl_image3_i_swap(jxl_image3_i* self, jxl_image3_i* other) {
   size_t i;
@@ -265,7 +266,7 @@ static inline void jxl_image3_i_destroy(jxl_image3_i* self) {
   }
 }
 
-static inline jxl_status jxl_image3_i_create(jxl_memory_manager* memory_manager,
+static inline jxl_status jxl_image3_i_create(jxl_context* ctx,
                                    const size_t xsize, const size_t ysize,
                                    jxl_image3_i* out) {
   jxl_image_i plane0;
@@ -276,21 +277,21 @@ static inline jxl_status jxl_image3_i_create(jxl_memory_manager* memory_manager,
   jxl_image_i_construct_empty(&plane0);
   jxl_image_i_construct_empty(&plane1);
   jxl_image_i_construct_empty(&plane2);
-  status = jxl_image_i_create(memory_manager, xsize, ysize, 0, &plane0);
+  status = jxl_image_i_create(ctx, xsize, ysize, 0, &plane0);
   if (!jxl_status_ok(status)) {
     jxl_image_i_destroy(&plane0);
     jxl_image_i_destroy(&plane1);
     jxl_image_i_destroy(&plane2);
     return status;
   }
-  status = jxl_image_i_create(memory_manager, xsize, ysize, 0, &plane1);
+  status = jxl_image_i_create(ctx, xsize, ysize, 0, &plane1);
   if (!jxl_status_ok(status)) {
     jxl_image_i_destroy(&plane0);
     jxl_image_i_destroy(&plane1);
     jxl_image_i_destroy(&plane2);
     return status;
   }
-  status = jxl_image_i_create(memory_manager, xsize, ysize, 0, &plane2);
+  status = jxl_image_i_create(ctx, xsize, ysize, 0, &plane2);
   if (!jxl_status_ok(status)) {
     jxl_image_i_destroy(&plane0);
     jxl_image_i_destroy(&plane1);
@@ -356,8 +357,8 @@ static inline const jxl_image_f* jxl_image3_f_plane_const(const jxl_image3_f* se
   return &self->planes_[idx];
 }
 
-static inline jxl_memory_manager* jxl_image3_f_memory_manager(const jxl_image3_f* self) {
-  return jxl_image_f_memory_manager(&self->planes_[0]);
+static inline jxl_context* jxl_image3_f_ctx(const jxl_image3_f* self) {
+  return jxl_image_f_ctx(&self->planes_[0]);
 }
 static inline void jxl_image3_f_swap(jxl_image3_f* self, jxl_image3_f* other) {
   size_t i;
@@ -380,7 +381,7 @@ static inline void jxl_image3_f_destroy(jxl_image3_f* self) {
   }
 }
 
-static inline jxl_status jxl_image3_f_create(jxl_memory_manager* memory_manager,
+static inline jxl_status jxl_image3_f_create(jxl_context* ctx,
                                    const size_t xsize, const size_t ysize,
                                    jxl_image3_f* out) {
   jxl_image_f plane0;
@@ -391,21 +392,21 @@ static inline jxl_status jxl_image3_f_create(jxl_memory_manager* memory_manager,
   jxl_image_f_construct_empty(&plane0);
   jxl_image_f_construct_empty(&plane1);
   jxl_image_f_construct_empty(&plane2);
-  status = jxl_image_f_create(memory_manager, xsize, ysize, 0, &plane0);
+  status = jxl_image_f_create(ctx, xsize, ysize, 0, &plane0);
   if (!jxl_status_ok(status)) {
     jxl_image_f_destroy(&plane0);
     jxl_image_f_destroy(&plane1);
     jxl_image_f_destroy(&plane2);
     return status;
   }
-  status = jxl_image_f_create(memory_manager, xsize, ysize, 0, &plane1);
+  status = jxl_image_f_create(ctx, xsize, ysize, 0, &plane1);
   if (!jxl_status_ok(status)) {
     jxl_image_f_destroy(&plane0);
     jxl_image_f_destroy(&plane1);
     jxl_image_f_destroy(&plane2);
     return status;
   }
-  status = jxl_image_f_create(memory_manager, xsize, ysize, 0, &plane2);
+  status = jxl_image_f_create(ctx, xsize, ysize, 0, &plane2);
   if (!jxl_status_ok(status)) {
     jxl_image_f_destroy(&plane0);
     jxl_image_f_destroy(&plane1);

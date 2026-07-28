@@ -5,7 +5,8 @@
 
 #include "lib/jxl/enc_quant_weights.h"
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include "lib/jxl/base/status.h"
 #include "lib/jxl/layer_type.h"
@@ -17,7 +18,7 @@
 static const float kAlmostZero = 1e-8f;
 
 typedef struct jxl_encode_mats_ctx {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   const jxl_array_quant_encoding* encodings;
   jxl_bit_writer* writer;
   jxl_modular_frame_encoder* modular_frame_encoder;
@@ -41,7 +42,7 @@ static jxl_status jxl_encode_dc_body(void* opaque) {
   return jxl_ok_status();
 }
 
-static jxl_status jxl_encode_quant(jxl_memory_manager* memory_manager,
+static jxl_status jxl_encode_quant(jxl_context* ctx,
                    const jxl_quant_encoding* encoding, size_t idx, size_t size_x,
                    size_t size_y, jxl_bit_writer* writer,
                    jxl_modular_frame_encoder* modular_frame_encoder) {
@@ -56,7 +57,7 @@ static jxl_status jxl_encode_quant(jxl_memory_manager* memory_manager,
     }
     case kQuantModeRAW: {
       JXL_RETURN_IF_ERROR(jxl_modular_frame_encoder_encode_quant_table(
-          memory_manager, size_x, size_y, writer, encoding, idx,
+          ctx, size_x, size_y, writer, encoding, idx,
           modular_frame_encoder));
       break;
     }
@@ -72,7 +73,7 @@ static jxl_status jxl_encode_mats_body(void* opaque) {
   if (!c->all_default) {
     for (size_t i = 0; i < jxl_array_len(c->encodings); i++) {
       JXL_RETURN_IF_ERROR(jxl_encode_quant(
-          c->memory_manager, jxl_array_at_const(c->encodings, i), i,
+          c->ctx, jxl_array_at_const(c->encodings, i), i,
           kDequantMatricesRequiredSizeX[i],
           kDequantMatricesRequiredSizeY[i], c->writer,
           c->modular_frame_encoder));
@@ -81,7 +82,7 @@ static jxl_status jxl_encode_mats_body(void* opaque) {
   return jxl_ok_status();
 }
 
-jxl_status jxl_dequant_matrices_encode(jxl_memory_manager* memory_manager,
+jxl_status jxl_dequant_matrices_encode(jxl_context* ctx,
                              const jxl_dequant_matrices* matrices, jxl_bit_writer* writer,
                              jxl_layer_type layer,
                              jxl_modular_frame_encoder* modular_frame_encoder){
@@ -96,7 +97,7 @@ jxl_status jxl_dequant_matrices_encode(jxl_memory_manager* memory_manager,
     }
   }
   // TODO(janwas): better bound
-  jxl_encode_mats_ctx mats_ctx = {memory_manager, encodings, writer,
+  jxl_encode_mats_ctx mats_ctx = {ctx, encodings, writer,
                             modular_frame_encoder, all_default};
   return jxl_bit_writer_with_max_bits(writer, 512 * 1024, layer, jxl_encode_mats_body, &mats_ctx);
 }

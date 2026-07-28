@@ -15,7 +15,7 @@
 #include "lib/jxl/pack_signed.h"
 
 void jxl_enc_color_encoding_create_c2(jxl_primaries pr, jxl_transfer_function tf,
-                           jxl_memory_manager* mm, jxl_enc_color_encoding out[2]) {
+                           jxl_context* mm, jxl_enc_color_encoding out[2]) {
   jxl_enc_color_encoding* c_rgb = &out[0];
   jxl_enc_color_encoding_construct_empty(c_rgb, mm);
   jxl_enc_color_encoding_init(c_rgb);

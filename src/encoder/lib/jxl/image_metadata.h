@@ -118,7 +118,7 @@ jxl_status jxl_extra_channel_info_visit_fields(jxl_extra_channel_info* self,
 JXL_FIELDS_NAME(jxl_extra_channel_info)
 
 static inline void jxl_extra_channel_info_construct_empty(
-    jxl_extra_channel_info* self, jxl_memory_manager* mm) {
+    jxl_extra_channel_info* self, jxl_context* mm) {
   jxl_fields_construct_empty(&self->fields);
   jxl_fields_construct_empty(&self->bit_depth.fields);
   jxl_array_construct_empty(&self->name, mm);
@@ -165,14 +165,14 @@ static inline void jxl_extra_channel_info_swap(jxl_extra_channel_info* self,
 
 // Growable list of jxl_extra_channel_info (was MoveArray<jxl_extra_channel_info>).
 typedef struct jxl_extra_channel_infos {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_extra_channel_info* ptr;
   size_t len;
   size_t capacity;
 } jxl_extra_channel_infos;
 
 static inline void jxl_extra_channel_infos_construct_empty(jxl_extra_channel_infos* self) {
-  self->memory_manager = NULL;
+  self->ctx = NULL;
   self->ptr = NULL;
   self->len = 0;
   self->capacity = 0;
@@ -201,9 +201,9 @@ static inline const jxl_extra_channel_info* jxl_extra_channel_infos_at_const(
 
 static inline void jxl_extra_channel_infos_swap(jxl_extra_channel_infos* self,
                                          jxl_extra_channel_infos* other) {
-  jxl_memory_manager* tmp_mm = self->memory_manager;
-  self->memory_manager = other->memory_manager;
-  other->memory_manager = tmp_mm;
+  jxl_context* tmp_mm = self->ctx;
+  self->ctx = other->ctx;
+  other->ctx = tmp_mm;
   jxl_extra_channel_info* tmp_ptr = self->ptr;
   self->ptr = other->ptr;
   other->ptr = tmp_ptr;
@@ -222,8 +222,8 @@ static inline void jxl_extra_channel_infos_clear(jxl_extra_channel_infos* self) 
 static inline void jxl_extra_channel_infos_destroy(jxl_extra_channel_infos* self) {
   jxl_extra_channel_infos_clear(self);
   if (self->ptr != NULL) {
-    if (self->memory_manager != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    if (self->ctx != NULL) {
+      jxl_free(self->ctx, self->ptr);
     }
   }
   self->ptr = NULL;
@@ -253,22 +253,22 @@ static inline jxl_status jxl_extra_channel_infos_reserve(jxl_extra_channel_infos
   if (!jxl_safe_mul(grown, sizeof(jxl_extra_channel_info), &bytes)) {
     return JXL_FAILURE("jxl_extra_channel_infos::reserve: size overflow");
   }
-  if (self->memory_manager == NULL) {
+  if (self->ctx == NULL) {
     return JXL_FAILURE("jxl_extra_channel_infos::reserve: missing memory manager");
   }
   neu = (jxl_extra_channel_info*)(
-      self->memory_manager->alloc(self->memory_manager->opaque, bytes));
+      jxl_alloc(self->ctx, bytes));
   if (neu == NULL) {
     return JXL_FAILURE("jxl_extra_channel_infos::reserve: allocation failed");
   }
   for (i = 0; i < self->len; ++i) {
-    jxl_extra_channel_info_construct_empty(neu + i, self->memory_manager);
+    jxl_extra_channel_info_construct_empty(neu + i, self->ctx);
     jxl_extra_channel_info_init(neu + i);
     jxl_extra_channel_info_swap(neu + i, &self->ptr[i]);
     jxl_extra_channel_info_destroy(self->ptr + i);
   }
   if (self->ptr != NULL) {
-    self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    jxl_free(self->ctx, self->ptr);
   }
   self->ptr = neu;
   self->capacity = grown;
@@ -287,7 +287,7 @@ static inline jxl_status jxl_extra_channel_infos_resize(jxl_extra_channel_infos*
   JXL_RETURN_IF_ERROR(jxl_extra_channel_infos_reserve(self, n));
   while (self->len < n) {
     jxl_extra_channel_info_construct_empty(self->ptr + self->len,
-                                           self->memory_manager);
+                                           self->ctx);
     jxl_extra_channel_info_init(self->ptr + self->len);
     ++self->len;
   }
@@ -470,7 +470,7 @@ static inline void jxl_image_metadata_set_intensity_target(jxl_image_metadata* s
 }
 
 static inline void jxl_image_metadata_construct_empty(jxl_image_metadata* self,
-                                                      jxl_memory_manager* mm) {
+                                                      jxl_context* mm) {
   jxl_fields_construct_empty(&self->fields);
   jxl_fields_construct_empty(&self->bit_depth.fields);
   jxl_fields_construct_empty(&self->tone_mapping.fields);
@@ -483,7 +483,7 @@ static inline void jxl_image_metadata_construct_empty(jxl_image_metadata* self,
   self->have_animation = false;
   self->have_intrinsic_size = false;
   jxl_extra_channel_infos_construct_empty(&self->extra_channel_info);
-  self->extra_channel_info.memory_manager = mm;
+  self->extra_channel_info.ctx = mm;
 }
 static inline void jxl_image_metadata_destroy(jxl_image_metadata* self) {
   jxl_enc_color_encoding_destroy(&self->color_encoding);
@@ -516,7 +516,7 @@ typedef struct jxl_codec_metadata {
 } jxl_codec_metadata;
 
 static inline void jxl_codec_metadata_construct_empty(jxl_codec_metadata* self,
-                                                      jxl_memory_manager* mm) {
+                                                      jxl_context* mm) {
   jxl_image_metadata_construct_empty(&self->m, mm);
   jxl_fields_construct_empty(&self->size.fields);
   jxl_fields_construct_empty(&self->transform_data.fields);

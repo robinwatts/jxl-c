@@ -9,7 +9,7 @@
 // MemoryManager-backed growable arrays (concrete POD peels).
 // C-shaped storage (ptr/len/capacity); prefer jxl_array_len/jxl_array_at/jxl_array_data/
 // jxl_array_empty.
-// memory_manager must be non-NULL before any growth (reserve/resize/push).
+// ctx must be non-NULL before any growth (reserve/resize/push).
 // jxl_array_copy_from may JXL_CRASH() on allocation failure (no exceptions).
 // Element types are specialized via JXL_DEFINE_POD_ARRAY; no Array<T>.
 // Note: jxl_array_size is a concrete array-of-size_t type; length helpers are
@@ -18,7 +18,8 @@
 // Operations are macros + field-pointer helpers (no C++ overloads, no
 // ArrayCommon* casts that break strict aliasing).
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -51,29 +52,29 @@
 
 #define jxl_array_construct_empty(a, mm)                                             \
   do {                                                                         \
-    (a)->memory_manager = (mm);                                                \
+    (a)->ctx = (mm);                                                \
     (a)->ptr = NULL;                                                           \
     (a)->len = 0;                                                              \
     (a)->capacity = 0;                                                         \
   } while (0)
 
-static inline void jxl_array_destroy_fields(jxl_memory_manager** mm, void** ptr,
+static inline void jxl_array_destroy_fields(jxl_context** mm, void** ptr,
                                       size_t* len, size_t* capacity) {
   if (ptr == NULL) return;
   if (*ptr != NULL) {
     JXL_DASSERT(*mm != NULL);
-    (*mm)->free((*mm)->opaque, *ptr);
+    jxl_free((*mm), *ptr);
   }
   *ptr = NULL;
   *len = 0;
   *capacity = 0;
 }
 
-static inline void jxl_array_swap_fields(jxl_memory_manager** mm_a, void** ptr_a,
+static inline void jxl_array_swap_fields(jxl_context** mm_a, void** ptr_a,
                                    size_t* len_a, size_t* cap_a,
-                                   jxl_memory_manager** mm_b, void** ptr_b,
+                                   jxl_context** mm_b, void** ptr_b,
                                    size_t* len_b, size_t* cap_b) {
-  jxl_memory_manager* tmp_mm = *mm_a;
+  jxl_context* tmp_mm = *mm_a;
   *mm_a = *mm_b;
   *mm_b = tmp_mm;
   void* tmp_ptr = *ptr_a;
@@ -83,16 +84,16 @@ static inline void jxl_array_swap_fields(jxl_memory_manager** mm_a, void** ptr_a
   jxl_swap(cap_a, cap_b);
 }
 
-static inline jxl_status jxl_array_init_fields(jxl_memory_manager** mm, void** ptr,
+static inline jxl_status jxl_array_init_fields(jxl_context** mm, void** ptr,
                                      size_t* len, size_t* capacity,
-                                     jxl_memory_manager* memory_manager) {
+                                     jxl_context* ctx) {
   JXL_ENSURE(mm != NULL && ptr != NULL && len != NULL && capacity != NULL);
   jxl_array_destroy_fields(mm, ptr, len, capacity);
-  *mm = memory_manager;
+  *mm = ctx;
   return jxl_ok_status();
 }
 
-static inline jxl_status jxl_array_reserve_fields(jxl_memory_manager** mm, void** ptr,
+static inline jxl_status jxl_array_reserve_fields(jxl_context** mm, void** ptr,
                                         size_t* len, size_t* capacity,
                                         size_t want_capacity, size_t elem_size) {
   JXL_ENSURE(mm != NULL && ptr != NULL && len != NULL && capacity != NULL);
@@ -117,20 +118,20 @@ static inline jxl_status jxl_array_reserve_fields(jxl_memory_manager** mm, void*
   if (*mm == NULL) {
     return JXL_FAILURE("jxl_array_reserve: missing memory manager");
   }
-  neu = (*mm)->alloc((*mm)->opaque, bytes);
+  neu = jxl_alloc((*mm), bytes);
   if (neu == NULL) {
     return JXL_FAILURE("jxl_array_reserve: allocation failed");
   }
   if (*ptr != NULL && *len > 0) {
     memcpy(neu, *ptr, (*len) * elem_size);
   }
-  (*mm)->free((*mm)->opaque, *ptr);
+  jxl_free((*mm), *ptr);
   *ptr = neu;
   *capacity = new_capacity;
   return jxl_ok_status();
 }
 
-static inline jxl_status jxl_array_resize_fields(jxl_memory_manager** mm, void** ptr,
+static inline jxl_status jxl_array_resize_fields(jxl_context** mm, void** ptr,
                                        size_t* len, size_t* capacity,
                                        size_t size, size_t elem_size) {
   JXL_RETURN_IF_ERROR(
@@ -139,7 +140,7 @@ static inline jxl_status jxl_array_resize_fields(jxl_memory_manager** mm, void**
   return jxl_ok_status();
 }
 
-static inline jxl_status jxl_array_resize_zero_fields(jxl_memory_manager** mm, void** ptr,
+static inline jxl_status jxl_array_resize_zero_fields(jxl_context** mm, void** ptr,
                                            size_t* len, size_t* capacity,
                                            size_t size, size_t elem_size) {
   size_t old = *len;
@@ -151,9 +152,9 @@ static inline jxl_status jxl_array_resize_zero_fields(jxl_memory_manager** mm, v
   return jxl_ok_status();
 }
 
-static inline jxl_status jxl_array_copy_from_fields(jxl_memory_manager** mm_a, void** ptr_a,
+static inline jxl_status jxl_array_copy_from_fields(jxl_context** mm_a, void** ptr_a,
                                          size_t* len_a, size_t* cap_a,
-                                         jxl_memory_manager* const* mm_b,
+                                         jxl_context* const* mm_b,
                                          void* const* ptr_b, const size_t* len_b,
                                          size_t elem_size) {
   JXL_ENSURE(mm_a != NULL && ptr_a != NULL && len_a != NULL && cap_a != NULL);
@@ -170,7 +171,7 @@ static inline jxl_status jxl_array_copy_from_fields(jxl_memory_manager** mm_a, v
   return jxl_ok_status();
 }
 
-static inline jxl_status jxl_array_append_fields(jxl_memory_manager** mm, void** ptr,
+static inline jxl_status jxl_array_append_fields(jxl_context** mm, void** ptr,
                                        size_t* len, size_t* capacity,
                                        const void* begin, size_t count,
                                        size_t elem_size) {
@@ -186,7 +187,7 @@ static inline jxl_status jxl_array_append_fields(jxl_memory_manager** mm, void**
   return jxl_ok_status();
 }
 
-static inline jxl_status jxl_array_assign_fields(jxl_memory_manager** mm, void** ptr,
+static inline jxl_status jxl_array_assign_fields(jxl_context** mm, void** ptr,
                                        size_t* len, size_t* capacity,
                                        const void* data, size_t count,
                                        size_t elem_size) {
@@ -212,7 +213,7 @@ static inline void jxl_array_erase_fields(void** ptr, size_t* len, void* first,
   *len -= n;
 }
 
-static inline jxl_status jxl_array_push_back_prep_fields(jxl_memory_manager** mm, void** ptr,
+static inline jxl_status jxl_array_push_back_prep_fields(jxl_context** mm, void** ptr,
                                              size_t* len, size_t* capacity,
                                              size_t elem_size) {
   if (*len == *capacity) {
@@ -225,7 +226,7 @@ static inline jxl_status jxl_array_push_back_prep_fields(jxl_memory_manager** mm
   return jxl_ok_status();
 }
 
-static inline jxl_status jxl_array_resize_fill_fields(jxl_memory_manager** mm, void** ptr,
+static inline jxl_status jxl_array_resize_fill_fields(jxl_context** mm, void** ptr,
                                            size_t* len, size_t* capacity,
                                            size_t size, const void* fill,
                                            size_t elem_size) {
@@ -238,7 +239,7 @@ static inline jxl_status jxl_array_resize_fill_fields(jxl_memory_manager** mm, v
   return jxl_ok_status();
 }
 
-static inline jxl_status jxl_array_push_back_copy_fields(jxl_memory_manager** mm, void** ptr,
+static inline jxl_status jxl_array_push_back_copy_fields(jxl_context** mm, void** ptr,
                                              size_t* len, size_t* capacity,
                                              const void* value,
                                              size_t elem_size) {
@@ -253,35 +254,35 @@ static inline jxl_status jxl_array_push_back_copy_fields(jxl_memory_manager** mm
 #define JXL_ARRAY_PTR_SLOT(a) ((void**)(void*)&(a)->ptr)
 
 #define jxl_array_destroy(a)                                                        \
-  jxl_array_destroy_fields(&(a)->memory_manager, JXL_ARRAY_PTR_SLOT(a), &(a)->len,   \
+  jxl_array_destroy_fields(&(a)->ctx, JXL_ARRAY_PTR_SLOT(a), &(a)->len,   \
                      &(a)->capacity)
 #define jxl_array_swap(a, b)                                                        \
-  jxl_array_swap_fields(&(a)->memory_manager, JXL_ARRAY_PTR_SLOT(a), &(a)->len,      \
-                  &(a)->capacity, &(b)->memory_manager, JXL_ARRAY_PTR_SLOT(b), \
+  jxl_array_swap_fields(&(a)->ctx, JXL_ARRAY_PTR_SLOT(a), &(a)->len,      \
+                  &(a)->capacity, &(b)->ctx, JXL_ARRAY_PTR_SLOT(b), \
                   &(b)->len, &(b)->capacity)
 #define jxl_array_init(a, mm)                                                       \
-  jxl_array_init_fields(&(a)->memory_manager, JXL_ARRAY_PTR_SLOT(a), &(a)->len,      \
+  jxl_array_init_fields(&(a)->ctx, JXL_ARRAY_PTR_SLOT(a), &(a)->len,      \
                   &(a)->capacity, (mm))
 #define jxl_array_reserve(a, cap)                                                   \
-  jxl_array_reserve_fields(&(a)->memory_manager, JXL_ARRAY_PTR_SLOT(a), &(a)->len,   \
+  jxl_array_reserve_fields(&(a)->ctx, JXL_ARRAY_PTR_SLOT(a), &(a)->len,   \
                      &(a)->capacity, (cap), sizeof(*(a)->ptr))
 #define jxl_array_resize(a, size)                                                   \
-  jxl_array_resize_fields(&(a)->memory_manager, JXL_ARRAY_PTR_SLOT(a), &(a)->len,    \
+  jxl_array_resize_fields(&(a)->ctx, JXL_ARRAY_PTR_SLOT(a), &(a)->len,    \
                     &(a)->capacity, (size), sizeof(*(a)->ptr))
 #define jxl_array_resize_zero(a, size)                                               \
-  jxl_array_resize_zero_fields(&(a)->memory_manager, JXL_ARRAY_PTR_SLOT(a),           \
+  jxl_array_resize_zero_fields(&(a)->ctx, JXL_ARRAY_PTR_SLOT(a),           \
                         &(a)->len, &(a)->capacity, (size), sizeof(*(a)->ptr))
 #define jxl_array_copy_from(a, other)                                                \
-  jxl_array_copy_from_fields(&(a)->memory_manager, JXL_ARRAY_PTR_SLOT(a), &(a)->len,  \
-                      &(a)->capacity, &(other)->memory_manager,                \
+  jxl_array_copy_from_fields(&(a)->ctx, JXL_ARRAY_PTR_SLOT(a), &(a)->len,  \
+                      &(a)->capacity, &(other)->ctx,                \
                       (void* const*)(const void*)&(other)->ptr, &(other)->len, \
                       sizeof(*(a)->ptr))
 #define jxl_array_append(a, begin, count)                                           \
-  jxl_array_append_fields(&(a)->memory_manager, JXL_ARRAY_PTR_SLOT(a), &(a)->len,    \
+  jxl_array_append_fields(&(a)->ctx, JXL_ARRAY_PTR_SLOT(a), &(a)->len,    \
                     &(a)->capacity, (const void*)(begin), (count),             \
                     sizeof(*(a)->ptr))
 #define jxl_array_assign(a, data, count)                                            \
-  jxl_array_assign_fields(&(a)->memory_manager, JXL_ARRAY_PTR_SLOT(a), &(a)->len,    \
+  jxl_array_assign_fields(&(a)->ctx, JXL_ARRAY_PTR_SLOT(a), &(a)->len,    \
                     &(a)->capacity, (const void*)(data), (count),              \
                     sizeof(*(a)->ptr))
 #define jxl_array_erase(a, first, last)                                             \
@@ -305,18 +306,18 @@ static inline jxl_status jxl_array_push_back_copy_fields(jxl_memory_manager** mm
 /* Typed PushBack / ResizeFill: C++ overloads; C uses NAME##* (C99, no _Generic). */
 #define JXL_DEFINE_POD_ARRAY(NAME, TYPE)                                       \
   typedef struct NAME {                                                        \
-    jxl_memory_manager* memory_manager;                                          \
+    jxl_context* ctx;                                          \
     TYPE* ptr;                                                                 \
     size_t len;                                                                \
     size_t capacity;                                                           \
   } NAME;                                                                      \
   static inline jxl_status NAME##_push_back(NAME* a, TYPE value) {                   \
-    return jxl_array_push_back_copy_fields(&(a)->memory_manager, JXL_ARRAY_PTR_SLOT(a),\
+    return jxl_array_push_back_copy_fields(&(a)->ctx, JXL_ARRAY_PTR_SLOT(a),\
                                    &(a)->len, &(a)->capacity, &value,          \
                                    sizeof(TYPE));                              \
   }                                                                            \
   static inline jxl_status NAME##_resize_fill(NAME* a, size_t size, TYPE fill) {     \
-    return jxl_array_resize_fill_fields(&(a)->memory_manager, JXL_ARRAY_PTR_SLOT(a),  \
+    return jxl_array_resize_fill_fields(&(a)->ctx, JXL_ARRAY_PTR_SLOT(a),  \
                                  &(a)->len, &(a)->capacity, size, &fill,       \
                                  sizeof(TYPE));                                \
   }                                                                            \

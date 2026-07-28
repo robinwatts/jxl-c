@@ -6,7 +6,8 @@
 #ifndef LIB_JXL_ENC_QUANT_WEIGHTS_H_
 #define LIB_JXL_ENC_QUANT_WEIGHTS_H_
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stdint.h>
 
@@ -18,7 +19,7 @@
 #include "lib/jxl/layer_type.h"
 struct jxl_modular_frame_encoder;
 
-jxl_status jxl_dequant_matrices_encode(jxl_memory_manager* memory_manager,
+jxl_status jxl_dequant_matrices_encode(jxl_context* ctx,
                              const jxl_dequant_matrices* matrices, jxl_bit_writer* writer,
                              jxl_layer_type layer,
                              jxl_modular_frame_encoder* modular_frame_encoder);

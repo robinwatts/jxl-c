@@ -94,7 +94,7 @@ static inline void jxl_group_header_swap(jxl_group_header* self, jxl_group_heade
 
 // Move-only list of jxl_group_headers (was MoveArray<jxl_group_header>).
 typedef struct jxl_group_headers {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_group_header* ptr;
   size_t len;
   size_t capacity;
@@ -114,7 +114,7 @@ static inline jxl_group_header* jxl_group_headers_at(jxl_group_headers* self, si
 static inline const jxl_group_header* jxl_group_headers_at_const(const jxl_group_headers* self, size_t i) { return &self->ptr[i]; }
 
 static inline void jxl_group_headers_construct_empty(jxl_group_headers* self) {
-  self->memory_manager = NULL;
+  self->ctx = NULL;
   self->ptr = NULL;
   self->len = 0;
   self->capacity = 0;
@@ -140,11 +140,11 @@ static inline jxl_status jxl_group_headers_reserve(jxl_group_headers* self, size
       return JXL_FAILURE("jxl_group_headers::reserve: size overflow");
     }
     jxl_group_header* neu;
-    if (self->memory_manager == NULL) {
+    if (self->ctx == NULL) {
       return JXL_FAILURE("jxl_group_headers::reserve: missing memory manager");
     }
     neu = (jxl_group_header*)(
-        self->memory_manager->alloc(self->memory_manager->opaque, bytes));
+        jxl_alloc(self->ctx, bytes));
     if (neu == NULL) {
       return JXL_FAILURE("jxl_group_headers::reserve: allocation failed");
     }
@@ -155,7 +155,7 @@ static inline jxl_status jxl_group_headers_reserve(jxl_group_headers* self, size
       jxl_group_header_destroy(self->ptr + i);
     }
     if (self->ptr != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+      jxl_free(self->ctx, self->ptr);
     }
     self->ptr = neu;
     self->capacity = grown;
@@ -185,8 +185,8 @@ static inline void jxl_group_headers_destroy(jxl_group_headers* self) {
   }
   self->len = 0;
   if (self->ptr != NULL) {
-    if (self->memory_manager != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    if (self->ctx != NULL) {
+      jxl_free(self->ctx, self->ptr);
     }
   }
   self->ptr = NULL;
@@ -203,9 +203,9 @@ static inline void jxl_group_headers_swap(jxl_group_headers* self, jxl_group_hea
     size_t tc = self->capacity;
     self->capacity = other->capacity;
     other->capacity = tc;
-    jxl_memory_manager* tm = self->memory_manager;
-    self->memory_manager = other->memory_manager;
-    other->memory_manager = tm;
+    jxl_context* tm = self->ctx;
+    self->ctx = other->ctx;
+    other->ctx = tm;
   }
 
 
@@ -220,7 +220,7 @@ typedef struct jxl_tree_lut {
 } jxl_tree_lut;
 
 static inline jxl_status jxl_tree_lut_init(jxl_tree_lut* self,
-                                           jxl_memory_manager* mm) {
+                                           jxl_context* mm) {
   jxl_array_construct_empty(&self->context_lookup, mm);
   JXL_RETURN_IF_ERROR(jxl_array_resize_zero(&self->context_lookup, 2 * kPropRangeFast));
   return jxl_ok_status();
@@ -250,7 +250,7 @@ JXL_DEFINE_POD_ARRAY(jxl_array_tree_range, jxl_tree_range)
 static inline bool jxl_tree_to_lookup_table(const jxl_flat_tree *tree, jxl_tree_lut *lut) {
   jxl_array_tree_range ranges;
   bool ok = true;
-  jxl_array_construct_empty(&ranges, lut->context_lookup.memory_manager);
+  jxl_array_construct_empty(&ranges, lut->context_lookup.ctx);
   if (!jxl_status_ok(jxl_array_tree_range_push_back(&ranges, jxl_tree_range_make(-kPropRangeFast - 1, kPropRangeFast - 1, 0)))) {
     JXL_CRASH();
   }

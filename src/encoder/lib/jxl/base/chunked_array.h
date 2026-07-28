@@ -10,7 +10,8 @@
 // starts has NumChunks()+1 entries when non-empty;
 // *jxl_array_at(&starts, jxl_array_len(&starts)-1) == jxl_array_len(&data).
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -45,7 +46,7 @@ static inline void jxl_byte_chunks_clear(jxl_byte_chunks* self) {
 }
 
 static inline void jxl_byte_chunks_construct_empty(jxl_byte_chunks* self,
-                                                   jxl_memory_manager* mm) {
+                                                   jxl_context* mm) {
   jxl_array_construct_empty(&self->data, mm);
   jxl_array_construct_empty(&self->starts, mm);
 }
@@ -114,7 +115,7 @@ static inline void jxl_u32_chunks_clear(jxl_u32_chunks* self) {
 }
 
 static inline void jxl_u32_chunks_construct_empty(jxl_u32_chunks* self,
-                                                  jxl_memory_manager* mm) {
+                                                  jxl_context* mm) {
   jxl_array_construct_empty(&self->data, mm);
   jxl_array_construct_empty(&self->starts, mm);
 }

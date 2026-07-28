@@ -9,7 +9,8 @@
 // Library to encode the ANS population counts to the bit-stream and encode
 // symbols based on the respective distributions.
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -103,7 +104,7 @@ typedef jxl_array_token jxl_token_stream;
 
 // Move-only list of per-context/token streams (was MoveArray<jxl_token_stream>).
 typedef struct jxl_token_streams {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_token_stream* ptr;
   size_t len;
   size_t capacity;
@@ -124,7 +125,7 @@ static inline const jxl_token_stream* jxl_token_streams_at_const(const jxl_token
 }
 
 static inline void jxl_token_streams_construct_empty(jxl_token_streams* self) {
-  self->memory_manager = NULL;
+  self->ctx = NULL;
   self->ptr = NULL;
   self->len = 0;
   self->capacity = 0;
@@ -158,21 +159,21 @@ static inline jxl_status jxl_token_streams_reserve(jxl_token_streams* self,
     return JXL_FAILURE("jxl_token_streams::reserve: size overflow");
   }
   jxl_token_stream* neu;
-  if (self->memory_manager == NULL) {
+  if (self->ctx == NULL) {
     return JXL_FAILURE("jxl_token_streams::reserve: missing memory manager");
   }
   neu = (jxl_token_stream*)(
-      self->memory_manager->alloc(self->memory_manager->opaque, bytes));
+      jxl_alloc(self->ctx, bytes));
   if (neu == NULL) {
     return JXL_FAILURE("jxl_token_streams::reserve: allocation failed");
   }
   for (size_t i = 0; i < self->len; ++i) {
-    jxl_array_construct_empty(neu + i, self->memory_manager);
+    jxl_array_construct_empty(neu + i, self->ctx);
     jxl_array_swap(neu + i, &self->ptr[i]);
     jxl_array_destroy(self->ptr + i);
   }
   if (self->ptr != NULL) {
-    self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    jxl_free(self->ctx, self->ptr);
   }
   self->ptr = neu;
   self->capacity = grown;
@@ -189,7 +190,7 @@ static inline jxl_status jxl_token_streams_resize(jxl_token_streams* self, size_
   }
   JXL_RETURN_IF_ERROR(jxl_token_streams_reserve(self, n));
   while (self->len < n) {
-    jxl_array_construct_empty(self->ptr + self->len, self->memory_manager);
+    jxl_array_construct_empty(self->ptr + self->len, self->ctx);
     ++self->len;
   }
   return jxl_ok_status();
@@ -198,8 +199,8 @@ static inline jxl_status jxl_token_streams_resize(jxl_token_streams* self, size_
 static inline void jxl_token_streams_destroy(jxl_token_streams* self) {
   jxl_token_streams_clear(self);
   if (self->ptr != NULL) {
-    if (self->memory_manager != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    if (self->ctx != NULL) {
+      jxl_free(self->ctx, self->ptr);
     }
   }
   self->ptr = NULL;
@@ -207,9 +208,9 @@ static inline void jxl_token_streams_destroy(jxl_token_streams* self) {
 }
 
 static inline void jxl_token_streams_create(jxl_token_streams* self, size_t n,
-                                            jxl_memory_manager* mm) {
+                                            jxl_context* mm) {
   jxl_token_streams_construct_empty(self);
-  self->memory_manager = mm;
+  self->ctx = mm;
   if (!jxl_status_ok(jxl_token_streams_resize(self, n))) JXL_CRASH();
 }
 
@@ -222,16 +223,16 @@ static inline jxl_status jxl_token_streams_push_back(jxl_token_streams* self,
     }
     JXL_RETURN_IF_ERROR(jxl_token_streams_reserve(self, need));
   }
-  jxl_array_construct_empty(self->ptr + self->len, self->memory_manager);
+  jxl_array_construct_empty(self->ptr + self->len, self->ctx);
   jxl_array_swap(self->ptr + self->len, value);
   ++self->len;
   return jxl_ok_status();
 }
 
 static inline void jxl_token_streams_swap(jxl_token_streams* self, jxl_token_streams* other) {
-  jxl_memory_manager* tmp_mm = self->memory_manager;
-  self->memory_manager = other->memory_manager;
-  other->memory_manager = tmp_mm;
+  jxl_context* tmp_mm = self->ctx;
+  self->ctx = other->ctx;
+  other->ctx = tmp_mm;
   jxl_token_stream* tmp_ptr = self->ptr;
   self->ptr = other->ptr;
   other->ptr = tmp_ptr;
@@ -304,21 +305,21 @@ typedef struct jxl_entropy_encoding_data {
 } jxl_entropy_encoding_data;
 
 jxl_status jxl_entropy_encoding_data_build_and_store_entropy_codes(
-    jxl_entropy_encoding_data* self, jxl_memory_manager* memory_manager,
+    jxl_entropy_encoding_data* self, jxl_context* ctx,
     const jxl_histogram_params* params, const jxl_token_streams* tokens,
     const jxl_array_histogram* builder, const jxl_hist_count_streams* builder_counts,
     jxl_bit_writer* writer, jxl_layer_type layer, size_t* cost_out);
 jxl_status jxl_entropy_encoding_data_build_and_store_ans_encoding_data(
-    jxl_entropy_encoding_data* self, jxl_memory_manager* memory_manager,
+    jxl_entropy_encoding_data* self, jxl_context* ctx,
     jxl_ans_histogram_strategy ans_histogram_strategy, const jxl_histogram* histogram,
     const jxl_array_i32* counts, jxl_bit_writer* writer, size_t* cost_out);
 jxl_status jxl_entropy_encoding_data_choose_uint_configs(
-    jxl_entropy_encoding_data* self, jxl_memory_manager* memory_manager,
+    jxl_entropy_encoding_data* self, jxl_context* ctx,
     const jxl_histogram_params* params, const jxl_token_streams* tokens,
     jxl_array_histogram* clustered_histograms, jxl_hist_count_streams* clustered_counts);
 
 static inline void jxl_entropy_encoding_data_construct_empty(
-    jxl_entropy_encoding_data* self, jxl_memory_manager* mm) {
+    jxl_entropy_encoding_data* self, jxl_context* mm) {
   jxl_array_construct_empty(&self->encoding_info, mm);
   jxl_array_construct_empty(&self->encoding_info_starts, mm);
   jxl_array_construct_empty(&self->ans_reverse_maps, mm);
@@ -338,7 +339,7 @@ static inline void jxl_entropy_encoding_data_destroy(jxl_entropy_encoding_data* 
 }
 
 static inline void jxl_entropy_encoding_data_init(jxl_entropy_encoding_data* self,
-                                                  jxl_memory_manager* mm) {
+                                                  jxl_context* mm) {
   jxl_entropy_encoding_data_construct_empty(self, mm);
 }
 
@@ -389,7 +390,7 @@ static inline void jxl_entropy_encoding_data_swap(jxl_entropy_encoding_data* sel
 // does not get written if `num_contexts` == 1).
 // Returns cost
 jxl_status jxl_build_and_encode_histograms(
-    jxl_memory_manager* memory_manager, const jxl_histogram_params* params,
+    jxl_context* ctx, const jxl_histogram_params* params,
     size_t num_contexts, jxl_token_streams* tokens, jxl_entropy_encoding_data* codes,
     jxl_bit_writer* writer, jxl_layer_type layer, const jxl_array_size* image_widths,
     size_t* cost_out);

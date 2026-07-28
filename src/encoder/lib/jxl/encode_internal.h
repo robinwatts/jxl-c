@@ -9,7 +9,8 @@
 
 #include <jxl/cms_interface.h>
 #include <jxl/encode.h>
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -87,7 +88,7 @@ typedef struct jxl_encoder_jpeg_frame_adapter {
 } jxl_encoder_jpeg_frame_adapter;
 
 static inline void jxl_encoder_jpeg_frame_adapter_construct_empty(
-    jxl_encoder_jpeg_frame_adapter* self, jxl_memory_manager* mm) {
+    jxl_encoder_jpeg_frame_adapter* self, jxl_context* mm) {
   self->xsize = 0;
   self->ysize = 0;
   jxl_jpeg_data_construct_empty(&self->jpeg_data_, mm);
@@ -100,7 +101,7 @@ static inline void jxl_encoder_jpeg_frame_adapter_destroy(
 }
 static inline void jxl_encoder_jpeg_frame_adapter_init(jxl_encoder_jpeg_frame_adapter* self,
                                            size_t xs, size_t ys,
-                                           jxl_memory_manager* mm) {
+                                           jxl_context* mm) {
   self->xsize = xs;
   self->ysize = ys;
   self->has_jpeg_data_ = false;
@@ -121,7 +122,7 @@ static inline bool jxl_encoder_jpeg_frame_adapter_is_jpeg(
 
 static inline void jxl_encoder_jpeg_frame_adapter_take_jpeg_data(
     jxl_encoder_jpeg_frame_adapter* self, jxl_jpeg_data* out,
-    jxl_memory_manager* mm) {
+    jxl_context* mm) {
   self->has_jpeg_data_ = false;
   jxl_jpeg_data_init(out, mm);
   jxl_jpeg_data_swap(out, &self->jpeg_data_);
@@ -158,7 +159,7 @@ typedef struct jxl_encoder_metadata_boxes {
 } jxl_encoder_metadata_boxes;
 
 static inline void jxl_encoder_metadata_boxes_construct_empty(
-    jxl_encoder_metadata_boxes* self, jxl_memory_manager* mm) {
+    jxl_encoder_metadata_boxes* self, jxl_context* mm) {
   jxl_array_construct_empty(&self->boxes, mm);
   jxl_byte_chunks_construct_empty(&self->contents, mm);
 }
@@ -201,7 +202,7 @@ typedef struct jxl_encoder_queued_frame {
 } jxl_encoder_queued_frame;
 
 static inline void jxl_encoder_queued_frame_construct_empty(
-    jxl_encoder_queued_frame* self, jxl_memory_manager* mm) {
+    jxl_encoder_queued_frame* self, jxl_context* mm) {
   jxl_compress_params_construct_empty(&self->cparams);
   jxl_encoder_jpeg_frame_adapter_construct_empty(&self->frame_data, mm);
   jxl_encoder_metadata_boxes_construct_empty(&self->metadata_boxes, mm);
@@ -212,7 +213,7 @@ static inline void jxl_encoder_queued_frame_destroy(jxl_encoder_queued_frame* se
 }
 static inline void jxl_encoder_queued_frame_init(jxl_encoder_queued_frame* self,
                                       const jxl_compress_params* cp, size_t xs,
-                                      size_t ys, jxl_memory_manager* mm) {
+                                      size_t ys, jxl_context* mm) {
   self->cparams = *cp;
   jxl_encoder_jpeg_frame_adapter_init(&self->frame_data, xs, ys, mm);
 }
@@ -225,41 +226,41 @@ static inline void jxl_encoder_queued_frame_swap(jxl_encoder_queued_frame* self,
   }
 
 
-// Owning pointer to a jxl_encoder_queued_frame allocated via jxl_memory_manager.
+// Owning pointer to a jxl_encoder_queued_frame allocated via jxl_context.
 
 typedef struct jxl_owned_queued_frame {
   jxl_encoder_queued_frame* ptr_;
-  const jxl_memory_manager* memory_manager_;
+  jxl_context* ctx_;
 
 } jxl_owned_queued_frame;
 
 static inline void jxl_owned_queued_frame_construct_empty(jxl_owned_queued_frame* self) {
   self->ptr_ = NULL;
-  self->memory_manager_ = NULL;
+  self->ctx_ = NULL;
 }
 static inline void jxl_owned_queued_frame_destroy(jxl_owned_queued_frame* self) {
   if (self == NULL) return;
   if (self->ptr_ != NULL) {
     jxl_encoder_queued_frame_destroy(self->ptr_);
-    self->memory_manager_->free(self->memory_manager_->opaque, self->ptr_);
+    jxl_free(self->ctx_, self->ptr_);
   }
   self->ptr_ = NULL;
 }
 
 static inline void jxl_owned_queued_frame_make(jxl_encoder_queued_frame* ptr,
-                                 const jxl_memory_manager* memory_manager,
+                                 jxl_context* ctx,
                                  jxl_owned_queued_frame* out) {
   jxl_owned_queued_frame_destroy(out);
   out->ptr_ = ptr;
-  out->memory_manager_ = memory_manager;
+  out->ctx_ = ctx;
 }
 static inline void jxl_owned_queued_frame_swap(jxl_owned_queued_frame* self, jxl_owned_queued_frame* other) {
     jxl_encoder_queued_frame* tp = self->ptr_;
     self->ptr_ = other->ptr_;
     other->ptr_ = tp;
-    const jxl_memory_manager* tm = self->memory_manager_;
-    self->memory_manager_ = other->memory_manager_;
-    other->memory_manager_ = tm;
+    jxl_context* tm = self->ctx_;
+    self->ctx_ = other->ctx_;
+    other->ctx_ = tm;
   }
 
 static inline jxl_encoder_queued_frame* jxl_owned_queued_frame_get(const jxl_owned_queued_frame* self) {
@@ -275,7 +276,7 @@ static inline bool jxl_owned_queued_frame_ok(const jxl_owned_queued_frame* self)
 
 
 typedef struct jxl_owned_queued_frames {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_owned_queued_frame* ptr;
   size_t len;
   size_t capacity;
@@ -289,16 +290,16 @@ static inline jxl_owned_queued_frame* jxl_owned_queued_frames_at(jxl_owned_queue
 static inline const jxl_owned_queued_frame* jxl_owned_queued_frames_at_const(const jxl_owned_queued_frames* self, size_t i) { return &self->ptr[i]; }
 
 static inline void jxl_owned_queued_frames_construct_empty(jxl_owned_queued_frames* self) {
-  self->memory_manager = NULL;
+  self->ctx = NULL;
   self->ptr = NULL;
   self->len = 0;
   self->capacity = 0;
 }
 
 static inline void jxl_owned_queued_frames_swap(jxl_owned_queued_frames* self, jxl_owned_queued_frames* other) {
-  jxl_memory_manager* tmp_mm = self->memory_manager;
-  self->memory_manager = other->memory_manager;
-  other->memory_manager = tmp_mm;
+  jxl_context* tmp_mm = self->ctx;
+  self->ctx = other->ctx;
+  other->ctx = tmp_mm;
   jxl_owned_queued_frame* tmp_ptr = self->ptr;
   self->ptr = other->ptr;
   other->ptr = tmp_ptr;
@@ -333,11 +334,11 @@ static inline jxl_status jxl_owned_queued_frames_reserve(jxl_owned_queued_frames
       return JXL_FAILURE("jxl_owned_queued_frames::reserve: size overflow");
     }
     jxl_owned_queued_frame* neu;
-    if (self->memory_manager == NULL) {
+    if (self->ctx == NULL) {
       return JXL_FAILURE("jxl_owned_queued_frames::reserve: missing memory manager");
     }
     neu = (jxl_owned_queued_frame*)(
-        self->memory_manager->alloc(self->memory_manager->opaque, bytes));
+        jxl_alloc(self->ctx, bytes));
     if (neu == NULL) {
       return JXL_FAILURE("jxl_owned_queued_frames::reserve: allocation failed");
     }
@@ -347,7 +348,7 @@ static inline jxl_status jxl_owned_queued_frames_reserve(jxl_owned_queued_frames
       jxl_owned_queued_frame_destroy(self->ptr + i);
     }
     if (self->ptr != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+      jxl_free(self->ctx, self->ptr);
     }
     self->ptr = neu;
     self->capacity = grown;
@@ -357,8 +358,8 @@ static inline jxl_status jxl_owned_queued_frames_reserve(jxl_owned_queued_frames
 static inline void jxl_owned_queued_frames_destroy(jxl_owned_queued_frames* self) {
   jxl_owned_queued_frames_clear(self);
   if (self->ptr != NULL) {
-    if (self->memory_manager != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    if (self->ctx != NULL) {
+      jxl_free(self->ctx, self->ptr);
     }
   }
   self->ptr = NULL;
@@ -398,23 +399,21 @@ static inline jxl_status jxl_owned_queued_frames_emplace_back(jxl_owned_queued_f
 
 
 static inline void jxl_make_owned_queued_frame(
-    const jxl_memory_manager* memory_manager, jxl_encoder_queued_frame* value,
+    jxl_context* ctx, jxl_encoder_queued_frame* value,
     jxl_owned_queued_frame* out) {
   jxl_owned_queued_frame_construct_empty(out);
   jxl_encoder_queued_frame* mem = (jxl_encoder_queued_frame*)(
-      memory_manager->alloc(memory_manager->opaque,
-                            sizeof(jxl_encoder_queued_frame)));
+      jxl_alloc(ctx, sizeof(jxl_encoder_queued_frame)));
   if (!mem) {
-    jxl_owned_queued_frame_make(NULL, memory_manager, out);
+    jxl_owned_queued_frame_make(NULL, ctx, out);
     return;
   }
-  jxl_encoder_queued_frame_construct_empty(mem, (jxl_memory_manager*)memory_manager);
+  jxl_encoder_queued_frame_construct_empty(mem, ctx);
   jxl_encoder_queued_frame_init(mem, &value->cparams, value->frame_data.xsize,
-                            value->frame_data.ysize,
-                            (jxl_memory_manager*)memory_manager);
+                            value->frame_data.ysize, ctx);
   jxl_encoder_jpeg_frame_adapter_swap(&mem->frame_data, &value->frame_data);
   jxl_encoder_metadata_boxes_swap(&mem->metadata_boxes, &value->metadata_boxes);
-  jxl_owned_queued_frame_make(mem, memory_manager, out);
+  jxl_owned_queued_frame_make(mem, ctx, out);
 }
 
 // Appends a JXL container box header with given type, size, and unbounded
@@ -433,7 +432,7 @@ static inline jxl_status jxl_append_box_header(const jxl_enc_box_type* type, siz
 
 // Returns the JXL container signature box and ftyp box.
 // ftyp_version: 0 = standard delivery order, 1 = out-of-order jxlp boxes.
-static inline jxl_status jxl_make_container_header(jxl_memory_manager* mm,
+static inline jxl_status jxl_make_container_header(jxl_context* mm,
                                                    int ftyp_version,
                                                    jxl_array_u8* out) {
   jxl_array_construct_empty(out, mm);
@@ -476,10 +475,10 @@ static inline void jxl_internal_buffer_destroy(jxl_internal_buffer* self) {
   self->written_bytes = 0;
 }
 static inline void jxl_internal_buffer_init(jxl_internal_buffer* self,
-                               jxl_memory_manager* memory_manager) {
-  JXL_DASSERT(memory_manager != NULL);
+                               jxl_context* ctx) {
+  JXL_DASSERT(ctx != NULL);
   self->written_bytes = 0;
-  jxl_padded_bytes_make(memory_manager, &self->owned_data);
+  jxl_padded_bytes_make(ctx, &self->owned_data);
 }
 
 // Chunk keyed by absolute start position; kept sorted by `start`.
@@ -501,15 +500,15 @@ static inline void jxl_buffered_chunk_destroy(jxl_buffered_chunk* self) {
   self->start = 0;
 }
 static inline void jxl_buffered_chunk_init(jxl_buffered_chunk* self, size_t start_pos,
-                              jxl_memory_manager* memory_manager) {
+                              jxl_context* ctx) {
   self->start = start_pos;
-  jxl_internal_buffer_init(&self->buffer, memory_manager);
+  jxl_internal_buffer_init(&self->buffer, ctx);
 }
 
 // Move-only list of jxl_buffered_chunk (was MoveArray<jxl_buffered_chunk>).
 
 typedef struct jxl_buffered_chunks {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_buffered_chunk* ptr;
   size_t len;
   size_t capacity;
@@ -523,7 +522,7 @@ static inline jxl_buffered_chunk* jxl_buffered_chunks_at(jxl_buffered_chunks* se
 static inline const jxl_buffered_chunk* jxl_buffered_chunks_at_const(const jxl_buffered_chunks* self, size_t i) { return &self->ptr[i]; }
 
 static inline void jxl_buffered_chunks_construct_empty(jxl_buffered_chunks* self) {
-  self->memory_manager = NULL;
+  self->ctx = NULL;
   self->ptr = NULL;
   self->len = 0;
   self->capacity = 0;
@@ -543,7 +542,7 @@ typedef struct jxl_encoder_output_processor_wrapper {
 
   bool has_buffer_;
 
-  jxl_memory_manager* memory_manager_;
+  jxl_context* ctx_;
 
 } jxl_encoder_output_processor_wrapper;
 
@@ -556,7 +555,7 @@ static inline void jxl_encoder_output_processor_wrapper_construct_empty(
   self->finalized_position_ = 0;
   self->output_position_ = 0;
   self->has_buffer_ = false;
-  self->memory_manager_ = NULL;
+  self->ctx_ = NULL;
 }
 static inline void jxl_buffered_chunks_destroy(
     jxl_buffered_chunks* self) {
@@ -568,8 +567,8 @@ static inline void jxl_buffered_chunks_destroy(
   }
   self->len = 0;
   if (self->ptr != NULL) {
-    if (self->memory_manager != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    if (self->ctx != NULL) {
+      jxl_free(self->ctx, self->ptr);
     }
   }
   self->ptr = NULL;
@@ -581,9 +580,9 @@ static inline void jxl_encoder_output_processor_wrapper_destroy(
   jxl_buffered_chunks_destroy(&self->internal_buffers_);
 }
 static inline void jxl_encoder_output_processor_wrapper_init(
-    jxl_encoder_output_processor_wrapper* self, jxl_memory_manager* memory_manager) {
-  self->memory_manager_ = memory_manager;
-  self->internal_buffers_.memory_manager = memory_manager;
+    jxl_encoder_output_processor_wrapper* self, jxl_context* ctx) {
+  self->ctx_ = ctx;
+  self->internal_buffers_.ctx = ctx;
 }
 
 static inline size_t jxl_encoder_output_processor_wrapper_current_position(
@@ -611,9 +610,9 @@ static inline void jxl_buffered_chunk_swap(
 static inline void jxl_buffered_chunks_swap(
     jxl_buffered_chunks* self,
     jxl_buffered_chunks* other) {
-  jxl_memory_manager* tmp_mm = self->memory_manager;
-  self->memory_manager = other->memory_manager;
-  other->memory_manager = tmp_mm;
+  jxl_context* tmp_mm = self->ctx;
+  self->ctx = other->ctx;
+  other->ctx = tmp_mm;
   jxl_buffered_chunk* tmp_ptr = self->ptr;
   self->ptr = other->ptr;
   other->ptr = tmp_ptr;
@@ -651,17 +650,17 @@ static inline jxl_status jxl_buffered_chunks_reserve(
     return JXL_FAILURE("jxl_buffered_chunks::reserve: size overflow");
   }
   jxl_buffered_chunk* neu;
-  if (self->memory_manager == NULL) {
+  if (self->ctx == NULL) {
     return JXL_FAILURE("jxl_buffered_chunks::reserve: missing memory manager");
   }
   neu = (jxl_buffered_chunk*)(
-      self->memory_manager->alloc(self->memory_manager->opaque, bytes));
+      jxl_alloc(self->ctx, bytes));
   if (neu == NULL) {
     return JXL_FAILURE("jxl_buffered_chunks::reserve: allocation failed");
   }
   for (size_t i = 0; i < self->len; ++i) {
-    jxl_memory_manager* shell_mm =
-        jxl_padded_bytes_memory_manager(&self->ptr[i].buffer.owned_data);
+    jxl_context* shell_mm =
+        jxl_padded_bytes_ctx(&self->ptr[i].buffer.owned_data);
     jxl_buffered_chunk_construct_empty(neu + i);
     jxl_buffered_chunk_init(neu + i, 0, shell_mm);
     jxl_buffered_chunk_swap(neu + i, &self->ptr[i]);
@@ -669,7 +668,7 @@ static inline jxl_status jxl_buffered_chunks_reserve(
     jxl_buffered_chunk_destroy(old);
   }
   if (self->ptr != NULL) {
-    self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    jxl_free(self->ctx, self->ptr);
   }
   self->ptr = neu;
   self->capacity = grown;
@@ -678,7 +677,7 @@ static inline jxl_status jxl_buffered_chunks_reserve(
 
 static inline jxl_status jxl_buffered_chunks_emplace(
     jxl_buffered_chunks* self, size_t index,
-    size_t pos, jxl_memory_manager* mm) {
+    size_t pos, jxl_context* mm) {
   
   JXL_DASSERT(index <= self->len);
   size_t need;
@@ -687,8 +686,8 @@ static inline jxl_status jxl_buffered_chunks_emplace(
   }
   JXL_RETURN_IF_ERROR(jxl_buffered_chunks_reserve(self, need));
   for (size_t i = self->len; i > index; --i) {
-    jxl_memory_manager* shell_mm =
-        jxl_padded_bytes_memory_manager(&self->ptr[i - 1].buffer.owned_data);
+    jxl_context* shell_mm =
+        jxl_padded_bytes_ctx(&self->ptr[i - 1].buffer.owned_data);
     jxl_buffered_chunk_construct_empty(self->ptr + i);
     jxl_buffered_chunk_init(self->ptr + i, 0, shell_mm);
     jxl_buffered_chunk_swap(self->ptr + i, &self->ptr[i - 1]);
@@ -708,8 +707,8 @@ static inline void jxl_buffered_chunks_erase(
   jxl_buffered_chunk* doomed = self->ptr + index;
   jxl_buffered_chunk_destroy(doomed);
   for (size_t i = index + 1; i < self->len; ++i) {
-    jxl_memory_manager* shell_mm =
-        jxl_padded_bytes_memory_manager(&self->ptr[i].buffer.owned_data);
+    jxl_context* shell_mm =
+        jxl_padded_bytes_ctx(&self->ptr[i].buffer.owned_data);
     jxl_buffered_chunk_construct_empty(self->ptr + i - 1);
     jxl_buffered_chunk_init(self->ptr + i - 1, 0, shell_mm);
     jxl_buffered_chunk_swap(self->ptr + i - 1, &self->ptr[i]);
@@ -729,7 +728,7 @@ static inline size_t jxl_encoder_output_processor_wrapper_insert_buffer(
   JXL_DASSERT(i == jxl_buffered_chunks_size(&self->internal_buffers_) ||
               jxl_buffered_chunks_at(&self->internal_buffers_, i)->start != pos);
   if (!jxl_status_ok(jxl_buffered_chunks_emplace(&self->internal_buffers_, i, pos,
-                             self->memory_manager_))) {
+                             self->ctx_))) {
     JXL_CRASH();
   }
   return i;
@@ -897,44 +896,44 @@ static inline void jxl_encoder_frame_settings_destroy(jxl_encoder_frame_settings
   self->enc = NULL;
 }
 
-// Owning pointer to a jxl_encoder_frame_settings allocated via jxl_memory_manager.
+// Owning pointer to a jxl_encoder_frame_settings allocated via jxl_context.
 // jxl_encoder_frame_settings is completed later in this header; destroy/construct
 // helpers are only used from TUs that see the complete type.
 
 
 typedef struct jxl_owned_frame_settings {
   jxl_encoder_frame_settings* ptr_;
-  const jxl_memory_manager* memory_manager_;
+  jxl_context* ctx_;
 
 } jxl_owned_frame_settings;
 
 static inline void jxl_owned_frame_settings_construct_empty(jxl_owned_frame_settings* self) {
   self->ptr_ = NULL;
-  self->memory_manager_ = NULL;
+  self->ctx_ = NULL;
 }
 static inline void jxl_owned_frame_settings_destroy(jxl_owned_frame_settings* self) {
   if (self == NULL) return;
   if (self->ptr_ != NULL) {
     jxl_encoder_frame_settings_destroy(self->ptr_);
-    self->memory_manager_->free(self->memory_manager_->opaque, self->ptr_);
+    jxl_free(self->ctx_, self->ptr_);
   }
   self->ptr_ = NULL;
 }
 
 static inline void jxl_owned_frame_settings_make(jxl_encoder_frame_settings* ptr,
-                                   const jxl_memory_manager* memory_manager,
+                                   jxl_context* ctx,
                                    jxl_owned_frame_settings* out) {
   jxl_owned_frame_settings_destroy(out);
   out->ptr_ = ptr;
-  out->memory_manager_ = memory_manager;
+  out->ctx_ = ctx;
 }
 static inline void jxl_owned_frame_settings_swap(jxl_owned_frame_settings* self, jxl_owned_frame_settings* other) {
     jxl_encoder_frame_settings* tp = self->ptr_;
     self->ptr_ = other->ptr_;
     other->ptr_ = tp;
-    const jxl_memory_manager* tm = self->memory_manager_;
-    self->memory_manager_ = other->memory_manager_;
-    other->memory_manager_ = tm;
+    jxl_context* tm = self->ctx_;
+    self->ctx_ = other->ctx_;
+    other->ctx_ = tm;
   }
 
 static inline jxl_encoder_frame_settings* jxl_owned_frame_settings_get(const jxl_owned_frame_settings* self) {
@@ -949,7 +948,7 @@ static inline bool jxl_owned_frame_settings_ok(const jxl_owned_frame_settings* s
 
 
 typedef struct jxl_owned_frame_settings_list {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_owned_frame_settings* ptr;
   size_t len;
   size_t capacity;
@@ -963,16 +962,16 @@ static inline jxl_owned_frame_settings* jxl_owned_frame_settings_list_at(jxl_own
 static inline const jxl_owned_frame_settings* jxl_owned_frame_settings_list_at_const(const jxl_owned_frame_settings_list* self, size_t i) { return &self->ptr[i]; }
 
 static inline void jxl_owned_frame_settings_list_construct_empty(jxl_owned_frame_settings_list* self) {
-  self->memory_manager = NULL;
+  self->ctx = NULL;
   self->ptr = NULL;
   self->len = 0;
   self->capacity = 0;
 }
 
 static inline void jxl_owned_frame_settings_list_swap(jxl_owned_frame_settings_list* self, jxl_owned_frame_settings_list* other) {
-  jxl_memory_manager* tmp_mm = self->memory_manager;
-  self->memory_manager = other->memory_manager;
-  other->memory_manager = tmp_mm;
+  jxl_context* tmp_mm = self->ctx;
+  self->ctx = other->ctx;
+  other->ctx = tmp_mm;
   jxl_owned_frame_settings* tmp_ptr = self->ptr;
   self->ptr = other->ptr;
   other->ptr = tmp_ptr;
@@ -1007,11 +1006,11 @@ static inline jxl_status jxl_owned_frame_settings_list_reserve(jxl_owned_frame_s
       return JXL_FAILURE("jxl_owned_frame_settings_list::reserve: size overflow");
     }
     jxl_owned_frame_settings* neu;
-    if (self->memory_manager == NULL) {
+    if (self->ctx == NULL) {
       return JXL_FAILURE("jxl_owned_frame_settings_list::reserve: missing memory manager");
     }
     neu = (jxl_owned_frame_settings*)(
-        self->memory_manager->alloc(self->memory_manager->opaque, bytes));
+        jxl_alloc(self->ctx, bytes));
     if (neu == NULL) {
       return JXL_FAILURE("jxl_owned_frame_settings_list::reserve: allocation failed");
     }
@@ -1021,7 +1020,7 @@ static inline jxl_status jxl_owned_frame_settings_list_reserve(jxl_owned_frame_s
       jxl_owned_frame_settings_destroy(self->ptr + i);
     }
     if (self->ptr != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+      jxl_free(self->ctx, self->ptr);
     }
     self->ptr = neu;
     self->capacity = grown;
@@ -1031,8 +1030,8 @@ static inline jxl_status jxl_owned_frame_settings_list_reserve(jxl_owned_frame_s
 static inline void jxl_owned_frame_settings_list_destroy(jxl_owned_frame_settings_list* self) {
   jxl_owned_frame_settings_list_clear(self);
   if (self->ptr != NULL) {
-    if (self->memory_manager != NULL) {
-      self->memory_manager->free(self->memory_manager->opaque, self->ptr);
+    if (self->ctx != NULL) {
+      jxl_free(self->ctx, self->ptr);
     }
   }
   self->ptr = NULL;
@@ -1061,7 +1060,6 @@ static inline jxl_status jxl_owned_frame_settings_list_emplace_back(jxl_owned_fr
 // jxl_encoder_create.
 typedef struct jxl_encoder {
   jxl_context* ctx;
-  jxl_memory_manager memory_manager;
   jxl_owned_frame_settings_list encoder_options;
 
   size_t num_queued_frames;
@@ -1107,11 +1105,11 @@ typedef struct jxl_encoder {
 } jxl_encoder;
 
 static inline void jxl_encoder_construct_empty(jxl_encoder* self,
-                                                jxl_memory_manager* mm) {
+                                                jxl_context* mm) {
   jxl_owned_frame_settings_list_construct_empty(&self->encoder_options);
-  self->encoder_options.memory_manager = mm;
+  self->encoder_options.ctx = mm;
   jxl_owned_queued_frames_construct_empty(&self->input_queue);
-  self->input_queue.memory_manager = mm;
+  self->input_queue.ctx = mm;
   jxl_encoder_output_processor_wrapper_construct_empty(&self->output_processor);
   jxl_codec_metadata_construct_empty(&self->metadata, mm);
   jxl_array_construct_empty(&self->jpeg_metadata, mm);
@@ -1146,17 +1144,16 @@ static inline bool jxl_encoder_must_use_container(const jxl_encoder* self) {
 
 
 static inline void jxl_make_owned_frame_settings(
-    const jxl_memory_manager* memory_manager, jxl_owned_frame_settings* out) {
+    jxl_context* ctx, jxl_owned_frame_settings* out) {
   jxl_owned_frame_settings_construct_empty(out);
   jxl_encoder_frame_settings* mem = (jxl_encoder_frame_settings*)(
-      memory_manager->alloc(memory_manager->opaque,
-                            sizeof(jxl_encoder_frame_settings)));
+      jxl_alloc(ctx, sizeof(jxl_encoder_frame_settings)));
   if (!mem) {
-    jxl_owned_frame_settings_make(NULL, memory_manager, out);
+    jxl_owned_frame_settings_make(NULL, ctx, out);
     return;
   }
   jxl_encoder_frame_settings_construct_empty(mem);
-  jxl_owned_frame_settings_make(mem, memory_manager, out);
+  jxl_owned_frame_settings_make(mem, ctx, out);
 }
 
 #endif  // LIB_JXL_ENCODE_INTERNAL_H_

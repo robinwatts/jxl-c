@@ -7,7 +7,8 @@
 
 #include "lib/jxl/enc_context_map.h"
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -57,7 +58,7 @@ static jxl_status jxl_move_to_front_transform_body(const jxl_array_u8* v, jxl_ar
 
 static jxl_status jxl_move_to_front_transform(const jxl_array_u8* v, jxl_array_u8* result) {
   jxl_array_u8 mtf;
-  jxl_array_construct_empty(&mtf, result->memory_manager);
+  jxl_array_construct_empty(&mtf, result->ctx);
   jxl_status status = jxl_move_to_front_transform_body(v, result, &mtf);
   jxl_array_destroy(&mtf);
   return status;
@@ -81,7 +82,7 @@ static jxl_status jxl_encode_context_map_simple_body(void* opaque) {
 }
 
 typedef struct jxl_ans_ctx {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   jxl_histogram_params* params;
   jxl_token_streams* tokens;
   jxl_bit_writer* writer;
@@ -94,12 +95,12 @@ static jxl_status jxl_encode_context_map_ans_body(void* opaque) {
   jxl_bit_writer_write(c->writer, 1, 0);
   jxl_bit_writer_write(c->writer, 1, TO_JXL_BOOL(c->use_mtf));  // Use/don't use MTF.
   jxl_entropy_encoding_data codes;
-  jxl_entropy_encoding_data_init(&codes, c->memory_manager);
+  jxl_entropy_encoding_data_init(&codes, c->ctx);
   jxl_array_size empty_widths;
-  jxl_array_construct_empty(&empty_widths, c->memory_manager);
+  jxl_array_construct_empty(&empty_widths, c->ctx);
   size_t cost;
   jxl_status status = jxl_build_and_encode_histograms(
-      c->memory_manager, c->params, 1, c->tokens, &codes, c->writer, c->layer,
+      c->ctx, c->params, 1, c->tokens, &codes, c->writer, c->layer,
       &empty_widths, &cost);
   (void)cost;
   if (jxl_status_ok(status)) {
@@ -155,7 +156,7 @@ jxl_status jxl_encode_context_map_body_inner(const jxl_array_u8* context_map,
                                  jxl_token_streams* mtf_tokens,
                                  jxl_array_u8* transformed_symbols,
                                  jxl_array_size* empty_widths) {
-  jxl_memory_manager* memory_manager = jxl_bit_writer_memory_manager(writer);
+  jxl_context* ctx = jxl_bit_writer_ctx(writer);
   JXL_RETURN_IF_ERROR(jxl_move_to_front_transform(context_map, transformed_symbols));
   for (size_t ctx_i = 0; ctx_i < jxl_array_len(context_map); ++ctx_i) {
 if (!jxl_status_ok(jxl_array_token_push_back(jxl_token_streams_at(tokens, 0), jxl_token_make(0, *jxl_array_at_const(context_map, ctx_i))))) JXL_CRASH();
@@ -170,18 +171,18 @@ if (!jxl_status_ok(jxl_array_token_push_back(jxl_token_streams_at(mtf_tokens, 0)
   size_t mtf_cost;
   {
     jxl_entropy_encoding_data codes;
-    jxl_entropy_encoding_data_init(&codes, memory_manager);
+    jxl_entropy_encoding_data_init(&codes, ctx);
     jxl_status hist_status = jxl_build_and_encode_histograms(
-        memory_manager, &params, 1, tokens, &codes, NULL, kLayerHeader,
+        ctx, &params, 1, tokens, &codes, NULL, kLayerHeader,
         empty_widths, &ans_cost);
     jxl_entropy_encoding_data_destroy(&codes);
     JXL_RETURN_IF_ERROR(hist_status);
   }
   {
     jxl_entropy_encoding_data codes;
-    jxl_entropy_encoding_data_init(&codes, memory_manager);
+    jxl_entropy_encoding_data_init(&codes, ctx);
     jxl_status hist_status = jxl_build_and_encode_histograms(
-        memory_manager, &params, 1, mtf_tokens, &codes, NULL, kLayerHeader,
+        ctx, &params, 1, mtf_tokens, &codes, NULL, kLayerHeader,
         empty_widths, &mtf_cost);
     jxl_entropy_encoding_data_destroy(&codes);
     JXL_RETURN_IF_ERROR(hist_status);
@@ -204,7 +205,7 @@ jxl_array_clear(jxl_token_streams_at(tokens, 0));
         3 + entry_bits * jxl_array_len(context_map), layer, jxl_encode_context_map_simple_body,
         &simple_ctx));
   } else {
-    jxl_ans_ctx ans_ctx = {memory_manager, &params, tokens, writer, layer, use_mtf};
+    jxl_ans_ctx ans_ctx = {ctx, &params, tokens, writer, layer, use_mtf};
     JXL_RETURN_IF_ERROR(jxl_bit_writer_with_max_bits(writer, 
         2 + jxl_array_len(jxl_token_streams_at(tokens, 0)) * 24, layer, jxl_encode_context_map_ans_body,
         &ans_ctx));
@@ -216,7 +217,7 @@ jxl_status jxl_encode_context_map_body(const jxl_array_u8* context_map,
                             size_t num_histograms, jxl_bit_writer* writer,
                             jxl_layer_type layer, jxl_token_streams* tokens,
                             jxl_token_streams* mtf_tokens) {
-  jxl_memory_manager* mm = jxl_bit_writer_memory_manager(writer);
+  jxl_context* mm = jxl_bit_writer_ctx(writer);
   jxl_array_u8 transformed_symbols;
   jxl_array_construct_empty(&transformed_symbols, mm);
   jxl_array_size empty_widths;
@@ -240,7 +241,7 @@ jxl_status jxl_encode_context_map(const jxl_array_u8* context_map,
     return jxl_ok_status();
   }
 
-  jxl_memory_manager* mm = jxl_bit_writer_memory_manager(writer);
+  jxl_context* mm = jxl_bit_writer_ctx(writer);
   jxl_token_streams tokens;
   jxl_token_streams_create(&tokens, 1, mm);
   jxl_token_streams mtf_tokens;

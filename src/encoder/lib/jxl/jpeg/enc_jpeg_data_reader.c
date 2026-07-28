@@ -92,12 +92,12 @@ static jxl_status jxl_process_sof(const uint8_t* data, const size_t len, size_t*
   }
   for (size_t i = 0; i < kJpegMaxComponents; ++i) {
     jxl_array_destroy(&jpg->component_coeffs[i]);
-    jxl_array_construct_empty(&jpg->component_coeffs[i], jpg->huffman_code.memory_manager);
+    jxl_array_construct_empty(&jpg->component_coeffs[i], jpg->huffman_code.ctx);
   }
 
   // Read sampling factors and quant table index for each component.
   jxl_array_u8 ids_seen;
-  jxl_array_construct_empty(&ids_seen, jpg->huffman_code.memory_manager);
+  jxl_array_construct_empty(&ids_seen, jpg->huffman_code.ctx);
   jxl_status status = jxl_process_sof_components(data, len, pos, jpg, start_pos,
                                        marker_len, &ids_seen);
   jxl_array_destroy(&ids_seen);
@@ -170,7 +170,7 @@ static jxl_status jxl_process_sos(const uint8_t* data, const size_t len, size_t*
   scan_info.num_components = comps_in_scan;
   JXL_JPEG_VERIFY_LEN(2 * comps_in_scan);
   jxl_array_u8 ids_seen;
-  jxl_array_construct_empty(&ids_seen, jpg->huffman_code.memory_manager);
+  jxl_array_construct_empty(&ids_seen, jpg->huffman_code.ctx);
   jxl_status status = jxl_process_sos_with_ids(data, len, pos, jpg, start_pos, marker_len,
                                     comps_in_scan, &scan_info, &ids_seen);
   jxl_array_destroy(&ids_seen);
@@ -315,7 +315,7 @@ return jxl_ok_status();
     }
     JXL_JPEG_VERIFY_LEN(total_count);
     jxl_array_u8 values_seen;
-    jxl_array_construct_empty(&values_seen, jpg->huffman_code.memory_manager);
+    jxl_array_construct_empty(&values_seen, jpg->huffman_code.ctx);
     jxl_status values_status = jxl_process_dht_values(
         data, len, pos, jpg, start_pos, marker_len, total_count, max_depth,
         space, is_ac_table, huff_lut, &huff, &values_seen);
@@ -427,7 +427,7 @@ static jxl_status jxl_process_app(const uint8_t* data, const size_t len, size_t*
   // Save the marker type together with the app data.
   const uint8_t* app_str_start = data + *pos - 3;
   jxl_array_u8 app_str;
-  jxl_array_construct_empty(&app_str, jpg->huffman_code.memory_manager);
+  jxl_array_construct_empty(&app_str, jpg->huffman_code.ctx);
   jxl_status status = jxl_array_assign(&app_str, app_str_start, marker_len + 1);
   if (!jxl_status_ok(status)) {
     jxl_array_destroy(&app_str);
@@ -448,7 +448,7 @@ static jxl_status jxl_process_com(const uint8_t* data, const size_t len, size_t*
   JXL_JPEG_VERIFY_LEN(marker_len - 2);
   const uint8_t* com_str_start = data + *pos - 3;
   jxl_array_u8 com_str;
-  jxl_array_construct_empty(&com_str, jpg->huffman_code.memory_manager);
+  jxl_array_construct_empty(&com_str, jpg->huffman_code.ctx);
   jxl_status status = jxl_array_assign(&com_str, com_str_start, marker_len + 1);
   if (!jxl_status_ok(status)) {
     jxl_array_destroy(&com_str);
@@ -1049,7 +1049,7 @@ static jxl_status jxl_read_jpeg_after_soi(const uint8_t* data, const size_t len,
       JXL_RETURN_IF_ERROR(
           jxl_array_u8_push_back(&jpg->marker_order, (uint8_t)(0xff)));
       jxl_array_u8 skipped;
-      jxl_array_construct_empty(&skipped, jpg->huffman_code.memory_manager);
+      jxl_array_construct_empty(&skipped, jpg->huffman_code.ctx);
       jxl_status skip_status = jxl_array_assign(&skipped, data + pos, num_skipped);
       if (!jxl_status_ok(skip_status)) {
         jxl_array_destroy(&skipped);
@@ -1162,7 +1162,7 @@ jxl_status jxl_read_jpeg(const uint8_t* data, const size_t len, jxl_jpeg_data* j
   if (marker != 0xd8) {
     return JXL_FAILURE("Did not find expected SOI marker, actual=%d", marker);
   }
-  jxl_memory_manager* mm = jpg->huffman_code.memory_manager;
+  jxl_context* mm = jpg->huffman_code.ctx;
   jxl_array_huffman_table_entry dc_huff_lut;
   jxl_array_construct_empty(&dc_huff_lut, mm);
   jxl_array_huffman_table_entry ac_huff_lut;

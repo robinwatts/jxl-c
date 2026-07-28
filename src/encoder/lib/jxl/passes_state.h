@@ -6,7 +6,8 @@
 #ifndef LIB_JXL_PASSES_STATE_H_
 #define LIB_JXL_PASSES_STATE_H_
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 
@@ -28,7 +29,7 @@
 // State common to both encoder and decoder.
 // NOLINTNEXTLINE(clang-analyzer-optin.performance.Padding)
 typedef struct jxl_passes_shared_state {
-  jxl_memory_manager* memory_manager;
+  jxl_context* ctx;
   const jxl_codec_metadata* metadata;
 
   jxl_frame_dimensions frame_dim;
@@ -65,18 +66,18 @@ typedef struct jxl_passes_shared_state {
 } jxl_passes_shared_state;
 
 static inline void jxl_passes_shared_state_init(jxl_passes_shared_state* self,
-                                  jxl_memory_manager* memory_manager) {
-  self->memory_manager = memory_manager;
+                                  jxl_context* ctx) {
+  self->ctx = ctx;
   jxl_ac_strategy_image_construct_empty(&self->ac_strategy);
-  jxl_dequant_matrices_init(&self->matrices, memory_manager);
+  jxl_dequant_matrices_init(&self->matrices, ctx);
   jxl_quantizer_init(&self->quantizer, &self->matrices);
   jxl_image_i_construct_empty(&self->raw_quant_field);
   jxl_image_b_construct_empty(&self->epf_sharpness);
   jxl_color_correlation_map_construct_empty(&self->cmap);
   self->coeff_order_size = 0;
-  jxl_array_construct_empty(&self->coeff_orders, memory_manager);
+  jxl_array_construct_empty(&self->coeff_orders, ctx);
   jxl_image_b_construct_empty(&self->quant_dc);
-  jxl_block_ctx_map_init(&self->block_ctx_map, memory_manager);
+  jxl_block_ctx_map_init(&self->block_ctx_map, ctx);
   self->num_histograms = 0;
 }
 

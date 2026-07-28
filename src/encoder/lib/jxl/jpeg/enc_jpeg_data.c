@@ -9,7 +9,8 @@
 
 #include <brotli/encode.h>
 #include <jxl/cms.h>
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -183,7 +184,7 @@ static jxl_status jxl_parse_chunked_marker(const jxl_jpeg_data* src, uint8_t mar
                           const jxl_bytes* tag, jxl_icc_bytes* output) {
   jxl_array_clear(output);
 
-  jxl_memory_manager* mm = output->memory_manager;
+  jxl_context* mm = output->ctx;
   jxl_array_bytes chunks;
   jxl_array_construct_empty(&chunks, mm);
   jxl_array_u8 presence;
@@ -205,7 +206,7 @@ jxl_status jxl_set_color_encoding_from_jpeg_data(jxl_context* ctx,
                                     jxl_enc_color_encoding* color_encoding) {
   jxl_icc_bytes icc_profile;
   jxl_array_construct_empty(&icc_profile,
-                            color_encoding->storage_.icc.memory_manager);
+                            color_encoding->storage_.icc.ctx);
   jxl_bytes icc_tag = jxl_bytes_make(kIccProfileTag, sizeof(kIccProfileTag));
   if (!jxl_status_ok(jxl_parse_chunked_marker(jpg, kApp2, &icc_tag, &icc_profile))) {
     JXL_WARNING("ReJPEG: corrupted ICC profile\n");
@@ -319,7 +320,7 @@ jxl_status jxl_append_brotli_chunk(BrotliEncoderState* brotli_enc, const jxl_byt
   return jxl_ok_status();
 }
 
-jxl_status jxl_encode_jpeg_data(jxl_memory_manager* memory_manager, jxl_jpeg_data* jpeg_data,
+jxl_status jxl_encode_jpeg_data(jxl_context* ctx, jxl_jpeg_data* jpeg_data,
                       jxl_array_u8* bytes, const jxl_compress_params* cparams){
   jxl_array_clear(bytes);
   jxl_array_clear(&jpeg_data->app_marker_type);
@@ -349,7 +350,7 @@ jxl_status jxl_encode_jpeg_data(jxl_memory_manager* memory_manager, jxl_jpeg_dat
   size_t brotli_capacity = BrotliEncoderMaxCompressedSize(total_data);
 
   jxl_bit_writer writer;
-  jxl_bit_writer_make(memory_manager, &writer);
+  jxl_bit_writer_make(ctx, &writer);
   {
     jxl_status write_status =
         jxl_bundle_write(&jpeg_data->fields, &writer, kLayerHeader);
@@ -379,7 +380,7 @@ jxl_status jxl_encode_jpeg_data(jxl_memory_manager* memory_manager, jxl_jpeg_dat
   }
   jxl_bit_writer_destroy(&writer);
 
-  BrotliEncoderState* brotli_enc = jxl_brotli_encoder_create(memory_manager);
+  BrotliEncoderState* brotli_enc = jxl_brotli_encoder_create(ctx);
   if (brotli_enc == NULL) {
     return JXL_FAILURE("BrotliEncoderCreateInstance failed");
   }
@@ -427,12 +428,12 @@ jxl_status jxl_encode_jpeg_data(jxl_memory_manager* memory_manager, jxl_jpeg_dat
   return jxl_ok_status();
 }
 
-jxl_status jxl_parse_jpg(jxl_memory_manager* memory_manager, const jxl_bytes* bytes,
+jxl_status jxl_parse_jpg(jxl_context* ctx, const jxl_bytes* bytes,
                 jxl_jpeg_data* out) {
-  if (memory_manager == NULL) return JXL_FAILURE("Missing memory manager");
+  if (ctx == NULL) return JXL_FAILURE("Missing memory manager");
   if (!jxl_is_jpg(bytes)) return JXL_FAILURE("Not JPEG");
   jxl_jpeg_data jpeg_data;
-  jxl_jpeg_data_init(&jpeg_data, memory_manager);
+  jxl_jpeg_data_init(&jpeg_data, ctx);
   jxl_status status = jxl_read_jpeg(jxl_bytes_data(bytes), jxl_bytes_size(bytes), &jpeg_data);
   if (!jxl_status_ok(status)) {
     jxl_jpeg_data_destroy(&jpeg_data);

@@ -8,7 +8,8 @@
 
 #include <jxl/cms_interface.h>
 #include <jxl/context.h>
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stdint.h>
 
@@ -29,7 +30,7 @@ typedef struct jxl_jpeg_blobs {
 } jxl_jpeg_blobs;
 
 static inline void jxl_jpeg_blobs_construct_empty(jxl_jpeg_blobs* self,
-                                                  jxl_memory_manager* mm) {
+                                                  jxl_context* mm) {
   jxl_array_construct_empty(&self->exif, mm);
   jxl_array_construct_empty(&self->xmp, mm);
 }
@@ -39,7 +40,7 @@ static inline void jxl_jpeg_blobs_destroy(jxl_jpeg_blobs* self) {
   jxl_array_destroy(&self->xmp);
 }
 
-jxl_status jxl_encode_jpeg_data(jxl_memory_manager* memory_manager, jxl_jpeg_data* jpeg_data,
+jxl_status jxl_encode_jpeg_data(jxl_context* ctx, jxl_jpeg_data* jpeg_data,
                       jxl_array_u8* bytes, const jxl_compress_params* cparams);
 
 jxl_status jxl_set_color_encoding_from_jpeg_data(jxl_context* ctx,
@@ -55,7 +56,7 @@ jxl_status jxl_set_color_transform_from_jpeg_data(const jxl_jpeg_data* jpg,
  * Decodes bytes containing JPEG codestream as coefficients only,
  * for lossless JPEG transcoding.
  */
-jxl_status jxl_parse_jpg(jxl_memory_manager* memory_manager, const jxl_bytes* bytes,
+jxl_status jxl_parse_jpg(jxl_context* ctx, const jxl_bytes* bytes,
                 jxl_jpeg_data* out);
 jxl_status jxl_set_blobs_from_jpeg_data(const jxl_jpeg_data* jpeg_data, jxl_jpeg_blobs* blobs);
 

@@ -26,8 +26,8 @@ typedef struct {
  * JXL_ALLOC_ALIGN_SIMD128 (16) and JXL_ALLOC_ALIGN_SIMD256 (32) match Rust
  * Vec<__m128i> / Vec<__m256i> alignment. Always pair with jxl_free_aligned.
  *
- * jxl_*_state helpers are for bootstrap (creating a context) and the internal
- * memory_manager bridge. New code should pass jxl_context*.
+ * jxl_*_state helpers are for bootstrap (creating a context). New code should
+ * pass jxl_context*.
  */
 
 void jxl_allocator_init(jxl_allocator_state *state, const jxl_allocator_t *user);
@@ -49,7 +49,9 @@ void *jxl_alloc(jxl_context *ctx, size_t size);
 void *jxl_alloc_aligned(jxl_context *ctx, size_t alignment, size_t size);
 void *jxl_calloc(jxl_context *ctx, size_t nmemb, size_t size);
 void *jxl_realloc(jxl_context *ctx, void *ptr, size_t size);
+const void *jxl_realloc_const(jxl_context *ctx, const void *ptr, size_t size);
 void jxl_free(jxl_context *ctx, void *ptr);
+void jxl_free_const(jxl_context *ctx, const void *ptr);
 void jxl_free_aligned(jxl_context *ctx, void *ptr);
 char *jxl_strdup(jxl_context *ctx, const char *src);
 

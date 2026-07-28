@@ -98,7 +98,7 @@ static const uint32_t kWeightedDivLookup[64] = {
 
 static inline void jxl_weighted_state_init(jxl_weighted_state* self,
                               const jxl_weighted_header* header, size_t xsize,
-                              size_t ysize, jxl_memory_manager* mm) {
+                              size_t ysize, jxl_context* mm) {
   self->header = header;
   self->pred = 0;
   for (size_t i = 0; i < kWeightedNumPredictors; ++i) {

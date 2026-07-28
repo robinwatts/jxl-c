@@ -5,7 +5,8 @@
 
 #include "lib/jxl/enc_icc_codec.h"
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -32,12 +33,12 @@
 // elements at the bottom of the rightmost column. The input is the input matrix
 // in scanline order, the output is the result matrix in scanline order, with
 // missing elements skipped over (this may occur at multiple positions).
-static jxl_status jxl_unshuffle(jxl_memory_manager* memory_manager, uint8_t* data, size_t size,
+static jxl_status jxl_unshuffle(jxl_context* ctx, uint8_t* data, size_t size,
                  size_t width) {
   size_t height = (size + width - 1) / width;  // amount of rows of input
   jxl_padded_bytes result;
   jxl_status status =
-      jxl_padded_bytes_with_initial_space(memory_manager, size, &result);
+      jxl_padded_bytes_with_initial_space(ctx, size, &result);
   if (!jxl_status_ok(status)) {
     jxl_padded_bytes_destroy(&result);
     return status;
@@ -66,7 +67,7 @@ static jxl_status jxl_predict_and_shuffle(size_t stride, size_t width, int order
                          const uint8_t* data, size_t size, size_t* pos,
                          jxl_padded_bytes* result) {
   JXL_RETURN_IF_ERROR(jxl_check_out_of_bounds(*pos, num, size));
-  jxl_memory_manager* memory_manager = jxl_padded_bytes_memory_manager(result);
+  jxl_context* ctx = jxl_padded_bytes_ctx(result);
   // Required by the specification, see decoder. stride * 4 must be < *pos.
   if (!*pos || ((*pos - 1u) >> 2u) < stride) {
     return JXL_FAILURE("Invalid stride");
@@ -81,7 +82,7 @@ static jxl_status jxl_predict_and_shuffle(size_t stride, size_t width, int order
   *pos += num;
   if (width > 1) {
     JXL_RETURN_IF_ERROR(
-        jxl_unshuffle(memory_manager, jxl_padded_bytes_data(result) + start, num, width));
+        jxl_unshuffle(ctx, jxl_padded_bytes_data(result) + start, num, width));
   }
   return jxl_ok_status();
 }
@@ -120,7 +121,7 @@ static bool jxl_tag_size_sane(size_t tagsize) {
 // form that is easier to compress (more zeroes, ...) and will compress better
 // with brotli.
 
-jxl_status jxl_predict_icc_main_step(jxl_memory_manager* memory_manager, const uint8_t* icc,
+jxl_status jxl_predict_icc_main_step(jxl_context* ctx, const uint8_t* icc,
                           size_t size, size_t* pos, jxl_tag* tag, size_t* tagstart,
                           size_t* tagsize, size_t* clutstart, size_t* last0,
                           jxl_padded_bytes* commands, jxl_padded_bytes* data,
@@ -163,7 +164,7 @@ jxl_status jxl_predict_icc_main_step(jxl_memory_manager* memory_manager, const u
         (*pos)++;
       }
       JXL_RETURN_IF_ERROR(
-          jxl_unshuffle(memory_manager, jxl_padded_bytes_data(data_add) + start, num, 2));
+          jxl_unshuffle(ctx, jxl_padded_bytes_data(data_add) + start, num, 2));
     }
 
     if (jxl_tag_equal(tag, &kCurvTag) && jxl_tag_size_sane(*tagsize) &&
@@ -316,7 +317,7 @@ jxl_status jxl_predict_icc_body(const uint8_t* icc, size_t size, jxl_padded_byte
                       jxl_padded_bytes* commands, jxl_padded_bytes* data,
                       jxl_padded_bytes* header, jxl_array_tag* tags,
                       jxl_array_size* tagstarts, jxl_array_size* tagsizes) {
-  jxl_memory_manager* memory_manager = jxl_padded_bytes_memory_manager(result);
+  jxl_context* ctx = jxl_padded_bytes_ctx(result);
 
   JXL_STATIC_ASSERT(sizeof(size_t) >= 4, "size_t is too short");
   // Fuzzer expects that jxl_predict_icc can accept any input,
@@ -461,10 +462,10 @@ jxl_status jxl_predict_icc_body(const uint8_t* icc, size_t size, jxl_padded_byte
   while (pos <= size) {
     jxl_padded_bytes commands_add;
     jxl_padded_bytes data_add;
-    jxl_padded_bytes_make(memory_manager, &commands_add);
-    jxl_padded_bytes_make(memory_manager, &data_add);
+    jxl_padded_bytes_make(ctx, &commands_add);
+    jxl_padded_bytes_make(ctx, &data_add);
     jxl_status step_status = jxl_predict_icc_main_step(
-        memory_manager, icc, size, &pos, &tag, &tagstart, &tagsize, &clutstart,
+        ctx, icc, size, &pos, &tag, &tagstart, &tagsize, &clutstart,
         &last0, commands, data, tagstarts, tagsizes, &commands_add, &data_add);
     jxl_padded_bytes_destroy(&commands_add);
     jxl_padded_bytes_destroy(&data_add);
@@ -485,19 +486,19 @@ jxl_status jxl_predict_icc_body(const uint8_t* icc, size_t size, jxl_padded_byte
 }
 
 jxl_status jxl_predict_icc(const uint8_t* icc, size_t size, jxl_padded_bytes* result) {
-  jxl_memory_manager* memory_manager = jxl_padded_bytes_memory_manager(result);
+  jxl_context* ctx = jxl_padded_bytes_ctx(result);
   jxl_padded_bytes commands;
   jxl_padded_bytes data;
   jxl_padded_bytes header;
-  jxl_padded_bytes_make(memory_manager, &commands);
-  jxl_padded_bytes_make(memory_manager, &data);
-  jxl_padded_bytes_make(memory_manager, &header);
+  jxl_padded_bytes_make(ctx, &commands);
+  jxl_padded_bytes_make(ctx, &data);
+  jxl_padded_bytes_make(ctx, &header);
   jxl_array_tag tags;
-  jxl_array_construct_empty(&tags, memory_manager);
+  jxl_array_construct_empty(&tags, ctx);
   jxl_array_size tagstarts;
-  jxl_array_construct_empty(&tagstarts, memory_manager);
+  jxl_array_construct_empty(&tagstarts, ctx);
   jxl_array_size tagsizes;
-  jxl_array_construct_empty(&tagsizes, memory_manager);
+  jxl_array_construct_empty(&tagsizes, ctx);
   jxl_status status = jxl_predict_icc_body(icc, size, result, &commands, &data, &header,
                                  &tags, &tagstarts, &tagsizes);
   jxl_padded_bytes_destroy(&commands);
@@ -521,9 +522,9 @@ static jxl_status jxl_write_icc_size_body(void* opaque) {
 
 jxl_status jxl_write_icc_body(const jxl_bytes* icc, jxl_bit_writer* JXL_RESTRICT writer,
                     jxl_layer_type layer, jxl_token_streams* tokens) {
-  jxl_memory_manager* memory_manager = jxl_bit_writer_memory_manager(writer);
+  jxl_context* ctx = jxl_bit_writer_ctx(writer);
   jxl_padded_bytes enc;
-  jxl_padded_bytes_make(memory_manager, &enc);
+  jxl_padded_bytes_make(ctx, &enc);
   jxl_status status = jxl_predict_icc(jxl_bytes_data(icc), jxl_bytes_size(icc), &enc);
   if (!jxl_status_ok(status)) {
     jxl_padded_bytes_destroy(&enc);
@@ -551,13 +552,13 @@ jxl_status jxl_write_icc_body(const jxl_bytes* icc, jxl_bit_writer* JXL_RESTRICT
   params.lz77_method =
       jxl_padded_bytes_size(&enc) < 16384 ? kLZ77Optimal : kLZ77;
   jxl_entropy_encoding_data code;
-  jxl_entropy_encoding_data_init(&code, memory_manager);
+  jxl_entropy_encoding_data_init(&code, ctx);
   params.force_huffman = true;
   jxl_array_size empty_widths;
-  jxl_array_construct_empty(&empty_widths, memory_manager);
+  jxl_array_construct_empty(&empty_widths, ctx);
   size_t cost;
   status = jxl_build_and_encode_histograms(
-      memory_manager, &params, kNumICCContexts, tokens, &code, writer, layer,
+      ctx, &params, kNumICCContexts, tokens, &code, writer, layer,
       &empty_widths, &cost);
   if (!jxl_status_ok(status)) {
     jxl_array_destroy(&empty_widths);
@@ -577,9 +578,9 @@ jxl_status jxl_write_icc_body(const jxl_bytes* icc, jxl_bit_writer* JXL_RESTRICT
 jxl_status jxl_write_icc(const jxl_bytes* icc, jxl_bit_writer* JXL_RESTRICT writer,
                 jxl_layer_type layer) {
   if (jxl_bytes_is_empty(icc)) return JXL_FAILURE("ICC must be non-empty");
-  jxl_memory_manager* memory_manager = jxl_bit_writer_memory_manager(writer);
+  jxl_context* ctx = jxl_bit_writer_ctx(writer);
   jxl_token_streams tokens;
-  jxl_token_streams_create(&tokens, 1, memory_manager);
+  jxl_token_streams_create(&tokens, 1, ctx);
   jxl_status status = jxl_write_icc_body(icc, writer, layer, &tokens);
   jxl_token_streams_destroy(&tokens);
   return status;

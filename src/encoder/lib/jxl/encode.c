@@ -6,7 +6,8 @@
 #include <brotli/encode.h>
 #include <jxl/cms.h>
 #include <jxl/encode.h>
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 #include <jxl/version.h>
 
 #include <stddef.h>
@@ -73,7 +74,7 @@ jxl_status jxl_encoder_output_processor_wrapper_get_buffer(
   requested_size = JXL_MAX(min_size, requested_size);
   JXL_ENSURE(self->output_position_ <= self->position_);
   size_t additional_size = self->position_ - self->output_position_;
-  JXL_ENSURE(self->memory_manager_ != NULL);
+  JXL_ENSURE(self->ctx_ != NULL);
 
   if (self->avail_out_ != NULL) {
     if (min_size + additional_size < *self->avail_out_) {
@@ -340,8 +341,8 @@ static bool jxl_queue_jpeg_metadata_box(jxl_encoder* enc, const char* type,
 // TODO(lode): share this code and the Brotli compression code in enc_jpeg_data
 static jxl_status_t jxl_brotli_compress(int quality, const uint8_t* in, size_t in_size,
                                 jxl_padded_bytes* out) {
-  jxl_memory_manager* memory_manager = jxl_padded_bytes_memory_manager(out);
-  BrotliEncoderState* enc = jxl_brotli_encoder_create(memory_manager);
+  jxl_context* ctx = jxl_padded_bytes_ctx(out);
+  BrotliEncoderState* enc = jxl_brotli_encoder_create(ctx);
   if (!enc) return JXL_API_ERROR_NOSET("BrotliEncoderCreateInstance failed");
 
   BrotliEncoderSetParameter(enc, BROTLI_PARAM_QUALITY, quality);
@@ -354,8 +355,8 @@ static jxl_status_t jxl_brotli_compress(int quality, const uint8_t* in, size_t i
     return JXL_API_ERROR_NOSET(message);      \
   } while (0)
   jxl_padded_bytes temp_buffer;
-  jxl_padded_bytes_make(memory_manager, &temp_buffer);
-  if (!jxl_status_ok(jxl_padded_bytes_with_initial_space(memory_manager, kBufferSize,
+  jxl_padded_bytes_make(ctx, &temp_buffer);
+  if (!jxl_status_ok(jxl_padded_bytes_with_initial_space(ctx, kBufferSize,
                                         &temp_buffer))) {
     jxl_padded_bytes_destroy(&temp_buffer);
     QUIT("Initialization of jxl_padded_bytes failed");
@@ -400,7 +401,7 @@ static jxl_status jxl_write_metadata_box(jxl_encoder* enc, int brotli_effort,
                              const jxl_bytes* contents) {
   if (box->compress_box) {
     jxl_padded_bytes compressed;
-    jxl_padded_bytes_make(&enc->memory_manager, &compressed);
+    jxl_padded_bytes_make(enc->ctx, &compressed);
     jxl_status status = jxl_padded_bytes_append(
         &compressed, jxl_enc_box_type_data(&box->type),
         jxl_enc_box_type_data(&box->type) + jxl_enc_box_type_size());
@@ -556,7 +557,7 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
                            "Codestream level verification for level 5 failed");
     }
     jxl_bit_writer writer;
-    jxl_bit_writer_make(&self->memory_manager, &writer);
+    jxl_bit_writer_make(self->ctx, &writer);
     if (!jxl_status_ok(jxl_write_codestream_headers(&self->metadata, &writer))) {
       jxl_bit_writer_destroy(&writer);
       return JXL_API_ERROR_AS_STATUS(self, JXL_ERROR_GENERIC,
@@ -592,8 +593,8 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
     if (jxl_encoder_must_use_container(self)) {
       self->container_ftyp_version = 0;
       jxl_array_u8 container_header;
-      jxl_array_construct_empty(&container_header, &self->memory_manager);
-      jxl_status box_status = jxl_make_container_header(&self->memory_manager, 0, &container_header);
+      jxl_array_construct_empty(&container_header, self->ctx);
+      jxl_status box_status = jxl_make_container_header(self->ctx, 0, &container_header);
       if (!jxl_status_ok(box_status)) {
         jxl_array_destroy(&container_header);
         return box_status;
@@ -607,7 +608,7 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
       if (self->codestream_level != 5) {
         const uint8_t level = (uint8_t)(self->codestream_level);
         jxl_array_u8 jxll_box;
-        jxl_array_construct_empty(&jxll_box, &self->memory_manager);
+        jxl_array_construct_empty(&jxll_box, self->ctx);
         {
           jxl_enc_box_type jxll = jxl_make_box_type("jxll");
           box_status = jxl_append_box_header(&jxll, 1,
@@ -694,7 +695,7 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
 
   jxl_frame_info frame_info;
   frame_info.is_last = last_frame;
-  if (!jxl_status_ok(jxl_encode_frame(&self->memory_manager, &jxl_owned_queued_frame_get(input_frame)->cparams, &frame_info,
+  if (!jxl_status_ok(jxl_encode_frame(self->ctx, &jxl_owned_queued_frame_get(input_frame)->cparams, &frame_info,
                         &self->metadata, &jxl_owned_queued_frame_get(input_frame)->frame_data, &self->output_processor))) {
     return JXL_API_ERROR_AS_STATUS(self, JXL_ERROR_GENERIC,
                                  "Failed to encode frame");
@@ -706,7 +707,7 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
   if (jxl_encoder_must_use_container(self)) {
     JXL_RETURN_IF_ERROR(jxl_encoder_output_processor_wrapper_seek(&self->output_processor, frame_start_pos));
     jxl_array_u8 box_header;
-    jxl_array_construct_empty(&box_header, &self->memory_manager);
+    jxl_array_construct_empty(&box_header, self->ctx);
     jxl_status box_status =
         jxl_array_resize_zero(&box_header, box_header_size);
     if (!jxl_status_ok(box_status)) {
@@ -753,7 +754,7 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
 jxl_status jxl_encoder_process_one_enqueued_input_body(
     jxl_encoder* self, jxl_owned_queued_frame* input_frame) {
   jxl_padded_bytes header_bytes;
-  jxl_padded_bytes_make(&self->memory_manager, &header_bytes);
+  jxl_padded_bytes_make(self->ctx, &header_bytes);
   jxl_status status = jxl_encoder_process_one_enqueued_input_body_with_header(
       self, input_frame, &header_bytes);
   jxl_padded_bytes_destroy(&header_bytes);
@@ -776,7 +777,7 @@ jxl_status jxl_encoder_process_one_enqueued_input(jxl_encoder* self) {
 jxl_encoder_frame_settings* jxl_encoder_frame_settings_create(
     jxl_encoder* enc, const jxl_encoder_frame_settings* source) {
   jxl_owned_frame_settings opts;
-  jxl_make_owned_frame_settings(&enc->memory_manager, &opts);
+  jxl_make_owned_frame_settings(enc->ctx, &opts);
   if (!jxl_owned_frame_settings_ok(&opts)) {
     jxl_owned_frame_settings_destroy(&opts);
     return NULL;
@@ -850,13 +851,8 @@ jxl_status_t jxl_encoder_frame_settings_set_option(
 }
 
 jxl_encoder* jxl_encoder_create(jxl_context* ctx) {
-  jxl_memory_manager* mm;
   jxl_encoder* enc;
   if (ctx == NULL) {
-    return NULL;
-  }
-  mm = jxl_context_memory_manager(ctx);
-  if (mm == NULL) {
     return NULL;
   }
   if (jxl_context_lcms(ctx) == NULL) {
@@ -865,11 +861,8 @@ jxl_encoder* jxl_encoder_create(jxl_context* ctx) {
 
   enc = (jxl_encoder*)jxl_alloc(ctx, sizeof(jxl_encoder));
   if (!enc) return NULL;
-  /* Install encoder-owned MM copy first so nested arrays/lists point at it.
-   * The copy bridges to ctx->alloc; prefer enc->ctx + jxl_ctx_* for new code. */
-  enc->memory_manager = *mm;
-  jxl_encoder_construct_empty(enc, &enc->memory_manager);
   enc->ctx = ctx;
+  jxl_encoder_construct_empty(enc, ctx);
   enc->cms = *jxl_get_default_cms();
   enc->cms.set_fields_data = jxl_context_lcms(ctx);
   jxl_owned_queued_frames_clear(&enc->input_queue);
@@ -885,8 +878,7 @@ jxl_encoder* jxl_encoder_create(jxl_context* ctx) {
   enc->container_ftyp_version = -1;
   enc->store_jpeg_metadata = false;
   enc->codestream_level = -1;
-  jxl_encoder_output_processor_wrapper_init(&enc->output_processor,
-                                       &enc->memory_manager);
+  jxl_encoder_output_processor_wrapper_init(&enc->output_processor, ctx);
   return enc;
 }
 
@@ -924,17 +916,17 @@ jxl_status_t jxl_encoder_store_jpeg_metadata(jxl_encoder* enc,
 jxl_status_t jxl_encoder_add_jpeg_frame(
     const jxl_encoder_frame_settings* frame_settings, const uint8_t* buffer,
     size_t size) {
-  jxl_memory_manager* memory_manager = &frame_settings->enc->memory_manager;
+  jxl_context* ctx = frame_settings->enc->ctx;
   if (frame_settings->enc->input_closed) {
     return JXL_API_ERROR(frame_settings->enc, JXL_ERROR_API_USAGE,
                          "Frame input is already closed");
   }
 
   jxl_jpeg_data jpeg_data;
-  jxl_jpeg_data_init(&jpeg_data, memory_manager);
+  jxl_jpeg_data_init(&jpeg_data, ctx);
   {
     jxl_bytes jpg_bytes = jxl_bytes_make(buffer, size);
-    jxl_status status = jxl_parse_jpg(memory_manager, &jpg_bytes, &jpeg_data);
+    jxl_status status = jxl_parse_jpg(ctx, &jpg_bytes, &jpeg_data);
     if (!jxl_status_ok(status)) {
       if (jxl_status_get_code(status) == kUnsupported) {
         return JXL_API_ERROR(
@@ -960,7 +952,7 @@ jxl_status_t jxl_encoder_add_jpeg_frame(
                          "zero-sized frame is not allowed");
   }
   jxl_jpeg_blobs blobs;
-  jxl_jpeg_blobs_construct_empty(&blobs, memory_manager);
+  jxl_jpeg_blobs_construct_empty(&blobs, ctx);
   if (!jxl_status_ok(jxl_set_blobs_from_jpeg_data(&jpeg_data, &blobs))) {
     jxl_jpeg_blobs_destroy(&blobs);
     return JXL_API_ERROR(frame_settings->enc, JXL_ERROR_INVALID_INPUT,
@@ -976,7 +968,7 @@ jxl_status_t jxl_encoder_add_jpeg_frame(
     frame_settings->enc->metadata.m.orientation = orientation;
   }
   jxl_encoder_metadata_boxes metadata_boxes;
-  jxl_encoder_metadata_boxes_construct_empty(&metadata_boxes, memory_manager);
+  jxl_encoder_metadata_boxes_construct_empty(&metadata_boxes, ctx);
   if (!jxl_array_empty(&blobs.exif) && frame_settings->cparams.jpeg_keep_exif) {
     size_t exif_size = jxl_array_len(&blobs.exif);
     // Exif data in JPEG is limited to 64k
@@ -988,7 +980,7 @@ jxl_status_t jxl_encoder_add_jpeg_frame(
     }
     exif_size += 4;  // prefix 4 zero bytes for tiff offset
     jxl_array_u8 exif;
-    jxl_array_construct_empty(&exif, memory_manager);
+    jxl_array_construct_empty(&exif, ctx);
     if (!jxl_status_ok(jxl_array_resize_zero(&exif, exif_size))) {
       jxl_array_destroy(&exif);
       jxl_jpeg_blobs_destroy(&blobs);
@@ -1028,8 +1020,8 @@ jxl_status_t jxl_encoder_add_jpeg_frame(
                            "bitstream reconstruction");
     }
     jxl_array_u8 jpeg_metadata;
-    jxl_array_construct_empty(&jpeg_metadata, memory_manager);
-    if (!jxl_status_ok(jxl_encode_jpeg_data(&frame_settings->enc->memory_manager,
+    jxl_array_construct_empty(&jpeg_metadata, ctx);
+    if (!jxl_status_ok(jxl_encode_jpeg_data(frame_settings->enc->ctx,
                                    &jpeg_data, &jpeg_metadata,
                                    &frame_settings->cparams))) {
       jxl_array_destroy(&jpeg_metadata);
@@ -1046,14 +1038,14 @@ jxl_status_t jxl_encoder_add_jpeg_frame(
   cparams.color_transform = kColorTransformNone;
 
   jxl_encoder_queued_frame frame;
-  jxl_encoder_queued_frame_construct_empty(&frame, memory_manager);
-  jxl_encoder_queued_frame_init(&frame, &cparams, xsize, ysize, memory_manager);
+  jxl_encoder_queued_frame_construct_empty(&frame, ctx);
+  jxl_encoder_queued_frame_init(&frame, &cparams, xsize, ysize, ctx);
   jxl_encoder_jpeg_frame_adapter_set_jpeg_data(&frame.frame_data, &jpeg_data);
   jxl_encoder_metadata_boxes_swap(&frame.metadata_boxes, &metadata_boxes);
   jxl_encoder_metadata_boxes_destroy(&metadata_boxes);
 
   jxl_owned_queued_frame queued_frame;
-  jxl_make_owned_queued_frame(&frame_settings->enc->memory_manager, &frame,
+  jxl_make_owned_queued_frame(frame_settings->enc->ctx, &frame,
                             &queued_frame);
   if (!jxl_owned_queued_frame_ok(&queued_frame)) {
     jxl_owned_queued_frame_destroy(&queued_frame);

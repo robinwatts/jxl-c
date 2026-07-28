@@ -213,7 +213,7 @@ static void jxl_find_best_split(jxl_tree_samples *tree_samples, float threshold,
                    const jxl_array_modular_multiplier_info *mul_info,
                    jxl_static_prop_range initial_static_prop_range,
                    float fast_decode_multiplier, jxl_tree *tree){
-  jxl_memory_manager* mm = tree_samples->sample_counts.memory_manager;
+  jxl_context* mm = tree_samples->sample_counts.ctx;
   jxl_array_ma_node_info nodes;
   jxl_array_construct_empty(&nodes, mm);
   {
@@ -610,7 +610,7 @@ jxl_status jxl_tree_samples_set_predictor(jxl_tree_samples* self, jxl_predictor 
   self->num_samples = 0;
   for (size_t i = 0; i < kNumModularPredictors; ++i) {
     jxl_array_destroy(&self->residuals[i]);
-    jxl_array_construct_empty(&self->residuals[i], self->sample_counts.memory_manager);
+    jxl_array_construct_empty(&self->residuals[i], self->sample_counts.ctx);
   }
   if (wp_tree_mode == kWPOnly) {
 jxl_array_clear(&self->predictors);
@@ -653,11 +653,11 @@ jxl_status jxl_tree_samples_set_properties(jxl_tree_samples* self, const uint32_
                                   jxl_modular_tree_mode wp_tree_mode) {
   for (size_t i = 0; i < kMaxSplittingHeuristicsProperties; ++i) {
     jxl_array_destroy(&self->props[i]);
-    jxl_array_construct_empty(&self->props[i], self->sample_counts.memory_manager);
+    jxl_array_construct_empty(&self->props[i], self->sample_counts.ctx);
     jxl_array_destroy(&self->compact_properties[i]);
-    jxl_array_construct_empty(&self->compact_properties[i], self->sample_counts.memory_manager);
+    jxl_array_construct_empty(&self->compact_properties[i], self->sample_counts.ctx);
     jxl_array_destroy(&self->property_mapping[i]);
-    jxl_array_construct_empty(&self->property_mapping[i], self->sample_counts.memory_manager);
+    jxl_array_construct_empty(&self->property_mapping[i], self->sample_counts.ctx);
   }
   if (!jxl_status_ok(jxl_array_assign(&self->props_to_use, properties, num_properties))) {
     return JXL_FAILURE("OOM");
@@ -888,7 +888,7 @@ static void jxl_quantize_samples(const jxl_array_i32 *samples, size_t num_chunks
   const int kRange = 512;
   min = jxl_clamp1_i(min, -kRange, kRange);
   jxl_array_u32 counts;
-  jxl_array_construct_empty(&counts, samples->memory_manager);
+  jxl_array_construct_empty(&counts, samples->ctx);
   if (!jxl_status_ok(jxl_array_resize_zero(&counts, 2 * kRange + 1))) JXL_CRASH();
   for (size_t s_i = 0; s_i < jxl_array_len(samples); ++s_i) {
     int s = *jxl_array_at_const(samples, s_i);
@@ -996,7 +996,7 @@ static void jxl_sample_threshold_cache_destroy(jxl_sample_threshold_cache* cache
 }
 
 static void jxl_sample_threshold_cache_construct_empty(
-    jxl_sample_threshold_cache* cache, jxl_memory_manager* mm) {
+    jxl_sample_threshold_cache* cache, jxl_context* mm) {
   jxl_array_construct_empty(&cache->thresholds, mm);
   jxl_array_construct_empty(&cache->abs_thresholds, mm);
 }
@@ -1051,7 +1051,7 @@ void jxl_tree_samples_pre_quantize_properties(jxl_tree_samples* self,
     size_t max_property_values){
   // If we have forced splits because of multipliers, choose channel and group
   // thresholds accordingly.
-  jxl_memory_manager* mm = self->sample_counts.memory_manager;
+  jxl_context* mm = self->sample_counts.ctx;
   jxl_array_i32 group_multiplier_thresholds;
   jxl_array_construct_empty(&group_multiplier_thresholds, mm);
   jxl_array_i32 channel_multiplier_thresholds;
@@ -1084,7 +1084,7 @@ if (!jxl_status_ok(jxl_array_i32_push_back(&group_multiplier_thresholds, jxl_sta
 
   for (size_t i = 0; i < kMaxSplittingHeuristicsProperties; ++i) {
     jxl_array_destroy(&self->compact_properties[i]);
-    jxl_array_construct_empty(&self->compact_properties[i], self->sample_counts.memory_manager);
+    jxl_array_construct_empty(&self->compact_properties[i], self->sample_counts.ctx);
   }
   jxl_sample_threshold_cache pixel_cache;
   jxl_sample_threshold_cache_construct_empty(&pixel_cache, mm);
@@ -1093,7 +1093,7 @@ if (!jxl_status_ok(jxl_array_i32_push_back(&group_multiplier_thresholds, jxl_sta
 
   for (size_t i = 0; i < kMaxSplittingHeuristicsProperties; ++i) {
     jxl_array_destroy(&self->property_mapping[i]);
-    jxl_array_construct_empty(&self->property_mapping[i], self->sample_counts.memory_manager);
+    jxl_array_construct_empty(&self->property_mapping[i], self->sample_counts.ctx);
   }
   for (size_t i = 0; i < jxl_array_len(&self->props_to_use); i++) {
     if (*jxl_array_at(&self->props_to_use, i) == 0) {
@@ -1162,7 +1162,7 @@ void jxl_collect_pixel_samples(const jxl_image *image, const jxl_modular_options
   jxl_rng_geometric_distribution dist = jxl_rng_make_geometric(fraction);
   size_t total_pixels = 0;
   jxl_array_size channel_ids;
-  jxl_array_construct_empty(&channel_ids, pixel_samples->memory_manager);
+  jxl_array_construct_empty(&channel_ids, pixel_samples->ctx);
   for (size_t i = 0; i < jxl_channels_size(&image->channel); i++) {
     if (i >= image->nb_meta_channels &&
         (jxl_channels_at_const(&image->channel, i)->w > options->max_chan_size ||
@@ -1212,7 +1212,7 @@ jxl_status jxl_tokenize_tree(const jxl_tree *tree, jxl_token_stream *tokens,
                     jxl_tree *decoder_tree){
   JXL_ENSURE(jxl_array_len(tree) <= kMaxTreeSize);
   jxl_array_int q;
-  jxl_array_construct_empty(&q, tree->memory_manager);
+  jxl_array_construct_empty(&q, tree->ctx);
   size_t q_head = 0;
 if (!jxl_status_ok(jxl_array_int_push_back(&q, 0))) JXL_CRASH();
 size_t leaf_id = 0;

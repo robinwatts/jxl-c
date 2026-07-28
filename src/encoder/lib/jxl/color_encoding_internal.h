@@ -148,10 +148,10 @@ jxl_status jxl_enc_color_encoding_visit_fields(jxl_enc_color_encoding* self,
 JXL_FIELDS_NAME(jxl_enc_color_encoding)
 
 void jxl_enc_color_encoding_create_c2(jxl_primaries pr, jxl_transfer_function tf,
-                           jxl_memory_manager* mm, jxl_enc_color_encoding out[2]);
+                           jxl_context* mm, jxl_enc_color_encoding out[2]);
 
 static inline void jxl_enc_color_encoding_construct_empty(
-    jxl_enc_color_encoding* self, jxl_memory_manager* mm) {
+    jxl_enc_color_encoding* self, jxl_context* mm) {
   jxl_fields_construct_empty(&self->fields);
   jxl_fields_construct_empty(&self->white_.fields);
   jxl_fields_construct_empty(&self->tf_.fields);
@@ -170,7 +170,7 @@ static inline jxl_status jxl_enc_color_encoding_copy_from(jxl_enc_color_encoding
   if (self == other) return jxl_ok_status();
   jxl_array_destroy(&self->storage_.icc);
   memcpy(self, other, sizeof(*self));
-  jxl_array_construct_empty(&self->storage_.icc, other->storage_.icc.memory_manager);
+  jxl_array_construct_empty(&self->storage_.icc, other->storage_.icc.ctx);
   return jxl_array_copy_from(&self->storage_.icc, &other->storage_.icc);
 }
 static inline void jxl_enc_color_encoding_init(jxl_enc_color_encoding* self) {

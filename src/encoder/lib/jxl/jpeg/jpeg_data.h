@@ -197,7 +197,7 @@ static inline void jxl_extra_zero_run_chunks_clear(jxl_extra_zero_run_chunks* se
 }
 
 static inline void jxl_extra_zero_run_chunks_construct_empty(jxl_extra_zero_run_chunks* self,
-                                                          jxl_memory_manager* mm) {
+                                                          jxl_context* mm) {
   jxl_array_construct_empty(&self->data, mm);
   jxl_array_construct_empty(&self->starts, mm);
 }
@@ -307,7 +307,7 @@ jxl_status jxl_jpeg_data_visit_fields(jxl_jpeg_data* self, jxl_visitor* visitor)
 JXL_FIELDS_NAME(jxl_jpeg_data)
 
 static inline void jxl_jpeg_data_construct_empty(jxl_jpeg_data* self,
-                                                 jxl_memory_manager* mm) {
+                                                 jxl_context* mm) {
   self->fields.visit_fields_fn = NULL;
 #if (JXL_IS_DEBUG_BUILD)
   self->fields.name_fn = NULL;
@@ -333,7 +333,7 @@ static inline void jxl_jpeg_data_construct_empty(jxl_jpeg_data* self,
   self->has_zero_padding_bit = false;
   jxl_array_construct_empty(&self->padding_bits, mm);
 }
-static inline void jxl_jpeg_data_init(jxl_jpeg_data* self, jxl_memory_manager* mm) {
+static inline void jxl_jpeg_data_init(jxl_jpeg_data* self, jxl_context* mm) {
   jxl_jpeg_data_construct_empty(self, mm);
   JXL_FIELDS_REGISTER_PTR(jxl_jpeg_data, &self->fields);
 }

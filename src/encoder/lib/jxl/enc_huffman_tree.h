@@ -40,7 +40,7 @@ JXL_DEFINE_POD_ARRAY(jxl_array_huffman_tree, jxl_huffman_tree)
 // the symbol.
 //
 // See http://en.wikipedia.org/wiki/Huffman_coding
-void jxl_create_huffman_tree(jxl_memory_manager* mm, const uint32_t* data,
+void jxl_create_huffman_tree(jxl_context* mm, const uint32_t* data,
                        size_t length, int tree_limit, uint8_t* depth);
 
 // Write a Huffman tree from bit depths into the bitstream representation

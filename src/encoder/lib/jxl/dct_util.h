@@ -6,7 +6,8 @@
 #ifndef LIB_JXL_DCT_UTIL_H_
 #define LIB_JXL_DCT_UTIL_H_
 
-#include "lib/jxl/memory_manager.h"
+#include <jxl/context.h>
+#include "lib/jxl/allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -67,12 +68,12 @@ static inline void jxl_ac_image_zero_fill_plane(jxl_ac_image* self, size_t c) {
   jxl_zero_fill_image_i(jxl_image3_i_plane(&self->img_, c));
 }
 
-static inline jxl_status jxl_ac_image_make(jxl_memory_manager* memory_manager, size_t xsize,
+static inline jxl_status jxl_ac_image_make(jxl_context* ctx, size_t xsize,
                                  size_t ysize, jxl_ac_image* out) {
   jxl_ac_image result;
   jxl_status status;
   jxl_ac_image_construct_empty(&result);
-  status = jxl_image3_i_create(memory_manager, xsize, ysize, &result.img_);
+  status = jxl_image3_i_create(ctx, xsize, ysize, &result.img_);
   if (!jxl_status_ok(status)) {
     jxl_ac_image_destroy(&result);
     return status;
