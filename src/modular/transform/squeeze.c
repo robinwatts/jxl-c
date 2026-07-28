@@ -40,7 +40,7 @@ static int32_t tendency_i32(int32_t a, int32_t b, int32_t c) {
     return 0;
 }
 
-void jxl_squeeze_inverse_h_i32(jxl_allocator_state *alloc, int32_t *merged, size_t width, size_t height, size_t row_stride) {
+void jxl_squeeze_inverse_h_i32(jxl_context *alloc, int32_t *merged, size_t width, size_t height, size_t row_stride) {
     size_t y;
     size_t avg_width;
     int32_t *scratch;
@@ -82,7 +82,7 @@ void jxl_squeeze_inverse_h_i32(jxl_allocator_state *alloc, int32_t *merged, size
     jxl_free(alloc, scratch);
 }
 
-void jxl_squeeze_inverse_v_i32(jxl_allocator_state *alloc, int32_t *merged, size_t width, size_t height, size_t row_stride) {
+void jxl_squeeze_inverse_v_i32(jxl_context *alloc, int32_t *merged, size_t width, size_t height, size_t row_stride) {
     size_t x;
     size_t avg_height;
     int32_t *scratch;
@@ -157,7 +157,7 @@ static int16_t tendency_i16(int16_t a, int16_t b, int16_t c) {
     return 0;
 }
 
-void jxl_squeeze_inverse_h_i16_base(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+void jxl_squeeze_inverse_h_i16_base(jxl_context *alloc, int16_t *merged, size_t width,
                                     size_t height, size_t row_stride) {
     size_t y;
     size_t avg_width;
@@ -199,7 +199,7 @@ void jxl_squeeze_inverse_h_i16_base(jxl_allocator_state *alloc, int16_t *merged,
     jxl_free(alloc, scratch);
 }
 
-void jxl_squeeze_inverse_h_i16(jxl_context *ctx, jxl_allocator_state *alloc, int16_t *merged,
+void jxl_squeeze_inverse_h_i16(jxl_context *ctx, jxl_context *alloc, int16_t *merged,
                                size_t width, size_t height, size_t row_stride) {
 #if defined(JXL_HAVE_SIMD_WASM128)
     jxl_squeeze_inverse_h_i16_wasm128(alloc, merged, width, height, row_stride);
@@ -230,7 +230,7 @@ void jxl_squeeze_inverse_h_i16(jxl_context *ctx, jxl_allocator_state *alloc, int
     jxl_squeeze_inverse_h_i16_base(alloc, merged, width, height, row_stride);
 }
 
-void jxl_squeeze_inverse_v_i16_base(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+void jxl_squeeze_inverse_v_i16_base(jxl_context *alloc, int16_t *merged, size_t width,
                                     size_t height, size_t row_stride) {
                                         size_t x;
     size_t avg_height;
@@ -273,7 +273,7 @@ void jxl_squeeze_inverse_v_i16_base(jxl_allocator_state *alloc, int16_t *merged,
     jxl_free(alloc, scratch);
 }
 
-void jxl_squeeze_inverse_v_i16(jxl_context *ctx, jxl_allocator_state *alloc, int16_t *merged,
+void jxl_squeeze_inverse_v_i16(jxl_context *ctx, jxl_context *alloc, int16_t *merged,
                                size_t width, size_t height, size_t row_stride) {
 #if defined(JXL_HAVE_SIMD_WASM128)
     jxl_squeeze_inverse_v_i16_wasm128(alloc, merged, width, height, row_stride);

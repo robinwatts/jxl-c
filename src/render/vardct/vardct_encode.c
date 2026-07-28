@@ -96,7 +96,7 @@ static size_t simd_padded_dim(size_t n) {
     return (n + 3u) & ~(size_t)3u;
 }
 
-static void channel_f32_buf_free(jxl_allocator_state *alloc, jxl_vardct_f32_buf *buf) {
+static void channel_f32_buf_free(jxl_context *alloc, jxl_vardct_f32_buf *buf) {
     if (buf == NULL) {
         return;
     }
@@ -105,7 +105,7 @@ static void channel_f32_buf_free(jxl_allocator_state *alloc, jxl_vardct_f32_buf 
     buf->width = buf->height = buf->stride = 0;
 }
 
-static int channel_f32_buf_alloc(jxl_allocator_state *alloc, uint32_t width, uint32_t height,
+static int channel_f32_buf_alloc(jxl_context *alloc, uint32_t width, uint32_t height,
                                  jxl_vardct_f32_buf *buf) {
     size_t w;
     size_t h;
@@ -192,7 +192,7 @@ static void frame_fb_channel_size(const jxl_frame_header *fh, uint32_t blocks_w,
     *out_h = lh * 8u;
 }
 
-static int group_coeff_bufs_alloc(jxl_allocator_state *alloc, const jxl_frame_header *fh,
+static int group_coeff_bufs_alloc(jxl_context *alloc, const jxl_frame_header *fh,
                                   const uint32_t fb_wh[3][2], uint32_t group_idx,
                                   jxl_vardct_group_coeff_bufs *bufs) {
                                       size_t idx;
@@ -231,7 +231,7 @@ static void init_group_bs_at_offset(jxl_bs *bs, const jxl_frame_group_data *src,
     }
 }
 
-static void encode_set_error(char **error_out, jxl_allocator_state *alloc, const char *message) {
+static void encode_set_error(char **error_out, jxl_context *alloc, const char *message) {
     if (error_out == NULL || alloc == NULL) {
         return;
     }
@@ -267,7 +267,7 @@ void jxl_vardct_encode_ctx_init(jxl_vardct_encode_ctx *ctx) {
     jxl_modular_params_init(&ctx->mod_params);
 }
 
-void jxl_vardct_encode_ctx_free(jxl_allocator_state *alloc, jxl_vardct_encode_ctx *ctx) {
+void jxl_vardct_encode_ctx_free(jxl_context *alloc, jxl_vardct_encode_ctx *ctx) {
     size_t ch;
     if (alloc == NULL || ctx == NULL) {
         return;

@@ -7,7 +7,7 @@ static int has_ff_byte(uint64_t val) {
     return (((~val) - 0x0101010101010101ull) & val & 0x8080808080808080ull) != 0;
 }
 
-static jxl_jbr_status emit_byte(jxl_jbr_bit_writer *w, jxl_allocator_state *alloc, uint8_t b) {
+static jxl_jbr_status emit_byte(jxl_jbr_bit_writer *w, jxl_context *alloc, uint8_t b) {
     jxl_jbr_status st = jxl_jbr_output_write(alloc, w->output, &b, 1);
     if (st != JXL_JBR_OK) {
         return st;
@@ -19,7 +19,7 @@ static jxl_jbr_status emit_byte(jxl_jbr_bit_writer *w, jxl_allocator_state *allo
     return JXL_JBR_OK;
 }
 
-static jxl_jbr_status flush_buf(jxl_jbr_bit_writer *w, jxl_allocator_state *alloc, uint64_t next_buf) {
+static jxl_jbr_status flush_buf(jxl_jbr_bit_writer *w, jxl_context *alloc, uint64_t next_buf) {
     size_t i;
     uint64_t out = w->buf;
     w->valid_buf_bits -= 64;
@@ -48,7 +48,7 @@ void jxl_jbr_bit_writer_init(jxl_jbr_bit_writer *w, jxl_jbr_output *output) {
     }
 }
 
-void jxl_jbr_bit_writer_write_huffman(jxl_jbr_bit_writer *w, jxl_allocator_state *alloc,
+void jxl_jbr_bit_writer_write_huffman(jxl_jbr_bit_writer *w, jxl_context *alloc,
                                       uint64_t bits, uint8_t len) {
     if (w == NULL || len == 0) {
         return;
@@ -62,7 +62,7 @@ void jxl_jbr_bit_writer_write_huffman(jxl_jbr_bit_writer *w, jxl_allocator_state
     }
 }
 
-void jxl_jbr_bit_writer_write_raw(jxl_jbr_bit_writer *w, jxl_allocator_state *alloc, uint64_t bits,
+void jxl_jbr_bit_writer_write_raw(jxl_jbr_bit_writer *w, jxl_context *alloc, uint64_t bits,
                                   uint8_t len) {
     if (len == 0) {
         return;
@@ -77,7 +77,7 @@ size_t jxl_jbr_bit_writer_padding_bits(const jxl_jbr_bit_writer *w) {
     return (8 - w->valid_buf_bits % 8) % 8;
 }
 
-jxl_jbr_status jxl_jbr_bit_writer_finalize(jxl_jbr_bit_writer *w, jxl_allocator_state *alloc) {
+jxl_jbr_status jxl_jbr_bit_writer_finalize(jxl_jbr_bit_writer *w, jxl_context *alloc) {
     size_t i;
     if (w == NULL) {
         return JXL_JBR_WRITE_ERROR;

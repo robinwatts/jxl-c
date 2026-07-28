@@ -20,7 +20,7 @@ static uint32_t div_ceil_u32(uint32_t a, uint32_t b) {
     return b == 0 ? a : (a + b - 1) / b;
 }
 
-void jxl_frame_passes_free(jxl_allocator_state *alloc, jxl_frame_passes *p) {
+void jxl_frame_passes_free(jxl_context *alloc, jxl_frame_passes *p) {
     if (p == NULL) {
         return;
     }
@@ -39,7 +39,7 @@ void jxl_frame_header_init(jxl_frame_header *h) {
     }
 }
 
-void jxl_frame_header_free(jxl_allocator_state *alloc, jxl_frame_header *h) {
+void jxl_frame_header_free(jxl_context *alloc, jxl_frame_header *h) {
     if (h == NULL) {
         return;
     }
@@ -49,7 +49,7 @@ void jxl_frame_header_free(jxl_allocator_state *alloc, jxl_frame_header *h) {
     jxl_frame_header_init(h);
 }
 
-static void apply_defaults(jxl_allocator_state *alloc, jxl_frame_header *h,
+static void apply_defaults(jxl_context *alloc, jxl_frame_header *h,
                            const jxl_parsed_image_header *image) {
     jxl_frame_header_init(h);
     h->frame_type = JXL_FRAME_TYPE_REGULAR;
@@ -214,7 +214,7 @@ static jxl_frame_status_t parse_restoration_filter(jxl_bs *bs, jxl_frame_encodin
     return JXL_FRAME_OK;
 }
 
-static jxl_frame_status_t parse_passes(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_frame_status_t parse_passes(jxl_context *alloc, jxl_bs *bs,
                                        jxl_frame_passes *p) {
     size_t nshift;
     jxl_frame_passes_free(alloc, p);
@@ -314,7 +314,7 @@ static jxl_frame_status_t parse_blending_info(jxl_bs *bs, int has_ec, int have_c
     return JXL_FRAME_OK;
 }
 
-static jxl_frame_status_t parse_non_default(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_frame_status_t parse_non_default(jxl_context *alloc, jxl_bs *bs,
                                             const jxl_parsed_image_header *image,
                                             jxl_frame_header *h) {
     uint32_t ft = 0;
@@ -487,7 +487,7 @@ static jxl_frame_status_t parse_non_default(jxl_allocator_state *alloc, jxl_bs *
     return JXL_FRAME_OK;
 }
 
-jxl_frame_status_t jxl_frame_header_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_frame_header_parse(jxl_context *alloc, jxl_bs *bs,
                                           const jxl_parsed_image_header *image,
                                           jxl_frame_header *out) {
     int all_default;

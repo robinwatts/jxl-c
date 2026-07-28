@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static jxl_allocator_state *test_alloc(void) {
+static jxl_context *test_alloc(void) {
     static jxl_allocator_state alloc;
     static int init = 0;
     if (!init) {
@@ -19,7 +19,7 @@ static jxl_allocator_state *test_alloc(void) {
 static void test_shared_subgrid_slices(void) {
     jxl_grid_u32 grid;
     uint32_t dummy;
-    jxl_allocator_state *alloc = test_alloc();
+    jxl_context *alloc = test_alloc();
     if (!jxl_grid_u32_create(alloc, 128, 128, NULL, &grid, NULL)) {
         assert(0);
     }
@@ -56,7 +56,7 @@ static void test_shared_subgrid_slices(void) {
 static void test_mutable_subgrid_slices(void) {
     jxl_grid_u32 grid;
     uint32_t dummy;
-    jxl_allocator_state *alloc = test_alloc();
+    jxl_context *alloc = test_alloc();
     if (!jxl_grid_u32_create(alloc, 128, 128, NULL, &grid, NULL)) {
         assert(0);
     }
@@ -87,7 +87,7 @@ static void test_mutable_split_merge(void) {
     jxl_grid_u32 grid;
     jxl_mutable_subgrid_u32 top;
     jxl_mutable_subgrid_u32 tl;
-    jxl_allocator_state *alloc = test_alloc();
+    jxl_context *alloc = test_alloc();
     if (!jxl_grid_u32_create(alloc, 128, 128, NULL, &grid, NULL)) {
         assert(0);
     }
@@ -142,7 +142,7 @@ static void test_into_groups(void) {
     uint32_t buf[] = {1, 2, 3, 4};
     jxl_mutable_subgrid_u32 grid1;
     jxl_mutable_subgrid_u32 grid2;
-    jxl_allocator_state *alloc = test_alloc();
+    jxl_context *alloc = test_alloc();
     if (!jxl_mutable_subgrid_u32_from_buf(buf, 2, 2, 2, &grid1)) {
         assert(0);
     }
@@ -167,7 +167,7 @@ static void test_into_groups(void) {
 static void test_into_groups_fixed(void) {
     uint32_t buf[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
     jxl_mutable_subgrid_u32 grid;
-    jxl_allocator_state *alloc = test_alloc();
+    jxl_context *alloc = test_alloc();
     if (!jxl_mutable_subgrid_u32_from_buf(buf, 3, 3, 3, &grid)) {
         assert(0);
     }
@@ -182,7 +182,7 @@ static void test_into_groups_fixed(void) {
 }
 
 static void test_alloc_tracker(void) {
-    jxl_allocator_state *alloc = test_alloc();
+    jxl_context *alloc = test_alloc();
     jxl_grid_alloc_tracker *t = jxl_grid_alloc_tracker_create(alloc, 1000);
     if (t == NULL) {
         assert(0);

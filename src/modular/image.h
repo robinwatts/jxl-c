@@ -33,18 +33,18 @@ struct jxl_modular_grid_i32 {
 
 void jxl_modular_grid_i32_init_empty(jxl_modular_grid_i32 *g);
 void jxl_modular_grid_normalize_stride(jxl_modular_grid *g);
-int jxl_modular_grid_create(jxl_allocator_state *alloc, size_t width, size_t height,
+int jxl_modular_grid_create(jxl_context *alloc, size_t width, size_t height,
                             jxl_grid_alloc_tracker *tracker,
                             jxl_modular_sample_kind kind, jxl_modular_grid_i32 *out);
-int jxl_modular_grid_i32_create(jxl_allocator_state *alloc, size_t width, size_t height,
+int jxl_modular_grid_i32_create(jxl_context *alloc, size_t width, size_t height,
                                 jxl_grid_alloc_tracker *tracker,
                                 jxl_modular_grid_i32 *out);
-int jxl_modular_grid_i16_create(jxl_allocator_state *alloc, size_t width, size_t height,
+int jxl_modular_grid_i16_create(jxl_context *alloc, size_t width, size_t height,
                                 jxl_grid_alloc_tracker *tracker,
                                 jxl_modular_grid_i32 *out);
-int jxl_modular_grid_clone(jxl_allocator_state *alloc, const jxl_modular_grid_i32 *src,
+int jxl_modular_grid_clone(jxl_context *alloc, const jxl_modular_grid_i32 *src,
                            jxl_modular_grid_i32 *dst);
-void jxl_modular_grid_i32_destroy(jxl_allocator_state *alloc, jxl_modular_grid_i32 *g);
+void jxl_modular_grid_i32_destroy(jxl_context *alloc, jxl_modular_grid_i32 *g);
 
 jxl_modular_sample_kind jxl_modular_grid_sample_kind(const jxl_modular_grid_i32 *g);
 size_t jxl_modular_grid_elem_size(const jxl_modular_grid_i32 *g);
@@ -96,11 +96,11 @@ typedef struct {
 } jxl_modular_image_destination;
 
 void jxl_modular_image_destination_init(jxl_modular_image_destination *dest);
-void jxl_modular_image_destination_free(jxl_allocator_state *alloc,
+void jxl_modular_image_destination_free(jxl_context *alloc,
                                        jxl_modular_image_destination *dest);
 
 jxl_modular_status_t jxl_modular_image_destination_create(
-    jxl_allocator_state *alloc, jxl_modular_header_ma *header_ma, uint32_t group_dim,
+    jxl_context *alloc, jxl_modular_header_ma *header_ma, uint32_t group_dim,
     uint32_t bit_depth, jxl_modular_sample_kind sample_kind, const jxl_modular_channels *channels,
     jxl_grid_alloc_tracker *tracker, jxl_modular_image_destination *out);
 

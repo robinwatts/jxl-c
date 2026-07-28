@@ -55,7 +55,7 @@ static int expect_encode_uses_context_allocator(void) {
     assert(jxl != NULL);
     assert(jxl_len > 0);
     assert(counts.alloc_calls > allocs_before);
-    jxl_ctx_free(ctx, jxl);
+    jxl_free(ctx, jxl);
     assert(counts.free_calls > frees_before);
     jxl_context_destroy(ctx);
     return 0;

@@ -7,7 +7,7 @@
 #include "vardct/dct_select.h"
 
 /* Returns 1 if handled, 0 to fall back to SSE2 or generic transform. */
-int jxl_render_transform_varblock_sse41(jxl_allocator_state *alloc, jxl_subgrid_f32 coeff,
+int jxl_render_transform_varblock_sse41(jxl_context *alloc, jxl_subgrid_f32 coeff,
                                         jxl_transform_type dct_select);
 
 #endif /* JXL_RENDER_VARDCT_TRANSFORM_SSE41_H_ */

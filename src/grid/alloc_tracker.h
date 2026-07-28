@@ -10,7 +10,7 @@
 typedef struct jxl_grid_alloc_tracker jxl_grid_alloc_tracker;
 typedef struct jxl_grid_alloc_handle jxl_grid_alloc_handle;
 
-jxl_grid_alloc_tracker *jxl_grid_alloc_tracker_create(jxl_allocator_state *alloc, size_t bytes_limit);
+jxl_grid_alloc_tracker *jxl_grid_alloc_tracker_create(jxl_context *alloc, size_t bytes_limit);
 void jxl_grid_alloc_tracker_destroy(jxl_grid_alloc_tracker *tracker);
 
 int jxl_grid_alloc_tracker_alloc(jxl_grid_alloc_tracker *tracker, size_t bytes,

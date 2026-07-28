@@ -53,7 +53,7 @@ static int is_reserved_brob_type(const jxl_box_type *ty) {
            jxl_box_type_eq(*ty, JXL_BOX_JPEG_RECONSTRUCTION);
 }
 
-jxl_container_parser *jxl_container_parser_create(jxl_allocator_state *alloc) {
+jxl_container_parser *jxl_container_parser_create(jxl_context *alloc) {
     jxl_container_parser *p = jxl_calloc(alloc, 1, sizeof(*p));
     if (p != NULL) {
         p->state = DETECT_WAITING_SIGNATURE;
@@ -62,7 +62,7 @@ jxl_container_parser *jxl_container_parser_create(jxl_allocator_state *alloc) {
     return p;
 }
 
-void jxl_container_parser_destroy(jxl_allocator_state *alloc, jxl_container_parser *parser) {
+void jxl_container_parser_destroy(jxl_context *alloc, jxl_container_parser *parser) {
     jxl_free(alloc, parser);
 }
 

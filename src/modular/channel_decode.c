@@ -563,7 +563,7 @@ static jxl_modular_status_t decode_one(jxl_context *ctx, jxl_bs *bs, jxl_coding_
     return JXL_MODULAR_OK;
 }
 
-static jxl_modular_status_t decode_single_node(jxl_context *ctx, jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_modular_status_t decode_single_node(jxl_context *ctx, jxl_context *alloc, jxl_bs *bs,
                                                jxl_coding_decoder *decoder,
                                                uint32_t dist_multiplier,
                                                const jxl_wp_header *wp,
@@ -740,7 +740,7 @@ static jxl_modular_status_t decode_table_one(jxl_bs *bs, jxl_coding_decoder *dec
 }
 
 static jxl_modular_status_t decode_simple_table_slow(
-    jxl_allocator_state *alloc, jxl_bs *bs, jxl_coding_decoder *decoder, uint32_t dist_multiplier,
+    jxl_context *alloc, jxl_bs *bs, jxl_coding_decoder *decoder, uint32_t dist_multiplier,
     uint32_t decision_prop, int32_t value_base, const jxl_ma_tree_leaf_clustered *leaf,
     const uint8_t *cluster_table, size_t cluster_table_len, const jxl_wp_header *wp,
     jxl_modular_predictor_state *pred, jxl_modular_grid_i32 *grid, jxl_modular_rle_state *rle) {
@@ -816,7 +816,7 @@ static jxl_modular_status_t decode_simple_table_slow(
 }
 
 static jxl_modular_status_t decode_simple_table(
-    jxl_allocator_state *alloc, jxl_bs *bs, jxl_coding_decoder *decoder, uint32_t dist_multiplier,
+    jxl_context *alloc, jxl_bs *bs, jxl_coding_decoder *decoder, uint32_t dist_multiplier,
     uint32_t decision_prop, int32_t value_base, const jxl_ma_tree_leaf_clustered *leaf,
     const uint8_t *cluster_table, size_t cluster_table_len, const jxl_wp_header *wp,
     jxl_modular_predictor_state *pred, jxl_modular_grid_i32 *grid, jxl_modular_rle_state *rle) {

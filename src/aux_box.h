@@ -23,8 +23,8 @@ typedef struct {
 
 typedef struct jxl_aux_box_list jxl_aux_box_list;
 
-jxl_aux_box_list *jxl_aux_box_list_create(jxl_allocator_state *alloc);
-void jxl_aux_box_list_destroy(jxl_allocator_state *alloc, jxl_aux_box_list *list);
+jxl_aux_box_list *jxl_aux_box_list_create(jxl_context *alloc);
+void jxl_aux_box_list_destroy(jxl_context *alloc, jxl_aux_box_list *list);
 
 jxl_bs_status_t jxl_aux_box_list_handle_event(jxl_aux_box_list *list, const jxl_parse_event *event);
 jxl_bs_status_t jxl_aux_box_list_eof(jxl_aux_box_list *list);

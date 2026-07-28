@@ -38,8 +38,8 @@ typedef struct {
 
 typedef struct jxl_container_parser jxl_container_parser;
 
-jxl_container_parser *jxl_container_parser_create(jxl_allocator_state *alloc);
-void jxl_container_parser_destroy(jxl_allocator_state *alloc, jxl_container_parser *parser);
+jxl_container_parser *jxl_container_parser_create(jxl_context *alloc);
+void jxl_container_parser_destroy(jxl_context *alloc, jxl_container_parser *parser);
 
 jxl_bitstream_kind jxl_container_parser_kind(const jxl_container_parser *parser);
 size_t jxl_container_parser_previous_consumed_bytes(const jxl_container_parser *parser);

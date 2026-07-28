@@ -437,7 +437,7 @@ void jxl_modular_encode_result_init(jxl_modular_encode_result *result) {
     jxl_splines_init(&result->splines);
 }
 
-void jxl_modular_encode_result_free(jxl_allocator_state *alloc, jxl_modular_encode_result *result) {
+void jxl_modular_encode_result_free(jxl_context *alloc, jxl_modular_encode_result *result) {
     if (alloc == NULL || result == NULL) {
         return;
     }

@@ -7,7 +7,7 @@
 
 #include "render/simd/features.h"
 
-typedef void (*jxl_dct_2d_fn)(jxl_allocator_state *, jxl_subgrid_f32, jxl_dct_direction);
+typedef void (*jxl_dct_2d_fn)(jxl_context *, jxl_subgrid_f32, jxl_dct_direction);
 
 #if defined(JXL_HAVE_SIMD_SSE2)
 #include "render/vardct/transform_sse2.h"
@@ -67,13 +67,13 @@ static void aux_idct2_in_place(jxl_subgrid_f32 block, size_t size) {
     }
 }
 
-static void transform_dct2(jxl_allocator_state *alloc, jxl_subgrid_f32 coeff) {
+static void transform_dct2(jxl_context *alloc, jxl_subgrid_f32 coeff) {
     aux_idct2_in_place_2(coeff);
     aux_idct2_in_place(coeff, 4);
     aux_idct2_in_place(coeff, 8);
 }
 
-static void transform_dct4(jxl_allocator_state *alloc, jxl_subgrid_f32 coeff, jxl_dct_2d_fn dct_2d) {
+static void transform_dct4(jxl_context *alloc, jxl_subgrid_f32 coeff, jxl_dct_2d_fn dct_2d) {
     size_t y;
     float scratch[64];
     const float *src = coeff.data;
@@ -171,7 +171,7 @@ static void transform_hornuss(jxl_subgrid_f32 coeff) {
     }
 }
 
-static void transform_dct4x8(jxl_allocator_state *alloc, jxl_subgrid_f32 coeff, int transpose,
+static void transform_dct4x8(jxl_context *alloc, jxl_subgrid_f32 coeff, int transpose,
                              jxl_dct_2d_fn dct_2d) {
                                  size_t idx;
     float coeff0 = jxl_subgrid_f32_get(coeff, 0, 0);
@@ -209,7 +209,7 @@ static void transform_dct4x8(jxl_allocator_state *alloc, jxl_subgrid_f32 coeff, 
     }
 }
 
-static void transform_afv(jxl_allocator_state *alloc, jxl_subgrid_f32 coeff, unsigned n,
+static void transform_afv(jxl_context *alloc, jxl_subgrid_f32 coeff, unsigned n,
                           jxl_dct_2d_fn dct_2d) {
     size_t idx;
     size_t row;
@@ -292,11 +292,11 @@ static void transform_afv(jxl_allocator_state *alloc, jxl_subgrid_f32 coeff, uns
     }
 }
 
-static void transform_dct(jxl_allocator_state *alloc, jxl_subgrid_f32 coeff, jxl_dct_2d_fn dct_2d) {
+static void transform_dct(jxl_context *alloc, jxl_subgrid_f32 coeff, jxl_dct_2d_fn dct_2d) {
     dct_2d(alloc, coeff, JXL_DCT_INVERSE);
 }
 
-static void jxl_render_transform_varblock_impl(jxl_allocator_state *alloc, jxl_subgrid_f32 coeff,
+static void jxl_render_transform_varblock_impl(jxl_context *alloc, jxl_subgrid_f32 coeff,
                                                jxl_transform_type dct_select, jxl_dct_2d_fn dct_2d) {
     switch (dct_select) {
     case JXL_TRANSFORM_DCT2:
@@ -332,19 +332,19 @@ static void jxl_render_transform_varblock_impl(jxl_allocator_state *alloc, jxl_s
     }
 }
 
-void jxl_render_transform_varblock_generic(jxl_context *ctx, jxl_allocator_state *alloc,
+void jxl_render_transform_varblock_generic(jxl_context *ctx, jxl_context *alloc,
                                            jxl_subgrid_f32 coeff, jxl_transform_type dct_select) {
     (void)ctx;
     jxl_render_transform_varblock_impl(alloc, coeff, dct_select, jxl_dct_2d_generic);
 }
 
-void jxl_render_transform_varblock_fallback(jxl_context *ctx, jxl_allocator_state *alloc,
+void jxl_render_transform_varblock_fallback(jxl_context *ctx, jxl_context *alloc,
                                               jxl_subgrid_f32 coeff, jxl_transform_type dct_select) {
     (void)ctx;
     jxl_render_transform_varblock_impl(alloc, coeff, dct_select, jxl_dct_2d);
 }
 
-void jxl_render_transform_varblock(jxl_context *ctx, jxl_allocator_state *alloc,
+void jxl_render_transform_varblock(jxl_context *ctx, jxl_context *alloc,
                                    jxl_subgrid_f32 coeff, jxl_transform_type dct_select) {
 #if defined(JXL_HAVE_SIMD_WASM128)
     if (jxl_render_transform_varblock_wasm128(alloc, coeff, dct_select)) {

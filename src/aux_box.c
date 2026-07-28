@@ -23,7 +23,7 @@ typedef struct {
     size_t raw_len;
     size_t raw_cap;
     jxl_brotli_decoder *brotli;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
 } jxl_aux_box_reader;
 
 typedef struct {
@@ -33,7 +33,7 @@ typedef struct {
 } aux_box_entry;
 
 struct jxl_aux_box_list {
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     aux_box_entry *boxes;
     size_t box_count;
     size_t box_cap;
@@ -72,7 +72,7 @@ static jxl_bs_status_t grow_raw(jxl_aux_box_reader *reader, size_t need) {
 }
 
 static void aux_box_reader_reset(jxl_aux_box_reader *reader) {
-    jxl_allocator_state *alloc = reader->alloc;
+    jxl_context *alloc = reader->alloc;
     jxl_free(alloc, reader->raw);
     if (reader->brotli != NULL) {
         jxl_brotli_decoder_destroy(alloc, reader->brotli);
@@ -82,7 +82,7 @@ static void aux_box_reader_reset(jxl_aux_box_reader *reader) {
     reader->alloc = alloc;
 }
 
-static void aux_box_reader_init(jxl_aux_box_reader *reader, jxl_allocator_state *alloc) {
+static void aux_box_reader_init(jxl_aux_box_reader *reader, jxl_context *alloc) {
     memset(reader, 0, sizeof(*reader));
     reader->kind = AUX_READER_INIT;
     reader->alloc = alloc;
@@ -326,7 +326,7 @@ static jxl_bs_status_t aux_box_list_finalize(jxl_aux_box_list *list) {
     return JXL_BS_OK;
 }
 
-jxl_aux_box_list *jxl_aux_box_list_create(jxl_allocator_state *alloc) {
+jxl_aux_box_list *jxl_aux_box_list_create(jxl_context *alloc) {
     jxl_aux_box_list *list = jxl_calloc(alloc, 1, sizeof(*list));
     if (list == NULL) {
         return NULL;
@@ -336,9 +336,9 @@ jxl_aux_box_list *jxl_aux_box_list_create(jxl_allocator_state *alloc) {
     return list;
 }
 
-void jxl_aux_box_list_destroy(jxl_allocator_state *alloc, jxl_aux_box_list *list) {
+void jxl_aux_box_list_destroy(jxl_context *alloc, jxl_aux_box_list *list) {
     size_t i;
-    jxl_allocator_state *a;
+    jxl_context *a;
     if (list == NULL) {
         return;
     }

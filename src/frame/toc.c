@@ -16,7 +16,7 @@ void jxl_toc_init(jxl_toc *t) {
     }
 }
 
-void jxl_toc_free(jxl_allocator_state *alloc, jxl_toc *t) {
+void jxl_toc_free(jxl_context *alloc, jxl_toc *t) {
     if (t == NULL) {
         return;
     }
@@ -56,7 +56,7 @@ static void assign_kind(jxl_toc_group *g, size_t entry_count, size_t idx, uint32
     (void)num_passes;
 }
 
-jxl_frame_status_t jxl_toc_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_toc_parse(jxl_context *alloc, jxl_bs *bs,
                                  const jxl_frame_header *header, jxl_toc *out) {
                                      size_t i;
     size_t entry_count;

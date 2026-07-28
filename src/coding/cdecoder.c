@@ -157,7 +157,7 @@ static const int8_t JXL_SPECIAL_DISTANCES[120][2] = {
     {-6, 7},  {7, 6},   {-7, 6},  {8, 5},   {7, 7},   {-7, 7},  {8, 6},   {8, 7},
 };
 
-static void coder_destroy(jxl_allocator_state *alloc, jxl_coder *coder) {
+static void coder_destroy(jxl_context *alloc, jxl_coder *coder) {
     size_t i;
     if (coder->kind == JXL_CODER_KIND_PREFIX) {
         for (i = 0; i < coder->u.prefix.count; ++i) {
@@ -684,7 +684,7 @@ static jxl_coding_status_t decoder_read_varint_lz77(jxl_coding_decoder *dec, jxl
     return JXL_CODING_OK;
 }
 
-static jxl_coding_status_t decoder_inner_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_coding_status_t decoder_inner_parse(jxl_context *alloc, jxl_bs *bs,
                                                uint32_t num_dist, jxl_coding_decoder *dec) {
                                                    size_t i;
     uint32_t num_clusters = 0;
@@ -803,7 +803,7 @@ static jxl_coding_status_t lz77_parse(jxl_bs *bs, jxl_coding_decoder *dec) {
     return integer_config_parse(bs, 8, &dec->lz.lz_len_conf);
 }
 
-static jxl_coding_status_t decoder_parse_assume_no_lz77(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_coding_status_t decoder_parse_assume_no_lz77(jxl_context *alloc, jxl_bs *bs,
                                                       uint32_t num_dist,
                                                       jxl_coding_decoder **out) {
     int lz77_enabled = 0;
@@ -829,7 +829,7 @@ static jxl_coding_status_t decoder_parse_assume_no_lz77(jxl_allocator_state *all
     return JXL_CODING_OK;
 }
 
-void jxl_coding_decoder_destroy(jxl_allocator_state *alloc, jxl_coding_decoder *dec) {
+void jxl_coding_decoder_destroy(jxl_context *alloc, jxl_coding_decoder *dec) {
     if (dec == NULL) {
         return;
     }
@@ -841,7 +841,7 @@ void jxl_coding_decoder_destroy(jxl_allocator_state *alloc, jxl_coding_decoder *
     jxl_free(alloc, dec);
 }
 
-static jxl_coding_status_t prefix_histogram_clone(jxl_allocator_state *alloc,
+static jxl_coding_status_t prefix_histogram_clone(jxl_context *alloc,
                                                   const jxl_prefix_histogram *src,
                                                   jxl_prefix_histogram *out) {
     memset(out, 0, sizeof(*out));
@@ -869,7 +869,7 @@ static jxl_coding_status_t prefix_histogram_clone(jxl_allocator_state *alloc,
     return JXL_CODING_OK;
 }
 
-static jxl_coding_status_t coder_clone(jxl_allocator_state *alloc, const jxl_coder *src,
+static jxl_coding_status_t coder_clone(jxl_context *alloc, const jxl_coder *src,
                                        jxl_coder *out) {
                                            size_t i;
     memset(out, 0, sizeof(*out));
@@ -919,7 +919,7 @@ static jxl_coding_status_t coder_clone(jxl_allocator_state *alloc, const jxl_cod
     return JXL_CODING_OK;
 }
 
-jxl_coding_status_t jxl_coding_decoder_clone(jxl_allocator_state *alloc,
+jxl_coding_status_t jxl_coding_decoder_clone(jxl_context *alloc,
                                              const jxl_coding_decoder *src,
                                              jxl_coding_decoder **out) {
     jxl_coding_status_t st;
@@ -967,7 +967,7 @@ jxl_coding_status_t jxl_coding_decoder_clone(jxl_allocator_state *alloc,
     return JXL_CODING_OK;
 }
 
-jxl_coding_status_t jxl_coding_decoder_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_coding_status_t jxl_coding_decoder_parse(jxl_context *alloc, jxl_bs *bs,
                                                uint32_t num_dist, jxl_coding_decoder **out) {
     uint32_t dist_count;
     jxl_coding_decoder *dec;
@@ -1378,7 +1378,7 @@ static int cluster_set_has_hole(const uint8_t *clusters, size_t len, uint32_t nu
     return 0;
 }
 
-jxl_coding_status_t jxl_coding_read_clusters(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_coding_status_t jxl_coding_read_clusters(jxl_context *alloc, jxl_bs *bs,
                                              uint32_t num_dist, uint32_t *num_clusters_out,
                                              uint8_t **clusters_out, size_t *clusters_len_out) {
                                                  uint32_t i;

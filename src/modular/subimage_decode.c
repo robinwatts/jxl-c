@@ -231,7 +231,7 @@ static jxl_modular_status_t transformed_subimage_decode(
 }
 
 static jxl_modular_status_t dest_decode_transformed_channels(
-    jxl_context *ctx, jxl_allocator_state *alloc, jxl_bs *bs, jxl_modular_image_destination *dest,
+    jxl_context *ctx, jxl_context *alloc, jxl_bs *bs, jxl_modular_image_destination *dest,
     size_t channel_end, uint32_t stream_index, int allow_partial) {
     size_t i;
     const jxl_modular_channels *layout;
@@ -278,7 +278,7 @@ static jxl_modular_status_t dest_decode_transformed_channels(
     return overall;
 }
 
-jxl_modular_status_t jxl_modular_subimage_decode(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_modular_subimage_decode(jxl_context *ctx, jxl_context *alloc,
                                                  jxl_bs *bs, jxl_modular_image_destination *dest,
                                                  uint32_t stream_index, int allow_partial) {
     const jxl_modular_channels *layout;
@@ -299,7 +299,7 @@ jxl_modular_status_t jxl_modular_subimage_decode(jxl_context *ctx, jxl_allocator
                                             allow_partial);
 }
 
-jxl_modular_status_t jxl_modular_gmodular_decode(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_modular_gmodular_decode(jxl_context *ctx, jxl_context *alloc,
                                                  jxl_bs *bs, jxl_modular_image_destination *dest,
                                                  int allow_partial) {
     const jxl_modular_channels *layout;
@@ -333,7 +333,7 @@ jxl_modular_status_t jxl_modular_pass_group_decode(jxl_context *ctx, jxl_bs *bs,
                                                    int *out_partial) {
     size_t i;
     const jxl_ma_config *ma;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     const jxl_modular_header *header;
     const jxl_modular_channels *channels;
     jxl_modular_grid_i32 **grid_ptrs;
@@ -390,7 +390,7 @@ jxl_modular_status_t jxl_modular_pass_group_decode(jxl_context *ctx, jxl_bs *bs,
     return st;
 }
 
-jxl_modular_status_t jxl_modular_dest_apply_local_header(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_modular_status_t jxl_modular_dest_apply_local_header(jxl_context *alloc, jxl_bs *bs,
                                                          const jxl_modular_parse_ctx *ctx,
                                                          jxl_modular_image_destination *dest) {
     jxl_modular_channels channels;

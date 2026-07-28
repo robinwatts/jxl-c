@@ -37,7 +37,7 @@ void jxl_transform_squeeze_init(jxl_transform_squeeze *sq) {
     }
 }
 
-void jxl_transform_squeeze_free(jxl_allocator_state *alloc, jxl_transform_squeeze *sq) {
+void jxl_transform_squeeze_free(jxl_context *alloc, jxl_transform_squeeze *sq) {
     if (sq == NULL) {
         return;
     }
@@ -46,7 +46,7 @@ void jxl_transform_squeeze_free(jxl_allocator_state *alloc, jxl_transform_squeez
     sq->sp_len = 0;
 }
 
-void jxl_transform_info_free(jxl_allocator_state *alloc, jxl_transform_info *tr) {
+void jxl_transform_info_free(jxl_context *alloc, jxl_transform_info *tr) {
     if (tr == NULL) {
         return;
     }
@@ -82,7 +82,7 @@ static jxl_modular_status_t palette_parse(jxl_bs *bs, const jxl_wp_header *wp,
     return JXL_MODULAR_OK;
 }
 
-static jxl_modular_status_t squeeze_parse(jxl_allocator_state *alloc, jxl_bs *bs, jxl_transform_squeeze *out) {
+static jxl_modular_status_t squeeze_parse(jxl_context *alloc, jxl_bs *bs, jxl_transform_squeeze *out) {
     jxl_transform_squeeze_free(alloc, out);
     jxl_transform_squeeze_init(out);
     JXL_MODULAR_TRY_BS(jxl_bs_read_u32(bs, k_squeeze_num_sq, &out->num_sq));
@@ -110,7 +110,7 @@ static jxl_modular_status_t squeeze_parse(jxl_allocator_state *alloc, jxl_bs *bs
     return JXL_MODULAR_OK;
 }
 
-jxl_modular_status_t jxl_transform_info_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_modular_status_t jxl_transform_info_parse(jxl_context *alloc, jxl_bs *bs,
                                                 const jxl_wp_header *wp,
                                               jxl_transform_info *out) {
     uint32_t tr;
@@ -154,7 +154,7 @@ static jxl_modular_status_t rct_prepare(jxl_transform_rct *rct, jxl_modular_chan
     return JXL_MODULAR_OK;
 }
 
-static jxl_modular_status_t palette_prepare(jxl_allocator_state *alloc, jxl_transform_palette *pal,
+static jxl_modular_status_t palette_prepare(jxl_context *alloc, jxl_transform_palette *pal,
                                             jxl_modular_channels *channels) {
                                                 size_t i;
     uint32_t begin_c = pal->begin_c;
@@ -189,7 +189,7 @@ static jxl_modular_status_t palette_prepare(jxl_allocator_state *alloc, jxl_tran
     return JXL_MODULAR_OK;
 }
 
-static int sq_params_push(jxl_allocator_state *alloc, jxl_squeeze_params **tmp, size_t *tmp_len,
+static int sq_params_push(jxl_context *alloc, jxl_squeeze_params **tmp, size_t *tmp_len,
                           size_t *tmp_cap, jxl_squeeze_params params) {
     size_t new_cap;
     jxl_squeeze_params *grown;
@@ -208,7 +208,7 @@ static int sq_params_push(jxl_allocator_state *alloc, jxl_squeeze_params **tmp, 
     return 1;
 }
 
-static void squeeze_set_default_params(jxl_allocator_state *alloc, jxl_transform_squeeze *sq, const jxl_modular_channels *channels) {
+static void squeeze_set_default_params(jxl_context *alloc, jxl_transform_squeeze *sq, const jxl_modular_channels *channels) {
     size_t tmp_len;
     size_t tmp_cap;
     jxl_squeeze_params param_base;
@@ -309,7 +309,7 @@ squeeze_defaults_done:
     }
 }
 
-void jxl_transform_squeeze_rebuild_default_params(jxl_allocator_state *alloc,
+void jxl_transform_squeeze_rebuild_default_params(jxl_context *alloc,
                                                 jxl_transform_squeeze *sq,
                                                 const jxl_modular_channels *channels) {
     if (sq == NULL || channels == NULL) {
@@ -322,7 +322,7 @@ void jxl_transform_squeeze_rebuild_default_params(jxl_allocator_state *alloc,
     squeeze_set_default_params(alloc, sq, channels);
 }
 
-static jxl_modular_status_t squeeze_apply_step_channels(jxl_allocator_state *alloc, const jxl_squeeze_params *sp,
+static jxl_modular_status_t squeeze_apply_step_channels(jxl_context *alloc, const jxl_squeeze_params *sp,
                                                           jxl_modular_channels *channels) {
     uint32_t idx;
     size_t residu_count;
@@ -411,7 +411,7 @@ static jxl_modular_status_t squeeze_apply_step_channels(jxl_allocator_state *all
     return JXL_MODULAR_OK;
 }
 
-static jxl_modular_status_t squeeze_prepare(jxl_allocator_state *alloc, jxl_transform_squeeze *sq, jxl_modular_channels *channels) {
+static jxl_modular_status_t squeeze_prepare(jxl_context *alloc, jxl_transform_squeeze *sq, jxl_modular_channels *channels) {
     size_t si;
     squeeze_set_default_params(alloc, sq, channels);
     for (si = 0; si < sq->sp_len; ++si) {
@@ -423,7 +423,7 @@ static jxl_modular_status_t squeeze_prepare(jxl_allocator_state *alloc, jxl_tran
     return JXL_MODULAR_OK;
 }
 
-size_t jxl_transform_squeeze_inverse_steps(jxl_allocator_state *alloc,
+size_t jxl_transform_squeeze_inverse_steps(jxl_context *alloc,
                                            const jxl_transform_squeeze *sq,
                                            const jxl_modular_params *params,
                                            jxl_squeeze_inverse_step *steps, size_t steps_cap) {
@@ -470,7 +470,7 @@ size_t jxl_transform_squeeze_inverse_steps(jxl_allocator_state *alloc,
     return n;
 }
 
-jxl_modular_status_t jxl_transform_prepare_channel_info(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_transform_prepare_channel_info(jxl_context *alloc,
                                                       jxl_transform_info *tr,
                                                           jxl_modular_channels *channels) {
     if (tr == NULL || channels == NULL) {

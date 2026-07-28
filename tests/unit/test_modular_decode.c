@@ -4,7 +4,7 @@
 
 #include "allocator.h"
 
-static jxl_allocator_state *test_alloc(void) {
+static jxl_context *test_alloc(void) {
     static jxl_allocator_state alloc;
     static int init;
     if (!init) { jxl_allocator_init(&alloc, NULL); init = 1; }

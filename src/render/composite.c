@@ -9,7 +9,7 @@
 
 #include <string.h>
 
-int jxl_render_composite_preprocess(jxl_context *ctx, jxl_allocator_state *alloc,
+int jxl_render_composite_preprocess(jxl_context *ctx, jxl_context *alloc,
                                     const jxl_parsed_image_header *parsed,
                                     const jxl_frame_header *fh, jxl_render *r) {
     int skip_blending;
@@ -37,7 +37,7 @@ int jxl_render_composite_preprocess(jxl_context *ctx, jxl_allocator_state *alloc
     return skip_blending;
 }
 
-void jxl_ref_image_release(jxl_allocator_state *alloc, jxl_ref_image *img) {
+void jxl_ref_image_release(jxl_context *alloc, jxl_ref_image *img) {
     if (alloc == NULL || img == NULL || !img->valid) {
         return;
     }
@@ -54,7 +54,7 @@ void jxl_ref_image_release(jxl_allocator_state *alloc, jxl_ref_image *img) {
     memset(img, 0, sizeof(*img));
 }
 
-jxl_status_t jxl_ref_image_from_canvas(jxl_allocator_state *alloc, const jxl_frame_header *fh,
+jxl_status_t jxl_ref_image_from_canvas(jxl_context *alloc, const jxl_frame_header *fh,
                                        const jxl_render *canvas, jxl_ref_image *out) {
                                            uint32_t p;
                                            uint32_t y;

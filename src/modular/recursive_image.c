@@ -21,7 +21,7 @@ void jxl_modular_recursive_image_init(jxl_modular_recursive_image *img) {
     }
 }
 
-void jxl_modular_recursive_image_teardown(jxl_allocator_state *alloc,
+void jxl_modular_recursive_image_teardown(jxl_context *alloc,
                                         jxl_modular_recursive_image *img) {
     if (img == NULL) {
         return;
@@ -56,7 +56,7 @@ int jxl_modular_recursive_image_is_valid(const jxl_modular_recursive_image *img)
 }
 
 jxl_modular_status_t jxl_modular_subimage_recursive(
-    jxl_allocator_state *alloc, jxl_bs *bs, const jxl_modular_transformed_subimage *sub,
+    jxl_context *alloc, jxl_bs *bs, const jxl_modular_transformed_subimage *sub,
     jxl_modular_image_destination *dest, const jxl_modular_params *mod_params,
     const jxl_ma_config *global_ma, int allow_partial, jxl_modular_recursive_image *out) {
     size_t ti;

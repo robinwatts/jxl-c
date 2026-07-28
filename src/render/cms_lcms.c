@@ -16,12 +16,12 @@
 /* Pixel format used by crates/jxl-oxide/src/lcms2.rs (not TYPE_RGB_FLT). */
 #define JXL_CMS_PIXEL_FORMAT_RGB_FLT ((cmsUInt32Number)0x40001cu)
 
-static jxl_allocator_state *cms_alloc_state(cmsContext ctx) {
-    return (jxl_allocator_state *)cmsGetContextUserData(ctx);
+static jxl_context *cms_alloc_state(cmsContext ctx) {
+    return (jxl_context *)cmsGetContextUserData(ctx);
 }
 
 static void *cms_lcms_malloc(cmsContext ctx, cmsUInt32Number size) {
-    jxl_allocator_state *alloc = cms_alloc_state(ctx);
+    jxl_context *alloc = cms_alloc_state(ctx);
     if (alloc == NULL || size == 0) {
         return NULL;
     }
@@ -29,7 +29,7 @@ static void *cms_lcms_malloc(cmsContext ctx, cmsUInt32Number size) {
 }
 
 static void cms_lcms_free(cmsContext ctx, void *ptr) {
-    jxl_allocator_state *alloc = cms_alloc_state(ctx);
+    jxl_context *alloc = cms_alloc_state(ctx);
     if (alloc == NULL) {
         return;
     }
@@ -37,7 +37,7 @@ static void cms_lcms_free(cmsContext ctx, void *ptr) {
 }
 
 static void *cms_lcms_realloc(cmsContext ctx, void *ptr, cmsUInt32Number new_size) {
-    jxl_allocator_state *alloc = cms_alloc_state(ctx);
+    jxl_context *alloc = cms_alloc_state(ctx);
     if (alloc == NULL) {
         return NULL;
     }
@@ -45,7 +45,7 @@ static void *cms_lcms_realloc(cmsContext ctx, void *ptr, cmsUInt32Number new_siz
 }
 
 static void *cms_lcms_malloc_zero(cmsContext ctx, cmsUInt32Number size) {
-    jxl_allocator_state *alloc = cms_alloc_state(ctx);
+    jxl_context *alloc = cms_alloc_state(ctx);
     if (alloc == NULL || size == 0) {
         return NULL;
     }
@@ -53,7 +53,7 @@ static void *cms_lcms_malloc_zero(cmsContext ctx, cmsUInt32Number size) {
 }
 
 static void *cms_lcms_calloc(cmsContext ctx, cmsUInt32Number num, cmsUInt32Number size) {
-    jxl_allocator_state *alloc = cms_alloc_state(ctx);
+    jxl_context *alloc = cms_alloc_state(ctx);
     if (alloc == NULL || num == 0 || size == 0) {
         return NULL;
     }
@@ -78,7 +78,7 @@ static cmsPluginMemHandler k_jxl_cms_mem_plugin = {
     cms_lcms_dup,
 };
 
-static cmsContext cms_create_jxl_context(jxl_allocator_state *alloc) {
+static cmsContext cms_create_jxl_context(jxl_context *alloc) {
     if (alloc == NULL) {
         return NULL;
     }
@@ -108,7 +108,7 @@ static int cms_profile_channels(cmsHPROFILE profile) {
 }
 #endif
 
-jxl_status_t jxl_cms_transform_linear_srgb_to_icc(jxl_allocator_state *alloc, float *r, float *g,
+jxl_status_t jxl_cms_transform_linear_srgb_to_icc(jxl_context *alloc, float *r, float *g,
                                                   float *b, size_t num_pixels,
                                                   const uint8_t *dst_icc, size_t dst_icc_len) {
 #if !defined(JXL_C_HAVE_LCMS2)
@@ -218,7 +218,7 @@ jxl_status_t jxl_cms_transform_linear_srgb_to_icc(jxl_allocator_state *alloc, fl
 #endif
 }
 
-jxl_status_t jxl_cms_transform_icc_to_icc(jxl_allocator_state *alloc, float **planes,
+jxl_status_t jxl_cms_transform_icc_to_icc(jxl_context *alloc, float **planes,
                                           uint32_t num_planes, size_t num_pixels,
                                           const uint8_t *src_icc, size_t src_icc_len,
                                           const uint8_t *dst_icc, size_t dst_icc_len) {

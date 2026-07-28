@@ -6,7 +6,7 @@
 #include <string.h>
 
 struct jxl_jbr_data {
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     jxl_jbr_header header;
     int header_parsed;
     jxl_brotli_decoder *brotli;
@@ -15,7 +15,7 @@ struct jxl_jbr_data {
     int finalized;
 };
 
-jxl_jbr_data *jxl_jbr_data_create(jxl_allocator_state *alloc) {
+jxl_jbr_data *jxl_jbr_data_create(jxl_context *alloc) {
     jxl_jbr_data *data = jxl_calloc(alloc, 1, sizeof(*data));
     if (data == NULL) {
         return NULL;
@@ -25,11 +25,11 @@ jxl_jbr_data *jxl_jbr_data_create(jxl_allocator_state *alloc) {
     return data;
 }
 
-void jxl_jbr_data_destroy(jxl_allocator_state *alloc, jxl_jbr_data *data) {
+void jxl_jbr_data_destroy(jxl_context *alloc, jxl_jbr_data *data) {
     if (data == NULL) {
         return;
     }
-    jxl_allocator_state *a = alloc != NULL ? alloc : data->alloc;
+    jxl_context *a = alloc != NULL ? alloc : data->alloc;
     jxl_jbr_header_free(a, &data->header);
     if (data->brotli != NULL) {
         jxl_brotli_decoder_destroy(a, data->brotli);
@@ -38,7 +38,7 @@ void jxl_jbr_data_destroy(jxl_allocator_state *alloc, jxl_jbr_data *data) {
     jxl_free(a, data);
 }
 
-static jxl_jbr_status start_from_buffer(jxl_allocator_state *alloc, jxl_jbr_data *data,
+static jxl_jbr_status start_from_buffer(jxl_context *alloc, jxl_jbr_data *data,
                                         const uint8_t *buf, size_t len) {
     jxl_bs bs;
     jxl_bs_init(&bs, buf, len);
@@ -71,7 +71,7 @@ static jxl_jbr_status start_from_buffer(jxl_allocator_state *alloc, jxl_jbr_data
     return JXL_JBR_OK;
 }
 
-jxl_jbr_status jxl_jbr_data_try_parse(jxl_allocator_state *alloc, const uint8_t *buf, size_t len,
+jxl_jbr_status jxl_jbr_data_try_parse(jxl_context *alloc, const uint8_t *buf, size_t len,
                                       jxl_jbr_data **out) {
     if (alloc == NULL || out == NULL) {
         return JXL_JBR_BITSTREAM_ERROR;
@@ -93,12 +93,12 @@ jxl_jbr_status jxl_jbr_data_try_parse(jxl_allocator_state *alloc, const uint8_t 
     return JXL_JBR_OK;
 }
 
-jxl_jbr_status jxl_jbr_data_feed(jxl_allocator_state *alloc, jxl_jbr_data *data, const uint8_t *buf,
+jxl_jbr_status jxl_jbr_data_feed(jxl_context *alloc, jxl_jbr_data *data, const uint8_t *buf,
                                  size_t len) {
     if (data == NULL) {
         return JXL_JBR_BITSTREAM_ERROR;
     }
-    jxl_allocator_state *a = alloc != NULL ? alloc : data->alloc;
+    jxl_context *a = alloc != NULL ? alloc : data->alloc;
     if (!data->header_parsed) {
         return start_from_buffer(a, data, buf, len);
     }
@@ -114,12 +114,12 @@ jxl_jbr_status jxl_jbr_data_feed(jxl_allocator_state *alloc, jxl_jbr_data *data,
     return JXL_JBR_OK;
 }
 
-jxl_jbr_status jxl_jbr_data_finalize(jxl_allocator_state *alloc, jxl_jbr_data *data) {
+jxl_jbr_status jxl_jbr_data_finalize(jxl_context *alloc, jxl_jbr_data *data) {
     size_t out_len;
     if (data == NULL || !data->header_parsed || data->brotli == NULL) {
         return JXL_JBR_INVALID_DATA;
     }
-    jxl_allocator_state *a = alloc != NULL ? alloc : data->alloc;
+    jxl_context *a = alloc != NULL ? alloc : data->alloc;
     if (jxl_brotli_decoder_finish(data->brotli) != JXL_BS_OK) {
         return JXL_JBR_BROTLI_ERROR;
     }

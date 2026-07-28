@@ -82,7 +82,7 @@ void jxl_filter_pad_params_compute(jxl_filter_pad_params *out,
     out->frame.frame_top = region_top;
 }
 
-int jxl_padded_f32_alloc(jxl_allocator_state *alloc, size_t buf_width, size_t buf_height,
+int jxl_padded_f32_alloc(jxl_context *alloc, size_t buf_width, size_t buf_height,
                          jxl_padded_f32 *out) {
     size_t count;
     if (alloc == NULL || out == NULL || buf_width == 0 || buf_height == 0) {
@@ -104,7 +104,7 @@ int jxl_padded_f32_alloc(jxl_allocator_state *alloc, size_t buf_width, size_t bu
     return 1;
 }
 
-void jxl_padded_f32_free(jxl_allocator_state *alloc, jxl_padded_f32 *buf) {
+void jxl_padded_f32_free(jxl_context *alloc, jxl_padded_f32 *buf) {
     if (buf == NULL) {
         return;
     }

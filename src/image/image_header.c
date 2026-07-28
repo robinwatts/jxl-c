@@ -33,7 +33,7 @@ jxl_bs_status_t jxl_image_header_parse(jxl_bs *bs, jxl_parsed_image_header *out)
     return JXL_BS_OK;
 }
 
-jxl_bs_status_t jxl_image_skip_post_header(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_bs_status_t jxl_image_skip_post_header(jxl_context *alloc, jxl_bs *bs,
                                            const jxl_parsed_image_header *parsed) {
     if (bs == NULL || parsed == NULL) {
         return JXL_BS_VALIDATION_FAILED;
@@ -47,7 +47,7 @@ jxl_bs_status_t jxl_image_skip_post_header(jxl_allocator_state *alloc, jxl_bs *b
     return jxl_bs_zero_pad_to_byte(bs);
 }
 
-void jxl_parsed_image_header_free_embedded_icc(jxl_allocator_state *alloc,
+void jxl_parsed_image_header_free_embedded_icc(jxl_context *alloc,
                                              jxl_parsed_image_header *parsed) {
     if (alloc == NULL || parsed == NULL) {
         return;
@@ -59,7 +59,7 @@ void jxl_parsed_image_header_free_embedded_icc(jxl_allocator_state *alloc,
     }
 }
 
-jxl_bs_status_t jxl_image_decode_post_header(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_bs_status_t jxl_image_decode_post_header(jxl_context *alloc, jxl_bs *bs,
                                              jxl_parsed_image_header *parsed) {
     if (bs == NULL || parsed == NULL) {
         return JXL_BS_VALIDATION_FAILED;

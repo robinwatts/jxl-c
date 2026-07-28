@@ -57,7 +57,7 @@ void jxl_hf_global_init(jxl_hf_global *hf) {
     jxl_dequant_matrix_set_init(&hf->dequant_matrices);
 }
 
-void jxl_hf_global_free(jxl_allocator_state *alloc, jxl_hf_global *hf) {
+void jxl_hf_global_free(jxl_context *alloc, jxl_hf_global *hf) {
     if (hf == NULL) {
         return;
     }
@@ -72,7 +72,7 @@ void jxl_hf_global_free(jxl_allocator_state *alloc, jxl_hf_global *hf) {
     jxl_hf_global_init(hf);
 }
 
-jxl_frame_status_t jxl_hf_global_parse(jxl_context *ctx, jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_hf_global_parse(jxl_context *ctx, jxl_context *alloc, jxl_bs *bs,
                                        const jxl_hf_global_params *params, jxl_hf_global *out) {
                                            size_t i;
     uint32_t preset_raw;

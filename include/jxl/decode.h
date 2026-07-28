@@ -131,7 +131,7 @@ typedef struct {
  * G, GA, RGB, or RGBA; 8-bit uses one byte per channel, >8-bit uses 16-bit samples
  * (little-endian in the buffer unless big_endian is set).
  *
- * On success, *jxl_out receives an allocated buffer (free with jxl_ctx_free(ctx, *jxl_out)).
+ * On success, *jxl_out receives an allocated buffer (free with jxl_free(ctx, *jxl_out)).
  */
 jxl_status_t jxl_simple_lossless_encode(jxl_context *ctx,
                                       const jxl_simple_lossless_image_desc *desc,

@@ -81,10 +81,10 @@ typedef struct {
 } jxl_jbr_header;
 
 void jxl_jbr_header_init(jxl_jbr_header *h);
-void jxl_jbr_header_free(jxl_allocator_state *alloc, jxl_jbr_header *h);
+void jxl_jbr_header_free(jxl_context *alloc, jxl_jbr_header *h);
 
 /* Returns JXL_JBR_NEED_MORE_DATA on EOF during parse. */
-jxl_jbr_status jxl_jbr_header_parse(jxl_allocator_state *alloc, jxl_bs *bs, jxl_jbr_header *out);
+jxl_jbr_status jxl_jbr_header_parse(jxl_context *alloc, jxl_bs *bs, jxl_jbr_header *out);
 
 size_t jxl_jbr_header_expected_data_len(const jxl_jbr_header *h);
 size_t jxl_jbr_header_expected_icc_len(const jxl_jbr_header *h);

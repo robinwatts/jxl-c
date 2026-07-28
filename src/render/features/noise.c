@@ -54,7 +54,7 @@ static void xorshift_fill_batch(jxl_xorshift128plus *rng, uint64_t out[NOISE_N])
     }
 }
 
-static jxl_noise_group *noise_group_new(jxl_allocator_state *alloc, size_t width, size_t height,
+static jxl_noise_group *noise_group_new(jxl_context *alloc, size_t width, size_t height,
                                         uint64_t seed0, uint64_t seed1) {
                                             size_t ch;
     size_t width_n2 = (width + NOISE_N * 2 - 1) / (NOISE_N * 2);
@@ -102,7 +102,7 @@ static jxl_noise_group *noise_group_new(jxl_allocator_state *alloc, size_t width
     return group;
 }
 
-static void noise_group_free(jxl_allocator_state *alloc, jxl_noise_group *group) {
+static void noise_group_free(jxl_context *alloc, jxl_noise_group *group) {
     size_t ch;
     if (group == NULL) {
         return;
@@ -220,7 +220,7 @@ static void fill_once(float *out, size_t out_len, size_t fill_y,
                     noise_subgrid_width(r));
 }
 
-static void convolve_fill(jxl_allocator_state *alloc, float *out, size_t width, size_t height,
+static void convolve_fill(jxl_context *alloc, float *out, size_t width, size_t height,
                           size_t out_stride, const jxl_noise_subgrid adjacent[9]) {
                               size_t y;
     const jxl_noise_subgrid *this_sg = &adjacent[4];
@@ -310,7 +310,7 @@ static void convolve_fill(jxl_allocator_state *alloc, float *out, size_t width, 
     jxl_free(alloc, rows);
 }
 
-static int init_noise_planes(jxl_allocator_state *alloc, const jxl_frame_header *header,
+static int init_noise_planes(jxl_context *alloc, const jxl_frame_header *header,
                              uint32_t visible_frames, uint32_t invisible_frames, float **out_x,
                              float **out_y, float **out_b) {
                                  size_t group_idx;
@@ -418,7 +418,7 @@ static int init_noise_planes(jxl_allocator_state *alloc, const jxl_frame_header 
     return 1;
 }
 
-int jxl_render_noise(jxl_allocator_state *alloc, const jxl_frame_header *header,
+int jxl_render_noise(jxl_context *alloc, const jxl_frame_header *header,
                      uint32_t visible_frames, uint32_t invisible_frames, float corr_x, float corr_b,
                      float *plane_x, float *plane_y, float *plane_b, uint32_t width,
                      uint32_t height, const jxl_noise_parameters *params,
@@ -545,9 +545,9 @@ uint64_t jxl_noise_planes_ch0_checksum(const jxl_frame_header *header, uint32_t 
         memcpy(&bits, &noise_x[i], sizeof(bits));
         h = h * (uint64_t)31 + ((uint64_t)bits ^ (uint64_t)i);
     }
-    jxl_free(&alloc, noise_x);
-    jxl_free(&alloc, noise_y);
-    jxl_free(&alloc, noise_b);
+    jxl_free_state(&alloc, noise_x);
+    jxl_free_state(&alloc, noise_y);
+    jxl_free_state(&alloc, noise_b);
     return h;
 }
 #endif

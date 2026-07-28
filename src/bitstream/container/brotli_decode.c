@@ -6,7 +6,7 @@
 
 struct jxl_brotli_decoder {
     BrotliDecoderState *state;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     uint8_t *out;
     size_t out_len;
     size_t out_cap;
@@ -14,7 +14,7 @@ struct jxl_brotli_decoder {
 };
 
 static void *brotli_jxl_alloc(void *opaque, size_t size) {
-    jxl_allocator_state *alloc = (jxl_allocator_state *)opaque;
+    jxl_context *alloc = (jxl_context *)opaque;
     if (alloc == NULL || size == 0) {
         return NULL;
     }
@@ -22,21 +22,21 @@ static void *brotli_jxl_alloc(void *opaque, size_t size) {
 }
 
 static void brotli_jxl_free(void *opaque, void *address) {
-    jxl_allocator_state *alloc = (jxl_allocator_state *)opaque;
+    jxl_context *alloc = (jxl_context *)opaque;
     if (alloc == NULL) {
         return;
     }
     jxl_free(alloc, address);
 }
 
-static BrotliDecoderState *brotli_create_state(jxl_allocator_state *alloc) {
+static BrotliDecoderState *brotli_create_state(jxl_context *alloc) {
     if (alloc == NULL) {
         return NULL;
     }
     return BrotliDecoderCreateInstance(brotli_jxl_alloc, brotli_jxl_free, alloc);
 }
 
-jxl_brotli_decoder *jxl_brotli_decoder_create(jxl_allocator_state *alloc) {
+jxl_brotli_decoder *jxl_brotli_decoder_create(jxl_context *alloc) {
     jxl_brotli_decoder *dec = jxl_calloc(alloc, 1, sizeof(*dec));
     if (dec == NULL) {
         return NULL;
@@ -50,7 +50,7 @@ jxl_brotli_decoder *jxl_brotli_decoder_create(jxl_allocator_state *alloc) {
     return dec;
 }
 
-void jxl_brotli_decoder_destroy(jxl_allocator_state *alloc, jxl_brotli_decoder *dec) {
+void jxl_brotli_decoder_destroy(jxl_context *alloc, jxl_brotli_decoder *dec) {
     if (dec == NULL) {
         return;
     }

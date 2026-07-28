@@ -215,7 +215,7 @@ typedef struct BitWriterGroup {
   BitWriter writers[4];
 } BitWriterGroup;
 
-static void bit_writer_allocate(jxl_allocator_state *alloc, BitWriter *writer,
+static void bit_writer_allocate(jxl_context *alloc, BitWriter *writer,
                                 size_t maximum_bit_size) {
   assert(writer->data == NULL);
   writer->data = (uint8_t *)jxl_alloc(alloc, maximum_bit_size / 8 + 64);
@@ -259,7 +259,7 @@ FJXL_INLINE void bit_writer_write_multiple(BitWriter *writer, const uint64_t *nb
   writer->bytes_written += bytes_in_buffer;
 }
 
-static void bit_writer_free(jxl_allocator_state *alloc, BitWriter *writer) {
+static void bit_writer_free(jxl_context *alloc, BitWriter *writer) {
   jxl_free(alloc, writer->data);
   writer->data = NULL;
 }
@@ -339,7 +339,7 @@ static void prefix_code_compute_canonical_code(const uint8_t *first_chunk_nbits,
 }
 
 static void prefix_code_compute_code_lengths_nonzero_impl_u32(
-    jxl_allocator_state *alloc, const uint64_t *freqs, size_t n, size_t precision, uint32_t infty,
+    jxl_context *alloc, const uint64_t *freqs, size_t n, size_t precision, uint32_t infty,
     const uint8_t *min_limit, const uint8_t *max_limit, uint8_t *nbits) {
   size_t table_size = ((1U << precision) + 1) * (n + 1);
   uint32_t *dynp = (uint32_t *)jxl_alloc(alloc, table_size * sizeof(uint32_t));
@@ -380,7 +380,7 @@ static void prefix_code_compute_code_lengths_nonzero_impl_u32(
 }
 
 static void prefix_code_compute_code_lengths_nonzero_impl_u64(
-    jxl_allocator_state *alloc, const uint64_t *freqs, size_t n, size_t precision, uint64_t infty,
+    jxl_context *alloc, const uint64_t *freqs, size_t n, size_t precision, uint64_t infty,
     const uint8_t *min_limit, const uint8_t *max_limit, uint8_t *nbits) {
   size_t table_size = ((1U << precision) + 1) * (n + 1);
   uint64_t *dynp = (uint64_t *)jxl_alloc(alloc, table_size * sizeof(uint64_t));
@@ -420,7 +420,7 @@ static void prefix_code_compute_code_lengths_nonzero_impl_u64(
   jxl_free(alloc, dynp);
 }
 
-static void prefix_code_compute_code_lengths_nonzero(jxl_allocator_state *alloc, const uint64_t *freqs, size_t n,
+static void prefix_code_compute_code_lengths_nonzero(jxl_context *alloc, const uint64_t *freqs, size_t n,
                                                      uint8_t *min_limit, uint8_t *max_limit,
                                                      uint8_t *nbits) {
   size_t precision = 0;
@@ -446,7 +446,7 @@ static void prefix_code_compute_code_lengths_nonzero(jxl_allocator_state *alloc,
   }
 }
 
-static void prefix_code_compute_code_lengths(jxl_allocator_state *alloc, const uint64_t *freqs, size_t n,
+static void prefix_code_compute_code_lengths(jxl_context *alloc, const uint64_t *freqs, size_t n,
                                              const uint8_t *min_limit_in,
                                              const uint8_t *max_limit_in,
                                              uint8_t *nbits) {
@@ -480,7 +480,7 @@ static void prefix_code_compute_code_lengths(jxl_allocator_state *alloc, const u
   }
 }
 
-static void prefix_code_init(jxl_allocator_state *alloc, PrefixCode *code, const BitDepthInfo *bd,
+static void prefix_code_init(jxl_context *alloc, PrefixCode *code, const BitDepthInfo *bd,
                              uint64_t *raw_counts, uint64_t *lz77_counts) {
   uint64_t level1_counts[20];
   size_t i;
@@ -525,7 +525,7 @@ static void prefix_code_init(jxl_allocator_state *alloc, PrefixCode *code, const
   }
 }
 
-static void prefix_code_write_to(jxl_allocator_state *alloc, const PrefixCode *code,
+static void prefix_code_write_to(jxl_context *alloc, const PrefixCode *code,
                                  BitWriter *writer) {
   uint64_t code_length_counts[18] = {0};
   code_length_counts[17] = 3 + 2 * (33 - 1);
@@ -570,7 +570,7 @@ static void prefix_code_write_to(jxl_allocator_state *alloc, const PrefixCode *c
 
 
 struct JxlSimpleLosslessFrameState {
-  jxl_allocator_state *alloc;
+  jxl_context *alloc;
   JxlChunkedFrameInputSource input;
   size_t width;
   size_t height;
@@ -1093,7 +1093,7 @@ static int32_t *align_ptr_i32(int32_t *ptr) {
   return ptr;
 }
 
-static void process_image_area(jxl_allocator_state *alloc, const unsigned char *rgba, size_t x0, size_t y0, size_t xs,
+static void process_image_area(jxl_context *alloc, const unsigned char *rgba, size_t x0, size_t y0, size_t xs,
                                size_t yskip, size_t ys, size_t row_stride,
                                const BitDepthInfo *bd, size_t nb_chans, int big_endian,
                                ChannelRowProcessor *processors) {
@@ -1163,7 +1163,7 @@ static void collector_finalize_wrapper(void *ctx, size_t run) {
 
 
 
-void prepare_dc_global_common(jxl_allocator_state *alloc, int is_single_group, size_t width, size_t height,
+void prepare_dc_global_common(jxl_context *alloc, int is_single_group, size_t width, size_t height,
                               const PrefixCode code[4], BitWriter *output) {
   static const int tree_vals[] = {1, 2, 1, 4, 1, 0, 0, 5, 0, 0, 0, 0, 5,
                                   0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 0, 0, 0};
@@ -1222,7 +1222,7 @@ void prepare_dc_global_common(jxl_allocator_state *alloc, int is_single_group, s
   bit_writer_write(output, 1, 1);
 }
 
-void prepare_dc_global(jxl_allocator_state *alloc, int is_single_group, size_t width, size_t height, size_t nb_chans,
+void prepare_dc_global(jxl_context *alloc, int is_single_group, size_t width, size_t height, size_t nb_chans,
                        const PrefixCode code[4], BitWriter *output) {
   prepare_dc_global_common(alloc, is_single_group, width, height, code, output);
   if (nb_chans > 2) {
@@ -1236,7 +1236,7 @@ void prepare_dc_global(jxl_allocator_state *alloc, int is_single_group, size_t w
   if (!is_single_group) bit_writer_zero_pad_to_byte(output);
 }
 
-static void write_ac_section(jxl_allocator_state *alloc, const unsigned char *rgba, size_t x0, size_t y0, size_t xs,
+static void write_ac_section(jxl_context *alloc, const unsigned char *rgba, size_t x0, size_t y0, size_t xs,
                              size_t ys, size_t row_stride, int is_single_group,
                              const BitDepthInfo *bd, size_t nb_chans, int big_endian,
                              const PrefixCode code[4], BitWriterGroup *output) {
@@ -1277,7 +1277,7 @@ static void fill_row_palette(const unsigned char *inrow, size_t xs, size_t nb_ch
   }
 }
 
-static void process_image_area_palette(jxl_allocator_state *alloc, const unsigned char *rgba, size_t x0, size_t y0,
+static void process_image_area_palette(jxl_context *alloc, const unsigned char *rgba, size_t x0, size_t y0,
                                        size_t xs, size_t yskip, size_t ys, size_t row_stride,
                                        const int16_t *lookup, size_t nb_chans,
                                        ChannelRowProcessor *row_encoder) {
@@ -1312,7 +1312,7 @@ static void process_image_area_palette(jxl_allocator_state *alloc, const unsigne
   jxl_free(alloc, group_data[1]);
 }
 
-static void write_ac_section_palette(jxl_allocator_state *alloc, const unsigned char *rgba, size_t x0, size_t y0, size_t xs,
+static void write_ac_section_palette(jxl_context *alloc, const unsigned char *rgba, size_t x0, size_t y0, size_t xs,
                                      size_t ys, size_t row_stride, int is_single_group,
                                      const PrefixCode code[4], const int16_t *lookup,
                                      size_t nb_chans, BitWriter *output) {
@@ -1333,7 +1333,7 @@ static void write_ac_section_palette(jxl_allocator_state *alloc, const unsigned 
   process_image_area_palette(alloc, rgba, x0, y0, xs, 0, ys, row_stride, lookup, nb_chans, &row_encoder);
 }
 
-static void collect_samples(jxl_allocator_state *alloc, const unsigned char *rgba, size_t x0, size_t y0, size_t xs,
+static void collect_samples(jxl_context *alloc, const unsigned char *rgba, size_t x0, size_t y0, size_t xs,
                             size_t row_stride, size_t row_count,
                             uint64_t raw_counts[4][19], uint64_t lz77_counts[4][33],
                             int is_single_group, int palette, const BitDepthInfo *bd,
@@ -1368,7 +1368,7 @@ static void collect_samples(jxl_allocator_state *alloc, const unsigned char *rgb
   }
 }
 
-void prepare_dc_global_palette(jxl_allocator_state *alloc, int is_single_group, size_t width, size_t height, size_t nb_chans,
+void prepare_dc_global_palette(jxl_context *alloc, int is_single_group, size_t width, size_t height, size_t nb_chans,
                                const PrefixCode code[4], const uint32_t *palette, size_t pcolors,
                                BitWriter *output) {
   ChunkEncoder encoder;
@@ -1481,7 +1481,7 @@ static int palette_compare_thunk(const void *ap, const void *bp) {
 #endif
 
 typedef struct SampleRowsCtx {
-  jxl_allocator_state *alloc;
+  jxl_context *alloc;
   JxlChunkedFrameInputSource input;
   size_t width;
   size_t height;
@@ -1516,7 +1516,7 @@ static void sample_rows_impl(void *opaque, size_t xg, size_t yg, size_t num_rows
   ctx->input.release_buffer(ctx->input.opaque, buffer);
 }
 
-static JxlSimpleLosslessFrameState *ll_prepare(jxl_allocator_state *alloc, JxlChunkedFrameInputSource input, size_t width,
+static JxlSimpleLosslessFrameState *ll_prepare(jxl_context *alloc, JxlChunkedFrameInputSource input, size_t width,
                                                size_t height, const BitDepthInfo *bd,
                                                size_t nb_chans, int big_endian, int effort,
                                                int oneshot) {
@@ -1770,7 +1770,7 @@ static void jxl_sl_trivial_runner(void *runner_opaque, void *opaque,
 }
 
 static jxl_status_t jxl_sl_encode_buffer(
-    jxl_allocator_state *alloc, const uint8_t *rgba, size_t width, size_t row_stride,
+    jxl_context *alloc, const uint8_t *rgba, size_t width, size_t row_stride,
     size_t height, size_t nb_chans, size_t bitdepth, int big_endian, int effort,
     uint8_t **output, size_t *output_len) {
   BitDepthInfo bd;
@@ -1821,7 +1821,7 @@ jxl_status_t jxl_simple_lossless_encode(jxl_context *ctx,
                                         const jxl_simple_lossless_image_desc *desc,
                                         const uint8_t *pixels, size_t row_stride,
                                         uint8_t **jxl_out, size_t *jxl_len) {
-  jxl_allocator_state *alloc;
+  jxl_context *alloc;
 
   if (ctx == NULL || desc == NULL || pixels == NULL || jxl_out == NULL || jxl_len == NULL) {
     return JXL_ERROR_INVALID_INPUT;
@@ -1829,7 +1829,7 @@ jxl_status_t jxl_simple_lossless_encode(jxl_context *ctx,
   if (desc->reserved != 0) {
     return JXL_ERROR_INVALID_INPUT;
   }
-  alloc = jxl_context_alloc_state(ctx);
+  alloc = ctx;
   return jxl_sl_encode_buffer(alloc, pixels, desc->width, row_stride, desc->height,
                               desc->num_channels, desc->bits_per_sample, desc->big_endian,
                               desc->effort, jxl_out, jxl_len);

@@ -58,7 +58,7 @@ jxl_inline int16x4_t diff_half_i16(int16x4_t diff) {
         vadd_s16(diff, vreinterpret_s16_u16(vshr_n_u16(vreinterpret_u16_s16(diff), 15))), 1);
 }
 
-static void inverse_h_i16_neon(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+static void inverse_h_i16_neon(jxl_context *alloc, int16_t *merged, size_t width,
                                size_t height, size_t row_stride) {
                                    size_t y4;
     if (row_stride == 0) {
@@ -197,7 +197,7 @@ static void inverse_h_i16_neon(jxl_allocator_state *alloc, int16_t *merged, size
     jxl_free_aligned(alloc, scratch);
 }
 
-static void inverse_v_i16_neon(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+static void inverse_v_i16_neon(jxl_context *alloc, int16_t *merged, size_t width,
                                size_t height, size_t row_stride) {
                                    size_t x4;
     if (row_stride == 0) {
@@ -253,12 +253,12 @@ static void inverse_v_i16_neon(jxl_allocator_state *alloc, int16_t *merged, size
     jxl_free_aligned(alloc, scratch);
 }
 
-void jxl_squeeze_inverse_h_i16_neon(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+void jxl_squeeze_inverse_h_i16_neon(jxl_context *alloc, int16_t *merged, size_t width,
                                     size_t height, size_t row_stride) {
     inverse_h_i16_neon(alloc, merged, width, height, row_stride);
 }
 
-void jxl_squeeze_inverse_v_i16_neon(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+void jxl_squeeze_inverse_v_i16_neon(jxl_context *alloc, int16_t *merged, size_t width,
                                     size_t height, size_t row_stride) {
     inverse_v_i16_neon(alloc, merged, width, height, row_stride);
 }

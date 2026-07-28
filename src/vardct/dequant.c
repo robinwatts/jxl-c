@@ -33,7 +33,7 @@ void jxl_dequant_matrix_params_init(jxl_dequant_matrix_params *p) {
     }
 }
 
-void jxl_dequant_matrix_params_free(jxl_allocator_state *alloc, jxl_dequant_matrix_params *p) {
+void jxl_dequant_matrix_params_free(jxl_context *alloc, jxl_dequant_matrix_params *p) {
     size_t c;
     if (p == NULL) {
         return;
@@ -61,12 +61,12 @@ void jxl_dequant_matrix_set_init(jxl_dequant_matrix_set *set) {
 
 void jxl_dequant_matrix_set_free(jxl_dequant_matrix_set *set) {
     size_t i;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     if (set == NULL) {
         return;
     }
     alloc =
-        set->ctx != NULL ? jxl_context_alloc_state(set->ctx) : NULL;
+        set->ctx != NULL ? set->ctx : NULL;
     if (set->ctx != NULL) {
         jxl_dequant_matrix_set_free_weights(set->ctx, set);
     }
@@ -80,7 +80,7 @@ uint32_t jxl_dequant_matrix_set_stream_index(uint32_t num_lf_groups) {
     return 1u + num_lf_groups * 3u;
 }
 
-static jxl_vardct_status_t copy_dct_bands(jxl_allocator_state *alloc, jxl_dequant_matrix_params *p,
+static jxl_vardct_status_t copy_dct_bands(jxl_context *alloc, jxl_dequant_matrix_params *p,
                                           size_t ch, const float *bands, size_t n) {
     p->dct_bands[ch] = jxl_alloc(alloc, n * sizeof(float));
     if (p->dct_bands[ch] == NULL) {
@@ -91,7 +91,7 @@ static jxl_vardct_status_t copy_dct_bands(jxl_allocator_state *alloc, jxl_dequan
     return JXL_VARDCT_OK;
 }
 
-static jxl_vardct_status_t set_dct_bands_3ch(jxl_allocator_state *alloc,
+static jxl_vardct_status_t set_dct_bands_3ch(jxl_context *alloc,
                                              jxl_dequant_matrix_params *p, const float *ch0,
                                              size_t n0, const float *ch1, size_t n1,
                                              const float *ch2, size_t n2) {
@@ -106,7 +106,7 @@ static jxl_vardct_status_t set_dct_bands_3ch(jxl_allocator_state *alloc,
     return copy_dct_bands(alloc, p, 2, ch2, n2);
 }
 
-static void set_dct_bands(jxl_allocator_state *alloc, jxl_dequant_matrix_params *p, float a0,
+static void set_dct_bands(jxl_context *alloc, jxl_dequant_matrix_params *p, float a0,
                           float b0, float c0, const float *seq_a, const float *seq_b,
                           const float *seq_c) {
                               size_t ch;
@@ -123,7 +123,7 @@ static void set_dct_bands(jxl_allocator_state *alloc, jxl_dequant_matrix_params 
     }
 }
 
-jxl_vardct_status_t jxl_dequant_matrix_params_default(jxl_allocator_state *alloc,
+jxl_vardct_status_t jxl_dequant_matrix_params_default(jxl_context *alloc,
                                                      jxl_transform_type t,
                                                      jxl_dequant_matrix_params *out) {
     if (alloc == NULL || out == NULL) {
@@ -330,7 +330,7 @@ static jxl_vardct_status_t read_fixed_f16(jxl_bs *bs, float *out, size_t n) {
     return JXL_VARDCT_OK;
 }
 
-static jxl_vardct_status_t read_dct_params(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_vardct_status_t read_dct_params(jxl_context *alloc, jxl_bs *bs,
                                              jxl_dequant_matrix_params *p) {
                                                  size_t ch;
     uint32_t num_params = 0;
@@ -360,7 +360,7 @@ static int encoding_allowed(uint32_t mode, jxl_transform_type t) {
     return idx == 0 || idx == 1 || idx == 2 || idx == 3 || idx == 9 || idx == 10;
 }
 
-jxl_vardct_status_t jxl_dequant_matrix_params_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_vardct_status_t jxl_dequant_matrix_params_parse(jxl_context *alloc, jxl_bs *bs,
                                                     jxl_transform_type dct_select,
                                                     const jxl_dequant_matrix_set_params *params,
                                                     jxl_dequant_matrix_params *out) {
@@ -553,7 +553,7 @@ jxl_vardct_status_t jxl_dequant_matrix_params_parse(jxl_allocator_state *alloc, 
     }
 }
 
-jxl_vardct_status_t jxl_dequant_matrix_set_parse(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_vardct_status_t jxl_dequant_matrix_set_parse(jxl_context *ctx, jxl_context *alloc,
                                                  jxl_bs *bs,
                                                  const jxl_dequant_matrix_set_params *params,
                                                  jxl_dequant_matrix_set *out) {

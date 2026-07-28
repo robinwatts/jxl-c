@@ -255,7 +255,7 @@ void jxl_mutable_subgrid_u32_merge_vertical_in_place(jxl_mutable_subgrid_u32 *to
     top->height += bottom.height;
 }
 
-static jxl_mutable_subgrid_u32_list make_groups(jxl_allocator_state *alloc,
+static jxl_mutable_subgrid_u32_list make_groups(jxl_context *alloc,
                                                 jxl_mutable_subgrid_u32 sg, size_t group_width,
                                                 size_t group_height, size_t num_cols,
                                                 size_t num_rows) {
@@ -312,7 +312,7 @@ static jxl_mutable_subgrid_u32_list make_groups(jxl_allocator_state *alloc,
     return list;
 }
 
-jxl_mutable_subgrid_u32_list jxl_mutable_subgrid_u32_into_groups(jxl_allocator_state *alloc,
+jxl_mutable_subgrid_u32_list jxl_mutable_subgrid_u32_into_groups(jxl_context *alloc,
                                                                  jxl_mutable_subgrid_u32 sg,
                                                                  size_t group_width,
                                                                  size_t group_height) {
@@ -322,12 +322,12 @@ jxl_mutable_subgrid_u32_list jxl_mutable_subgrid_u32_into_groups(jxl_allocator_s
 }
 
 jxl_mutable_subgrid_u32_list jxl_mutable_subgrid_u32_into_groups_fixed(
-    jxl_allocator_state *alloc, jxl_mutable_subgrid_u32 sg, size_t group_width,
+    jxl_context *alloc, jxl_mutable_subgrid_u32 sg, size_t group_width,
     size_t group_height, size_t num_cols, size_t num_rows) {
     return make_groups(alloc, sg, group_width, group_height, num_cols, num_rows);
 }
 
-void jxl_mutable_subgrid_u32_list_destroy(jxl_allocator_state *alloc,
+void jxl_mutable_subgrid_u32_list_destroy(jxl_context *alloc,
                                           jxl_mutable_subgrid_u32_list *list) {
     if (list == NULL || alloc == NULL) {
         return;

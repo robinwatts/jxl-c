@@ -27,11 +27,11 @@ typedef struct jxl_prefix_histogram {
     size_t second_level_len;
 } jxl_prefix_histogram;
 
-jxl_coding_status_t jxl_prefix_histogram_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_coding_status_t jxl_prefix_histogram_parse(jxl_context *alloc, jxl_bs *bs,
                                                uint32_t alphabet_size,
                                                jxl_prefix_histogram *out);
 
-void jxl_prefix_histogram_destroy(jxl_allocator_state *alloc, jxl_prefix_histogram *hist);
+void jxl_prefix_histogram_destroy(jxl_context *alloc, jxl_prefix_histogram *hist);
 
 jxl_coding_status_t jxl_prefix_histogram_read_symbol(const jxl_prefix_histogram *hist, jxl_bs *bs,
                                                      uint32_t *symbol_out);

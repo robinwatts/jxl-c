@@ -75,7 +75,7 @@ void jxl_allocator_init(jxl_allocator_state *state, const jxl_allocator_t *user)
     state->next_align_group = 0;
 }
 
-void *jxl_alloc(jxl_allocator_state *state, size_t size) {
+void *jxl_alloc_state(jxl_allocator_state *state, size_t size) {
     size_t *block;
     if (state == NULL || size == 0) {
         return NULL;
@@ -92,7 +92,7 @@ void *jxl_alloc(jxl_allocator_state *state, size_t size) {
     return alloc_user_ptr(block);
 }
 
-void jxl_free(jxl_allocator_state *state, void *ptr) {
+void jxl_free_state(jxl_allocator_state *state, void *ptr) {
     if (state == NULL || ptr == NULL) {
         return;
     }
@@ -103,13 +103,16 @@ void jxl_free(jxl_allocator_state *state, void *ptr) {
     state->vtable.free(state->vtable.user_data, alloc_block_ptr(ptr));
 }
 
-void jxl_free_const(jxl_allocator_state *state, const void *ptr) {
-    union { void *p; const void *cp; } x;
+void jxl_free_const_state(jxl_allocator_state *state, const void *ptr) {
+    union {
+        void *p;
+        const void *cp;
+    } x;
     x.cp = ptr;
-    jxl_free(state, x.p);
+    jxl_free_state(state, x.p);
 }
 
-void *jxl_alloc_aligned(jxl_allocator_state *state, size_t alignment, size_t size) {
+void *jxl_alloc_aligned_state(jxl_allocator_state *state, size_t alignment, size_t size) {
     size_t raw_size;
     void *raw;
     uintptr_t aligned;
@@ -121,7 +124,7 @@ void *jxl_alloc_aligned(jxl_allocator_state *state, size_t alignment, size_t siz
         !alloc_add_overflow(raw_size, sizeof(void *), &raw_size)) {
         return NULL;
     }
-    raw = jxl_alloc(state, raw_size);
+    raw = jxl_alloc_state(state, raw_size);
     if (raw == NULL) {
         return NULL;
     }
@@ -131,14 +134,14 @@ void *jxl_alloc_aligned(jxl_allocator_state *state, size_t alignment, size_t siz
     return (void *)aligned;
 }
 
-void jxl_free_aligned(jxl_allocator_state *state, void *ptr) {
+void jxl_free_aligned_state(jxl_allocator_state *state, void *ptr) {
     if (state == NULL || ptr == NULL) {
         return;
     }
-    jxl_free(state, ((void **)ptr)[-1]);
+    jxl_free_state(state, ((void **)ptr)[-1]);
 }
 
-void *jxl_calloc(jxl_allocator_state *state, size_t nmemb, size_t size) {
+void *jxl_calloc_state(jxl_allocator_state *state, size_t nmemb, size_t size) {
     size_t total;
     void *ptr;
     if (state == NULL || nmemb == 0 || size == 0) {
@@ -151,14 +154,14 @@ void *jxl_calloc(jxl_allocator_state *state, size_t nmemb, size_t size) {
     if (state->vtable.calloc != NULL) {
         return state->vtable.calloc(state->vtable.user_data, nmemb, size);
     }
-    ptr = jxl_alloc(state, total);
+    ptr = jxl_alloc_state(state, total);
     if (ptr != NULL) {
         memset(ptr, 0, total);
     }
     return ptr;
 }
 
-void *jxl_realloc(jxl_allocator_state *state, void *ptr, size_t size) {
+void *jxl_realloc_state(jxl_allocator_state *state, void *ptr, size_t size) {
     size_t old_size;
     size_t copy;
     void *grown;
@@ -169,37 +172,40 @@ void *jxl_realloc(jxl_allocator_state *state, void *ptr, size_t size) {
         return state->vtable.realloc(state->vtable.user_data, ptr, size);
     }
     if (ptr == NULL) {
-        return size == 0 ? NULL : jxl_alloc(state, size);
+        return size == 0 ? NULL : jxl_alloc_state(state, size);
     }
     if (size == 0) {
-        jxl_free(state, ptr);
+        jxl_free_state(state, ptr);
         return NULL;
     }
     old_size = *alloc_block_ptr(ptr);
-    grown = jxl_alloc(state, size);
+    grown = jxl_alloc_state(state, size);
     if (grown == NULL) {
         return NULL;
     }
     copy = old_size < size ? old_size : size;
     memcpy(grown, ptr, copy);
-    jxl_free(state, ptr);
+    jxl_free_state(state, ptr);
     return grown;
 }
 
-const void *jxl_realloc_const(jxl_allocator_state *state, const void *ptr, size_t size) {
-    union { void *p; const void *cp; } x;
+const void *jxl_realloc_const_state(jxl_allocator_state *state, const void *ptr, size_t size) {
+    union {
+        void *p;
+        const void *cp;
+    } x;
     x.cp = ptr;
-    return jxl_realloc(state, x.p, size);
+    return jxl_realloc_state(state, x.p, size);
 }
 
-char *jxl_strdup(jxl_allocator_state *state, const char *src) {
+char *jxl_strdup_state(jxl_allocator_state *state, const char *src) {
     size_t len;
     char *copy;
     if (src == NULL) {
         return NULL;
     }
     len = strlen(src) + 1;
-    copy = jxl_alloc(state, len);
+    copy = jxl_alloc_state(state, len);
     if (copy == NULL) {
         return NULL;
     }
@@ -207,30 +213,38 @@ char *jxl_strdup(jxl_allocator_state *state, const char *src) {
     return copy;
 }
 
-void *jxl_ctx_alloc(jxl_context *ctx, size_t size) {
-    return jxl_alloc(jxl_context_alloc_state(ctx), size);
+jxl_allocator_state *jxl_context_alloc_state(jxl_context *ctx) {
+    return ctx != NULL ? &ctx->alloc : NULL;
 }
 
-void *jxl_ctx_alloc_aligned(jxl_context *ctx, size_t alignment, size_t size) {
-    return jxl_alloc_aligned(jxl_context_alloc_state(ctx), alignment, size);
+const jxl_allocator_state *jxl_context_alloc_state_const(const jxl_context *ctx) {
+    return ctx != NULL ? &ctx->alloc : NULL;
 }
 
-void *jxl_ctx_calloc(jxl_context *ctx, size_t nmemb, size_t size) {
-    return jxl_calloc(jxl_context_alloc_state(ctx), nmemb, size);
+void *jxl_alloc(jxl_context *ctx, size_t size) {
+    return jxl_alloc_state(jxl_context_alloc_state(ctx), size);
 }
 
-void *jxl_ctx_realloc(jxl_context *ctx, void *ptr, size_t size) {
-    return jxl_realloc(jxl_context_alloc_state(ctx), ptr, size);
+void *jxl_alloc_aligned(jxl_context *ctx, size_t alignment, size_t size) {
+    return jxl_alloc_aligned_state(jxl_context_alloc_state(ctx), alignment, size);
 }
 
-void jxl_ctx_free(jxl_context *ctx, void *ptr) {
-    jxl_free(jxl_context_alloc_state(ctx), ptr);
+void *jxl_calloc(jxl_context *ctx, size_t nmemb, size_t size) {
+    return jxl_calloc_state(jxl_context_alloc_state(ctx), nmemb, size);
 }
 
-void jxl_ctx_free_aligned(jxl_context *ctx, void *ptr) {
-    jxl_free_aligned(jxl_context_alloc_state(ctx), ptr);
+void *jxl_realloc(jxl_context *ctx, void *ptr, size_t size) {
+    return jxl_realloc_state(jxl_context_alloc_state(ctx), ptr, size);
 }
 
-char *jxl_ctx_strdup(jxl_context *ctx, const char *src) {
-    return jxl_strdup(jxl_context_alloc_state(ctx), src);
+void jxl_free(jxl_context *ctx, void *ptr) {
+    jxl_free_state(jxl_context_alloc_state(ctx), ptr);
+}
+
+void jxl_free_aligned(jxl_context *ctx, void *ptr) {
+    jxl_free_aligned_state(jxl_context_alloc_state(ctx), ptr);
+}
+
+char *jxl_strdup(jxl_context *ctx, const char *src) {
+    return jxl_strdup_state(jxl_context_alloc_state(ctx), src);
 }

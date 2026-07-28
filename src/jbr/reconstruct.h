@@ -13,7 +13,7 @@
 #include <stddef.h>
 #include "jxl/decode_types.h"
 
-jxl_jbr_status jxl_jbr_reconstruct(jxl_allocator_state *alloc, jxl_context *ctx,
+jxl_jbr_status jxl_jbr_reconstruct(jxl_context *alloc, jxl_context *ctx,
                                    const jxl_jbr_data *jbrd, const jxl_frame *frame,
                                    const jxl_parsed_image_header *image, const uint8_t *icc,
                                    size_t icc_len, const uint8_t *exif, size_t exif_len,

@@ -17,12 +17,12 @@ void jxl_coding_decoder_attach_context(jxl_coding_decoder *dec, jxl_context *ctx
 
 jxl_context *jxl_coding_decoder_context(const jxl_coding_decoder *dec);
 
-jxl_coding_status_t jxl_coding_decoder_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_coding_status_t jxl_coding_decoder_parse(jxl_context *alloc, jxl_bs *bs,
                                              uint32_t num_dist, jxl_coding_decoder **out);
 
-void jxl_coding_decoder_destroy(jxl_allocator_state *alloc, jxl_coding_decoder *dec);
+void jxl_coding_decoder_destroy(jxl_context *alloc, jxl_coding_decoder *dec);
 
-jxl_coding_status_t jxl_coding_decoder_clone(jxl_allocator_state *alloc,
+jxl_coding_status_t jxl_coding_decoder_clone(jxl_context *alloc,
                                              const jxl_coding_decoder *src,
                                              jxl_coding_decoder **out);
 
@@ -94,15 +94,15 @@ jxl_coding_status_t jxl_coding_decode_fast_lossless_gradient_i16(
 
 const uint8_t *jxl_coding_decoder_cluster_map(const jxl_coding_decoder *dec, size_t *len_out);
 
-jxl_coding_status_t jxl_coding_read_clusters(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_coding_status_t jxl_coding_read_clusters(jxl_context *alloc, jxl_bs *bs,
                                              uint32_t num_dist, uint32_t *num_clusters_out,
                                              uint8_t **clusters_out, size_t *clusters_len_out);
 
-jxl_coding_status_t jxl_coding_read_permutation(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_coding_status_t jxl_coding_read_permutation(jxl_context *alloc, jxl_bs *bs,
                                                 jxl_coding_decoder *dec, uint32_t size,
                                                 uint32_t skip, size_t **permutation_out,
                                                 size_t *permutation_len_out);
 
-void jxl_coding_permutation_destroy(jxl_allocator_state *alloc, size_t *permutation);
+void jxl_coding_permutation_destroy(jxl_context *alloc, size_t *permutation);
 
 #endif /* JXL_CODING_DECODER_H_ */

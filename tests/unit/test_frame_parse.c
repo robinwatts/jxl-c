@@ -91,11 +91,11 @@ static void verify_fixture(const jxl_frame_field_expect *expect) {
 
     jxl_bs_init(&bs, cs, cs_len);
     if (jxl_image_header_parse(&bs, &image) != JXL_BS_OK) {
-        jxl_free(&alloc, cs);
+        jxl_free_state(&alloc, cs);
         assert(0);
     }
     if (jxl_image_skip_post_header(&alloc, &bs, &image) != JXL_BS_OK) {
-        jxl_free(&alloc, cs);
+        jxl_free_state(&alloc, cs);
         assert(0);
     }
 
@@ -150,11 +150,11 @@ static void verify_fixture(const jxl_frame_field_expect *expect) {
 
     jxl_bs_init(&bs_full, cs, cs_len);
     if (jxl_image_header_parse(&bs_full, &image) != JXL_BS_OK) {
-        jxl_free(&alloc, cs);
+        jxl_free_state(&alloc, cs);
         assert(0);
     }
     if (jxl_image_skip_post_header(&alloc, &bs_full, &image) != JXL_BS_OK) {
-        jxl_free(&alloc, cs);
+        jxl_free_state(&alloc, cs);
         assert(0);
     }
 
@@ -194,7 +194,7 @@ static void verify_fixture(const jxl_frame_field_expect *expect) {
     }
 
     jxl_frame_free(&alloc, &frame);
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
 }
 
 static void test_all_verified_fixtures(void) {

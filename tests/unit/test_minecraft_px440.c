@@ -354,7 +354,7 @@ int main(void) {
 
     printf("Rust pre-filter ref @440: -0.00413295 0.57746 0.727269\n");
 
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
     for (c = 0; c < 3; ++c) {
         free(i32_coeff[c]);
         free(fbuf[c]);

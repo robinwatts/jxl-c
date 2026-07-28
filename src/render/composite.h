@@ -17,12 +17,12 @@ typedef struct jxl_context jxl_context;
  * Rust image::composite_preprocess.
  * Returns 1 when blending can be skipped, 0 when composition is required, -1 on error.
  */
-int jxl_render_composite_preprocess(jxl_context *ctx, jxl_allocator_state *alloc,
+int jxl_render_composite_preprocess(jxl_context *ctx, jxl_context *alloc,
                                     const jxl_parsed_image_header *parsed,
                                     const jxl_frame_header *fh, jxl_render *r);
 
 typedef struct {
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     const jxl_parsed_image_header *parsed;
     const jxl_frame_header *fh;
     const jxl_render *new_frame;
@@ -38,9 +38,9 @@ typedef struct {
 jxl_status_t jxl_render_composite(const jxl_render_composite_params *params);
 
 /* Copy a composited frame region from canvas into a reference slot image. */
-jxl_status_t jxl_ref_image_from_canvas(jxl_allocator_state *alloc, const jxl_frame_header *fh,
+jxl_status_t jxl_ref_image_from_canvas(jxl_context *alloc, const jxl_frame_header *fh,
                                        const jxl_render *canvas, jxl_ref_image *out);
 
-void jxl_ref_image_release(jxl_allocator_state *alloc, jxl_ref_image *img);
+void jxl_ref_image_release(jxl_context *alloc, jxl_ref_image *img);
 
 #endif /* JXL_RENDER_COMPOSITE_H_ */

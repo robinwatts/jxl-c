@@ -128,10 +128,10 @@ void jxl_aligned_memory_init(jxl_aligned_memory* self, jxl_memory_manager* memor
   // alignments.
   size_t group;
   if (memory_manager != NULL && memory_manager->opaque != NULL) {
-    /* Bridged jxl_context memory managers set opaque to jxl_allocator_state*. */
-    jxl_allocator_state* alloc_state =
-        (jxl_allocator_state*)memory_manager->opaque;
-    group = (size_t)(alloc_state->next_align_group++);
+    /* Bridged managers set opaque to jxl_context*; alignment group lives on its allocator. */
+    jxl_context* ctx = (jxl_context*)memory_manager->opaque;
+    jxl_allocator_state* state = jxl_context_alloc_state(ctx);
+    group = (size_t)(state->next_align_group++);
   } else {
     static uint32_t next_group = 0;
     group = (size_t)(__atomic_fetch_add(&next_group, 1u, __ATOMIC_RELAXED));

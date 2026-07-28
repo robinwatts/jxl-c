@@ -332,7 +332,7 @@ int main(void) {
         jxl_lf_group_free(&alloc, &lf_groups[i]);
     }
     free(lf_groups);
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
     jxl_context_destroy(library_ctx);
     return rc;
 }

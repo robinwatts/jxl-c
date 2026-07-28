@@ -20,7 +20,7 @@
 #include "test_helpers.h"
 #include "jxl/context.h"
 
-static jxl_allocator_state *test_alloc(void) {
+static jxl_context *test_alloc(void) {
     static jxl_allocator_state alloc;
     static int init;
     if (!init) { jxl_allocator_init(&alloc, NULL); init = 1; }
@@ -234,7 +234,7 @@ static void validate_layout_oracle_file(void) {
     fclose(f);
 }
 
-static jxl_frame *load_modular_frame(const char *fixture, jxl_allocator_state *alloc,
+static jxl_frame *load_modular_frame(const char *fixture, jxl_context *alloc,
                                      jxl_parsed_image_header *image_out, uint8_t **cs_out,
                                      size_t *cs_len_out) {
     char path[512];
@@ -313,7 +313,7 @@ static int64_t grid_sample_sum(const jxl_modular_image_destination *dest, size_t
     return sum;
 }
 
-static size_t modular_pass_group_offset_or_zero(jxl_allocator_state *alloc, jxl_frame *frame,
+static size_t modular_pass_group_offset_or_zero(jxl_context *alloc, jxl_frame *frame,
                                                 const jxl_parsed_image_header *image) {
     jxl_ma_config global_ma;
     int has_ma;
@@ -332,7 +332,7 @@ static size_t modular_pass_group_offset_or_zero(jxl_allocator_state *alloc, jxl_
     return pg_bs.num_read_bits;
 }
 
-static jxl_frame_status_t setup_modular_dest_from_lf_global(jxl_allocator_state *alloc,
+static jxl_frame_status_t setup_modular_dest_from_lf_global(jxl_context *alloc,
                                                             jxl_frame *frame,
                                                             const jxl_parsed_image_header *image,
                                                             jxl_ma_config *global_ma,
@@ -488,7 +488,7 @@ static void test_grayalpha_gmodular_decode_full(void) {
     jxl_ma_config_destroy(&alloc, &global_ma);
     jxl_frame_free(&alloc, frame);
     free(frame);
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
 }
 
 static void test_issue_311_pass_group0_decode(void) {
@@ -562,7 +562,7 @@ static void test_issue_311_pass_group0_decode(void) {
     jxl_ma_config_destroy(&alloc, &global_ma);
     jxl_frame_free(&alloc, frame);
     free(frame);
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
 }
 
 static void test_grayalpha_lf_global_skip_and_pass_group(void) {
@@ -628,7 +628,7 @@ static void test_grayalpha_lf_global_skip_and_pass_group(void) {
     jxl_ma_config_destroy(&alloc, &global_ma);
     jxl_frame_free(&alloc, frame);
     free(frame);
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
 }
 
 static void test_squeeze_edge_pass_group_modular(void) {
@@ -709,7 +709,7 @@ static void test_squeeze_edge_pass_group_modular(void) {
     jxl_ma_config_destroy(&alloc, &global_ma);
     jxl_frame_free(&alloc, frame);
     free(frame);
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
 }
 
 static void test_modular_pass_group_offsets_decode_fixtures(void) {
@@ -766,12 +766,12 @@ static void test_modular_pass_group_offsets_decode_fixtures(void) {
 
         jxl_frame_free(&alloc, frame);
         free(frame);
-        jxl_free(&alloc, cs);
+        jxl_free_state(&alloc, cs);
     }
     fclose(f);
 }
 
-static jxl_frame *load_conformance_first_frame(const char *case_name, jxl_allocator_state *alloc,
+static jxl_frame *load_conformance_first_frame(const char *case_name, jxl_context *alloc,
                                                jxl_parsed_image_header *image_out,
                                                uint8_t **cs_out, size_t *cs_len_out) {
     char path[512];
@@ -897,7 +897,7 @@ static void test_spot_frame0_full_modular_decode(void) {
     jxl_ma_config_destroy(&alloc, &global_ma);
     jxl_frame_free(&alloc, frame);
     free(frame);
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
 }
 
 static void test_lossless_pfm_modular_decode(void) {
@@ -935,7 +935,7 @@ static void test_lossless_pfm_modular_decode(void) {
     jxl_ma_config_destroy(&alloc, &global_ma);
     jxl_frame_free(&alloc, frame);
     free(frame);
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
 }
 
 int main(void) {

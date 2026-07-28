@@ -36,7 +36,7 @@ void jxl_render_transform_with_lf_grouped(jxl_render_vardct_group_params *params
         shifts[ch] = jxl_channel_shift_from_jpeg_upsampling(params->frame_header->jpeg_upsampling,
                                                             ch);
     }
-    jxl_render_transform_varblocks(params->ctx, jxl_context_alloc_state(params->ctx), params->lf,
+    jxl_render_transform_varblocks(params->ctx, params->ctx, params->lf,
                                    params->coeff, shifts, block_info);
 }
 

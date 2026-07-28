@@ -26,9 +26,9 @@ typedef struct {
 } jxl_splines;
 
 void jxl_splines_init(jxl_splines *s);
-void jxl_splines_free(jxl_allocator_state *alloc, jxl_splines *s);
+void jxl_splines_free(jxl_context *alloc, jxl_splines *s);
 
-jxl_frame_status_t jxl_splines_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_splines_parse(jxl_context *alloc, jxl_bs *bs,
                                      const jxl_frame_header *frame, jxl_splines *out);
 
 uint64_t jxl_splines_estimate_area(const jxl_splines *splines, float corr_x, float corr_b);

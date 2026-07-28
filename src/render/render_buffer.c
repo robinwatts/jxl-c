@@ -70,7 +70,7 @@ static int plane_needs_upsample(const jxl_render *r, uint32_t plane) {
     return 0;
 }
 
-jxl_render *jxl_render_create(jxl_allocator_state *alloc, uint32_t num_planes,
+jxl_render *jxl_render_create(jxl_context *alloc, uint32_t num_planes,
                               uint32_t color_planes, uint32_t width, uint32_t height) {
     uint32_t p;
     jxl_render *r;
@@ -117,7 +117,7 @@ jxl_render *jxl_render_create(jxl_allocator_state *alloc, uint32_t num_planes,
     return r;
 }
 
-void jxl_render_free(jxl_allocator_state *alloc, jxl_render *r) {
+void jxl_render_free(jxl_context *alloc, jxl_render *r) {
     if (r == NULL) {
         return;
     }
@@ -137,7 +137,7 @@ void jxl_render_free(jxl_allocator_state *alloc, jxl_render *r) {
 }
 
 void jxl_render_destroy(jxl_context *ctx, jxl_render *r) {
-    jxl_render_free(jxl_context_alloc_state(ctx), r);
+    jxl_render_free(ctx, r);
 }
 
 void jxl_render_init_all_planes(jxl_render *r, const jxl_modular_region *frame_region) {
@@ -155,7 +155,7 @@ void jxl_render_init_all_planes(jxl_render *r, const jxl_modular_region *frame_r
     }
 }
 
-static jxl_status_t render_materialize_all_integer_planes(jxl_allocator_state *alloc,
+static jxl_status_t render_materialize_all_integer_planes(jxl_context *alloc,
                                                         jxl_render *r) {
     uint32_t p;
     if (alloc == NULL || r == NULL) {
@@ -172,7 +172,7 @@ static jxl_status_t render_materialize_all_integer_planes(jxl_allocator_state *a
     return JXL_OK;
 }
 
-static jxl_status_t render_rebind_plane_bufs_f32(jxl_allocator_state *alloc, jxl_render *r) {
+static jxl_status_t render_rebind_plane_bufs_f32(jxl_context *alloc, jxl_render *r) {
     uint32_t p;
     if (alloc == NULL || r == NULL || r->planes == NULL || r->bufs == NULL) {
         return JXL_ERROR_INVALID_INPUT;
@@ -186,7 +186,7 @@ static jxl_status_t render_rebind_plane_bufs_f32(jxl_allocator_state *alloc, jxl
     return JXL_OK;
 }
 
-static jxl_status_t render_resize_bufs(jxl_allocator_state *alloc, jxl_render *r,
+static jxl_status_t render_resize_bufs(jxl_context *alloc, jxl_render *r,
                                        uint32_t new_num_planes) {
     uint32_t old_num_planes;
     uint32_t p;
@@ -226,7 +226,7 @@ static jxl_status_t render_resize_bufs(jxl_allocator_state *alloc, jxl_render *r
     return JXL_OK;
 }
 
-jxl_status_t jxl_render_clone_gray(jxl_allocator_state *alloc, jxl_render *r) {
+jxl_status_t jxl_render_clone_gray(jxl_context *alloc, jxl_render *r) {
     uint32_t p;
     uint32_t new_num_planes;
     uint32_t old_num_planes;
@@ -306,7 +306,7 @@ jxl_status_t jxl_render_clone_gray(jxl_allocator_state *alloc, jxl_render *r) {
     return JXL_OK;
 }
 
-jxl_status_t jxl_render_shrink_to_encoded_layout(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_shrink_to_encoded_layout(jxl_context *alloc, jxl_render *r,
                                                uint32_t encoded_color, uint32_t extra_planes) {
                                                    uint32_t p;
     uint32_t want_total;
@@ -369,7 +369,7 @@ jxl_status_t jxl_render_shrink_to_encoded_layout(jxl_allocator_state *alloc, jxl
     return JXL_OK;
 }
 
-jxl_status_t jxl_render_remove_color_planes(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_remove_color_planes(jxl_context *alloc, jxl_render *r,
                                             uint32_t keep_count) {
                                                 uint32_t p;
     uint32_t new_num_planes;
@@ -680,7 +680,7 @@ void jxl_render_prepare_color_upsampling(jxl_render *r, const jxl_frame_header *
     }
 }
 
-jxl_status_t jxl_render_upsample_plane_jpeg(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_upsample_plane_jpeg(jxl_context *alloc, jxl_render *r,
                                           uint32_t plane, uint32_t target_w, uint32_t target_h) {
     jxl_render_plane_meta *m;
     uint32_t src_w;
@@ -716,7 +716,7 @@ jxl_status_t jxl_render_upsample_plane_jpeg(jxl_allocator_state *alloc, jxl_rend
     return JXL_OK;
 }
 
-jxl_status_t jxl_render_upsample_plane_to_target(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_upsample_plane_to_target(jxl_context *alloc, jxl_render *r,
                                                  uint32_t plane,
                                                  const jxl_upsampling_weights *weights,
                                                  uint32_t frame_upsampling) {
@@ -838,7 +838,7 @@ static void size_with_orientation(uint32_t orientation, uint32_t w, uint32_t h, 
     }
 }
 
-jxl_status_t jxl_render_apply_orientation(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_apply_orientation(jxl_context *alloc, jxl_render *r,
                                           uint32_t orientation) {
                                               uint32_t p;
                                               uint32_t y;
@@ -928,7 +928,7 @@ static uint32_t abs_diff_i32(int32_t a, int32_t b) {
     return a >= b ? (uint32_t)(a - b) : (uint32_t)(b - a);
 }
 
-jxl_status_t jxl_render_upsample_nonseparable(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_upsample_nonseparable(jxl_context *alloc, jxl_render *r,
                                               const jxl_modular_region *valid_region,
                                               const jxl_frame_header *fh,
                                               const jxl_upsampling_weights *weights,
@@ -1025,7 +1025,7 @@ jxl_status_t jxl_render_upsample_nonseparable(jxl_allocator_state *alloc, jxl_re
     return JXL_OK;
 }
 
-jxl_status_t jxl_render_normalize_all_planes(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_normalize_all_planes(jxl_context *alloc, jxl_render *r,
                                              const jxl_frame_header *fh,
                                              const jxl_upsampling_weights *weights,
                                              const jxl_modular_region *valid_region) {
@@ -1060,7 +1060,7 @@ jxl_status_t jxl_render_normalize_all_planes(jxl_allocator_state *alloc, jxl_ren
     return JXL_OK;
 }
 
-jxl_status_t jxl_render_features_pipeline(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_status_t jxl_render_features_pipeline(jxl_context *ctx, jxl_context *alloc,
                                           jxl_render *r,
                                           const jxl_parsed_image_header *parsed,
                                           const jxl_frame_header *fh,
@@ -1143,7 +1143,7 @@ jxl_status_t jxl_render_features_pipeline(jxl_context *ctx, jxl_allocator_state 
     return jxl_render_normalize_all_planes(alloc, r, fh, weights, valid_region);
 }
 
-jxl_status_t jxl_render_ensure_all_planes_f32(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_ensure_all_planes_f32(jxl_context *alloc, jxl_render *r,
                                               const jxl_parsed_image_header *parsed) {
     uint32_t p;
     jxl_status_t st;
@@ -1187,7 +1187,7 @@ int jxl_render_any_plane_integer(const jxl_render *r) {
     return 0;
 }
 
-void jxl_render_bind_materialization(jxl_render *r, jxl_allocator_state *alloc,
+void jxl_render_bind_materialization(jxl_render *r, jxl_context *alloc,
                                      const jxl_parsed_image_header *parsed) {
     uint32_t i;
     if (r == NULL || parsed == NULL) {
@@ -1220,7 +1220,7 @@ uint32_t jxl_render_plane_bit_depth(const jxl_render *r, uint32_t plane) {
     return r->color_bit_depth_bits != 0 ? r->color_bit_depth_bits : 8u;
 }
 
-jxl_status_t jxl_render_materialize_plane_f32(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_materialize_plane_f32(jxl_context *alloc, jxl_render *r,
                                             uint32_t plane) {
     if (alloc == NULL || r == NULL) {
         return JXL_ERROR_INVALID_INPUT;
@@ -1231,7 +1231,7 @@ jxl_status_t jxl_render_materialize_plane_f32(jxl_allocator_state *alloc, jxl_re
     return jxl_render_ensure_plane_f32(alloc, r, plane, jxl_render_plane_bit_depth(r, plane));
 }
 
-jxl_status_t jxl_render_ensure_plane_f32(jxl_allocator_state *alloc, jxl_render *r, uint32_t plane,
+jxl_status_t jxl_render_ensure_plane_f32(jxl_context *alloc, jxl_render *r, uint32_t plane,
                                          uint32_t bit_depth_bits) {
     if (alloc == NULL || r == NULL || r->bufs == NULL || r->planes == NULL ||
         plane >= r->num_planes) {
@@ -1301,7 +1301,7 @@ jxl_status_t jxl_render_ensure_plane_f32(jxl_allocator_state *alloc, jxl_render 
     }
 }
 
-jxl_status_t jxl_render_convert_modular_color(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_convert_modular_color(jxl_context *alloc, jxl_render *r,
                                               uint32_t bit_depth_bits, uint32_t color_planes) {
     uint32_t p;
     jxl_status_t st;
@@ -1320,7 +1320,7 @@ jxl_status_t jxl_render_convert_modular_color(jxl_allocator_state *alloc, jxl_re
     return JXL_OK;
 }
 
-jxl_status_t jxl_render_extend_from_modular_dest(jxl_allocator_state *alloc,
+jxl_status_t jxl_render_extend_from_modular_dest(jxl_context *alloc,
                                                  jxl_modular_image_destination *dest,
                                                  const jxl_frame_header *fh, jxl_render *r,
                                                  uint32_t num_transfer_planes, int32_t ox,

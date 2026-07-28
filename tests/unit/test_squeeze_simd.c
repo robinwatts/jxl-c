@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static jxl_allocator_state *test_alloc(void) {
+static jxl_context *test_alloc(void) {
     static jxl_allocator_state alloc;
     static int init;
     if (!init) {

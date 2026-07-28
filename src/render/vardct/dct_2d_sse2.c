@@ -241,7 +241,7 @@ static void dct8x8_lane(jxl_lane_subgrid *io, jxl_dct_direction direction) {
     }
 }
 
-static void dct_2d_lane(jxl_lane_subgrid *io, jxl_allocator_state *alloc, jxl_dct_direction direction) {
+static void dct_2d_lane(jxl_lane_subgrid *io, jxl_context *alloc, jxl_dct_direction direction) {
     enum { JXL_DCT_STACK_SCRATCH_LANES = 256 };
     jxl_lane stack_scratch[JXL_DCT_STACK_SCRATCH_LANES];
     const size_t scratch_size =
@@ -275,7 +275,7 @@ static int subgrid_as_lane(jxl_subgrid_f32 sg, jxl_lane_subgrid *out) {
     return 1;
 }
 
-int jxl_dct_2d_x86_64_sse2(jxl_allocator_state *alloc, jxl_subgrid_f32 io, jxl_dct_direction direction) {
+int jxl_dct_2d_x86_64_sse2(jxl_context *alloc, jxl_subgrid_f32 io, jxl_dct_direction direction) {
     jxl_lane_subgrid lane_io;
     if (io.width % JXL_LANE_SIZE != 0 || io.height % JXL_LANE_SIZE != 0) {
         return 0;

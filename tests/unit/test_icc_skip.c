@@ -89,7 +89,7 @@ static void test_fixture(const char *name) {
     }
 
     printf("%s: icc skip ok bits=%zu\n", name, bs.num_read_bits);
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
 }
 
 static void test_ec_bit_depth(const char *name) {
@@ -127,7 +127,7 @@ static void test_ec_bit_depth(const char *name) {
            parsed.ec_bit_depth_count,
            parsed.ec_bit_depth_count > 0 ? parsed.ec_bit_depth[0] : 0, parsed.embedded_icc_len);
     jxl_parsed_image_header_free_embedded_icc(&alloc, &parsed);
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
 }
 
 int main(void) {

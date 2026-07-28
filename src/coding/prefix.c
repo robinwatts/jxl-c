@@ -32,7 +32,7 @@ static void prefix_vec_reverse_bits_fixed(const jxl_prefix_entry *v, size_t len,
     }
 }
 
-static jxl_coding_status_t prefix_with_single_symbol(jxl_allocator_state *alloc, uint16_t symbol,
+static jxl_coding_status_t prefix_with_single_symbol(jxl_context *alloc, uint16_t symbol,
                                                      jxl_prefix_histogram *out) {
     memset(out, 0, sizeof(*out));
     out->toplevel_bits = 0;
@@ -56,7 +56,7 @@ typedef struct {
     size_t cap;
 } jxl_prefix_sym_list;
 
-static jxl_coding_status_t prefix_sym_list_push(jxl_allocator_state *alloc, jxl_prefix_sym_list *list,
+static jxl_coding_status_t prefix_sym_list_push(jxl_context *alloc, jxl_prefix_sym_list *list,
                                                 uint16_t sym) {
     if (list->len == list->cap) {
         size_t new_cap = list->cap == 0 ? 4 : list->cap * 2;
@@ -75,7 +75,7 @@ static jxl_coding_status_t prefix_sym_list_push(jxl_allocator_state *alloc, jxl_
     return JXL_CODING_OK;
 }
 
-static void prefix_sym_list_clear(jxl_allocator_state *alloc, jxl_prefix_sym_list *lists,
+static void prefix_sym_list_clear(jxl_context *alloc, jxl_prefix_sym_list *lists,
                                   size_t count) {
                                       size_t i;
     for (i = 0; i < count; ++i) {
@@ -86,7 +86,7 @@ static void prefix_sym_list_clear(jxl_allocator_state *alloc, jxl_prefix_sym_lis
     }
 }
 
-static jxl_coding_status_t prefix_with_code_lengths(jxl_allocator_state *alloc,
+static jxl_coding_status_t prefix_with_code_lengths(jxl_context *alloc,
                                                     const uint8_t *code_lengths, size_t len,
                                                     jxl_prefix_histogram *out) {
                                                         size_t sym;
@@ -302,7 +302,7 @@ static jxl_coding_status_t prefix_with_code_lengths(jxl_allocator_state *alloc,
     return JXL_CODING_OK;
 }
 
-void jxl_prefix_histogram_destroy(jxl_allocator_state *alloc, jxl_prefix_histogram *hist) {
+void jxl_prefix_histogram_destroy(jxl_context *alloc, jxl_prefix_histogram *hist) {
     if (hist == NULL) {
         return;
     }
@@ -314,7 +314,7 @@ void jxl_prefix_histogram_destroy(jxl_allocator_state *alloc, jxl_prefix_histogr
     hist->second_level_len = 0;
 }
 
-static jxl_coding_status_t prefix_parse_simple(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_coding_status_t prefix_parse_simple(jxl_context *alloc, jxl_bs *bs,
                                                uint32_t alphabet_size, jxl_prefix_histogram *out) {
                                                    size_t i;
     uint32_t pow2 = 1;
@@ -497,7 +497,7 @@ static jxl_coding_status_t prefix_parse_simple(jxl_allocator_state *alloc, jxl_b
     return st;
 }
 
-static jxl_coding_status_t prefix_parse_complex(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_coding_status_t prefix_parse_complex(jxl_context *alloc, jxl_bs *bs,
                                                 uint32_t alphabet_size, uint32_t hskip,
                                                 jxl_prefix_histogram *out) {
                                                     size_t oi;
@@ -679,7 +679,7 @@ static jxl_coding_status_t prefix_parse_complex(jxl_allocator_state *alloc, jxl_
     return st;
 }
 
-jxl_coding_status_t jxl_prefix_histogram_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_coding_status_t jxl_prefix_histogram_parse(jxl_context *alloc, jxl_bs *bs,
                                                uint32_t alphabet_size,
                                                jxl_prefix_histogram *out) {
     uint32_t hskip;

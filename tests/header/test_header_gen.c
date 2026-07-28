@@ -75,7 +75,7 @@ static int process_one(const char *name, const char *update_path) {
 
     jxl_bs_init(&bs, cs, cs_len);
     jxl_bs_status_t st = jxl_image_header_parse(&bs, &parsed);
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
     if (st != JXL_BS_OK) {
         fprintf(stderr, "%s: parse failed\n", name);
         return -1;

@@ -3,7 +3,7 @@
 #include "bitstream/container/parser.h"
 
 
-static jxl_allocator_state *test_alloc_state(void) {
+static jxl_context *test_alloc_state(void) {
     static jxl_allocator_state alloc;
     static int init = 0;
     if (!init) { jxl_allocator_init(&alloc, NULL); init = 1; }

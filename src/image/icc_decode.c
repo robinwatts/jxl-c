@@ -247,7 +247,7 @@ static uint32_t read_be_u32_width(const uint8_t *src, size_t width) {
     return v;
 }
 
-static jxl_bs_status_t icc_stream_decode(jxl_allocator_state *alloc, const uint8_t *stream,
+static jxl_bs_status_t icc_stream_decode(jxl_context *alloc, const uint8_t *stream,
                                          size_t stream_len, uint8_t **out_data, size_t *out_len) {
                                              size_t idx;
     uint64_t output_size_u64;
@@ -728,7 +728,7 @@ static jxl_bs_status_t icc_stream_decode(jxl_allocator_state *alloc, const uint8
     return JXL_BS_OK;
 }
 
-static jxl_bs_status_t icc_decode_bytes(jxl_allocator_state *alloc, jxl_bs *bs, uint8_t **out_data,
+static jxl_bs_status_t icc_decode_bytes(jxl_context *alloc, jxl_bs *bs, uint8_t **out_data,
                                       size_t *out_len) {
                                           uint64_t idx;
     uint64_t enc_size;
@@ -803,7 +803,7 @@ static jxl_bs_status_t icc_decode_bytes(jxl_allocator_state *alloc, jxl_bs *bs, 
     return JXL_BS_OK;
 }
 
-jxl_bs_status_t jxl_icc_decode(jxl_allocator_state *alloc, jxl_bs *bs, uint8_t **out_data,
+jxl_bs_status_t jxl_icc_decode(jxl_context *alloc, jxl_bs *bs, uint8_t **out_data,
                                size_t *out_len) {
     size_t encoded_len = 0;
     uint8_t *encoded = NULL;
@@ -817,7 +817,7 @@ jxl_bs_status_t jxl_icc_decode(jxl_allocator_state *alloc, jxl_bs *bs, uint8_t *
     return st;
 }
 
-jxl_bs_status_t jxl_icc_skip(jxl_allocator_state *alloc, jxl_bs *bs) {
+jxl_bs_status_t jxl_icc_skip(jxl_context *alloc, jxl_bs *bs) {
     size_t len = 0;
     uint8_t *data = NULL;
     jxl_bs_status_t st = icc_decode_bytes(alloc, bs, &data, &len);

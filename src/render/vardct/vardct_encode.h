@@ -58,7 +58,7 @@ typedef struct {
 } jxl_vardct_encode_ctx;
 
 void jxl_vardct_encode_ctx_init(jxl_vardct_encode_ctx *ctx);
-void jxl_vardct_encode_ctx_free(jxl_allocator_state *alloc, jxl_vardct_encode_ctx *ctx);
+void jxl_vardct_encode_ctx_free(jxl_context *alloc, jxl_vardct_encode_ctx *ctx);
 
 /*
  * Parse lf/hf metadata, decode pass groups, synthesize color framebuffer.

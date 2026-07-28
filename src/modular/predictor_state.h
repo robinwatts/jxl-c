@@ -58,9 +58,9 @@ typedef struct jxl_modular_predictor_state {
 } jxl_modular_predictor_state;
 
 void jxl_modular_predictor_state_init(jxl_modular_predictor_state *st);
-void jxl_modular_predictor_state_free(jxl_allocator_state *alloc, jxl_modular_predictor_state *st);
+void jxl_modular_predictor_state_free(jxl_context *alloc, jxl_modular_predictor_state *st);
 
-void jxl_modular_predictor_state_reset(jxl_allocator_state *alloc, jxl_modular_predictor_state *st,
+void jxl_modular_predictor_state_reset(jxl_context *alloc, jxl_modular_predictor_state *st,
                                        uint32_t width,
                                        const jxl_modular_grid_i32 *const *prev_channels,
                                        size_t prev_channel_count, const jxl_wp_header *wp);

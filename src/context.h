@@ -11,7 +11,7 @@
 #include "vardct/hf_pass.h"
 
 #if defined(JXL_C_ENABLE_JPEG_ENCODER)
-#include "lib/jxl/memory_manager.h"
+#include "encoder/lib/jxl/memory_manager.h"
 #endif
 
 typedef struct jxl_debug_flags {
@@ -95,7 +95,7 @@ typedef struct jxl_context {
     jxl_context_hf_orders hf_orders;
 #if defined(JXL_C_ENABLE_JPEG_ENCODER)
     /* Bridge to legacy encoder APIs that still take jxl_memory_manager*.
-     * opaque points at &alloc; prefer jxl_ctx_* for new code. */
+     * opaque points at the jxl_context; prefer jxl_alloc/jxl_free for new code. */
     jxl_memory_manager mm;
     /* Opaque JPEG-encoder session (LCMS, sRGB encodings). */
     struct jxl_jpeg_encoder_context *jpeg_enc;
@@ -105,8 +105,5 @@ typedef struct jxl_context {
 void jxl_context_init_inplace(jxl_context *ctx, const jxl_context_options *opts);
 void jxl_context_fini_inplace(jxl_context *ctx);
 void jxl_context_dequant_free(jxl_context *ctx);
-
-jxl_allocator_state *jxl_context_alloc_state(jxl_context *ctx);
-const jxl_allocator_state *jxl_context_alloc_state_const(const jxl_context *ctx);
 
 #endif /* JXL_CONTEXT_INTERNAL_H_ */

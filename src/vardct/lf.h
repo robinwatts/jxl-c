@@ -41,10 +41,10 @@ typedef struct {
 jxl_vardct_status_t jxl_lf_channel_dequant_parse(jxl_bs *bs, jxl_lf_channel_dequant *out);
 jxl_vardct_status_t jxl_quantizer_parse(jxl_bs *bs, jxl_quantizer *out);
 jxl_vardct_status_t jxl_lf_channel_correlation_parse(jxl_bs *bs, jxl_lf_channel_correlation *out);
-jxl_vardct_status_t jxl_hf_block_context_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_vardct_status_t jxl_hf_block_context_parse(jxl_context *alloc, jxl_bs *bs,
                                                jxl_hf_block_context *out);
 
-void jxl_hf_block_context_free(jxl_allocator_state *alloc, jxl_hf_block_context *ctx);
+void jxl_hf_block_context_free(jxl_context *alloc, jxl_hf_block_context *ctx);
 
 float jxl_lf_channel_dequant_m_x_unscaled(const jxl_lf_channel_dequant *d);
 float jxl_lf_channel_dequant_m_y_unscaled(const jxl_lf_channel_dequant *d);

@@ -100,12 +100,12 @@ int main(void) {
     if (jxl_image_header_parse(&bs, &parsed) != JXL_BS_OK ||
         jxl_image_decode_post_header(&alloc, &bs, &parsed) != JXL_BS_OK) {
         fprintf(stderr, "image header failed\n");
-        jxl_free(&alloc, cs);
+        jxl_free_state(&alloc, cs);
         return 1;
     }
     if (jxl_frame_parse(&alloc, &bs, &parsed, &frame) != JXL_FRAME_OK) {
         fprintf(stderr, "frame parse failed\n");
-        jxl_free(&alloc, cs);
+        jxl_free_state(&alloc, cs);
         return 1;
     }
     {
@@ -114,7 +114,7 @@ int main(void) {
         jxl_frame_feed_bytes(&frame, cs + meta_end, frame.toc.total_size, &consumed);
         if (consumed != frame.toc.total_size || !jxl_frame_is_loading_done(&frame)) {
             fprintf(stderr, "frame feed failed\n");
-            jxl_free(&alloc, cs);
+            jxl_free_state(&alloc, cs);
             return 1;
         }
     }
@@ -130,7 +130,7 @@ int main(void) {
     }
     if (src == NULL) {
         fprintf(stderr, "missing lf-global group\n");
-        jxl_free(&alloc, cs);
+        jxl_free_state(&alloc, cs);
         return 1;
     }
 
@@ -147,7 +147,7 @@ int main(void) {
         jxl_lf_global_free(&alloc, &lf);
         jxl_frame_free(&alloc, &frame);
         jxl_parsed_image_header_free_embedded_icc(&alloc, &parsed);
-        jxl_free(&alloc, cs);
+        jxl_free_state(&alloc, cs);
         return 1;
     }
 
@@ -157,7 +157,7 @@ int main(void) {
     jxl_lf_global_free(&alloc, &lf);
     jxl_frame_free(&alloc, &frame);
     jxl_parsed_image_header_free_embedded_icc(&alloc, &parsed);
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
     jxl_context_destroy(library_ctx);
     printf("test_srgb_benchmark: ok\n");
     return 0;

@@ -10,8 +10,8 @@
 
 typedef struct jxl_brotli_decoder jxl_brotli_decoder;
 
-jxl_brotli_decoder *jxl_brotli_decoder_create(jxl_allocator_state *alloc);
-void jxl_brotli_decoder_destroy(jxl_allocator_state *alloc, jxl_brotli_decoder *dec);
+jxl_brotli_decoder *jxl_brotli_decoder_create(jxl_context *alloc);
+void jxl_brotli_decoder_destroy(jxl_context *alloc, jxl_brotli_decoder *dec);
 
 jxl_bs_status_t jxl_brotli_decoder_feed(jxl_brotli_decoder *dec, const uint8_t *data, size_t len);
 jxl_bs_status_t jxl_brotli_decoder_finish(jxl_brotli_decoder *dec);

@@ -63,7 +63,7 @@ static int32_t subgrid_i32_get(const jxl_subgrid_i32 *sg, size_t x, size_t y) {
     return sg->data[y * sg->stride + x];
 }
 
-static jxl_jbr_status refinement_grow(jxl_jbr_scan_state *state, jxl_allocator_state *alloc) {
+static jxl_jbr_status refinement_grow(jxl_jbr_scan_state *state, jxl_context *alloc) {
     if (state->refinement_len < state->refinement_cap) {
         return JXL_JBR_OK;
     }
@@ -81,7 +81,7 @@ static jxl_jbr_status refinement_grow(jxl_jbr_scan_state *state, jxl_allocator_s
     return JXL_JBR_OK;
 }
 
-void jxl_jbr_scan_state_init(jxl_jbr_scan_state *state, jxl_allocator_state *alloc, size_t num_comps) {
+void jxl_jbr_scan_state_init(jxl_jbr_scan_state *state, jxl_context *alloc, size_t num_comps) {
     if (state == NULL) {
         return;
     }
@@ -92,7 +92,7 @@ void jxl_jbr_scan_state_init(jxl_jbr_scan_state *state, jxl_allocator_state *all
     }
 }
 
-void jxl_jbr_scan_state_free(jxl_allocator_state *alloc, jxl_jbr_scan_state *state) {
+void jxl_jbr_scan_state_free(jxl_context *alloc, jxl_jbr_scan_state *state) {
     if (state == NULL) {
         return;
     }
@@ -120,7 +120,7 @@ static int16_t update_dc_pred(jxl_jbr_scan_state *state, size_t comp_idx, int16_
     return diff;
 }
 
-static jxl_jbr_status buffer_refinement_bits(jxl_jbr_scan_state *state, jxl_allocator_state *alloc,
+static jxl_jbr_status buffer_refinement_bits(jxl_jbr_scan_state *state, jxl_context *alloc,
                                              uint64_t bits, uint8_t bitlen) {
     jxl_jbr_status st = refinement_grow(state, alloc);
     if (st != JXL_JBR_OK) {
@@ -132,7 +132,7 @@ static jxl_jbr_status buffer_refinement_bits(jxl_jbr_scan_state *state, jxl_allo
     return JXL_JBR_OK;
 }
 
-static jxl_jbr_status emit_eobrun(jxl_jbr_scan_state *state, jxl_allocator_state *alloc) {
+static jxl_jbr_status emit_eobrun(jxl_jbr_scan_state *state, jxl_context *alloc) {
     size_t i;
     uint8_t len;
     uint64_t bits;
@@ -165,7 +165,7 @@ static jxl_jbr_status emit_eobrun(jxl_jbr_scan_state *state, jxl_allocator_state
 }
 
 static jxl_jbr_status flush_bit_writer(jxl_jbr_scan_state *state, jxl_jbr_reconstructor *recon,
-                                       jxl_allocator_state *alloc, jxl_jbr_output *out) {
+                                       jxl_context *alloc, jxl_jbr_output *out) {
     jxl_jbr_status st = emit_eobrun(state, alloc);
     if (st != JXL_JBR_OK) {
         return st;
@@ -194,7 +194,7 @@ static jxl_jbr_status flush_bit_writer(jxl_jbr_scan_state *state, jxl_jbr_recons
 }
 
 static jxl_jbr_status restart_scan(jxl_jbr_scan_state *state, jxl_jbr_reconstructor *recon,
-                                   jxl_allocator_state *alloc, jxl_jbr_output *out) {
+                                   jxl_context *alloc, jxl_jbr_output *out) {
     uint8_t rst[2];
     if (state->dc_pred != NULL) {
         memset(state->dc_pred, 0, state->dc_pred_len * sizeof(int16_t));
@@ -215,7 +215,7 @@ static jxl_jbr_status restart_scan(jxl_jbr_scan_state *state, jxl_jbr_reconstruc
     return JXL_JBR_OK;
 }
 
-jxl_jbr_status jxl_jbr_process_sequential(jxl_jbr_scan_state *state, jxl_allocator_state *alloc,
+jxl_jbr_status jxl_jbr_process_sequential(jxl_jbr_scan_state *state, jxl_context *alloc,
                                           size_t component_idx, const jxl_jbr_huffman_table *dc_table,
                                           const jxl_jbr_huffman_table *ac_table, int16_t dc,
                                           const int16_t *ac, size_t ac_len, int has_extra_zero_runs,
@@ -307,7 +307,7 @@ jxl_jbr_status jxl_jbr_process_sequential(jxl_jbr_scan_state *state, jxl_allocat
 }
 
 jxl_jbr_status jxl_jbr_process_progressive_first(jxl_jbr_scan_state *state,
-                                                 jxl_allocator_state *alloc, size_t component_idx,
+                                                 jxl_context *alloc, size_t component_idx,
                                                  const jxl_jbr_huffman_table *dc_table,
                                                  const jxl_jbr_huffman_table *ac_table, int has_dc,
                                                  int16_t dc, const int16_t *ac, size_t ac_len,
@@ -432,7 +432,7 @@ jxl_jbr_status jxl_jbr_process_progressive_first(jxl_jbr_scan_state *state,
 }
 
 jxl_jbr_status jxl_jbr_process_progressive_refinement(jxl_jbr_scan_state *state,
-                                                      jxl_allocator_state *alloc,
+                                                      jxl_context *alloc,
                                                       const jxl_jbr_huffman_table *ac_table,
                                                       int has_dc, int16_t dc, const int16_t *ac,
                                                       size_t ac_len, int has_extra_zero_runs,
@@ -606,7 +606,7 @@ static int16_t saturate_sub_i16(int16_t a, int16_t b) {
     return (int16_t)r;
 }
 
-jxl_jbr_status jxl_jbr_process_scan(jxl_jbr_reconstructor *recon, jxl_allocator_state *alloc,
+jxl_jbr_status jxl_jbr_process_scan(jxl_jbr_reconstructor *recon, jxl_context *alloc,
                                     int scan_type, const jxl_jbr_scan_params *params,
                                     jxl_jbr_output *out) {
                                         uint32_t y8;

@@ -54,19 +54,19 @@ void jxl_channel_shift_shift_size(const jxl_channel_shift *s, uint32_t width, ui
                                   uint32_t *out_w, uint32_t *out_h);
 
 void jxl_modular_params_init(jxl_modular_params *p);
-void jxl_modular_params_free(jxl_allocator_state *alloc, jxl_modular_params *p);
+void jxl_modular_params_free(jxl_context *alloc, jxl_modular_params *p);
 
-int jxl_modular_params_set_channels(jxl_allocator_state *alloc, jxl_modular_params *p,
+int jxl_modular_params_set_channels(jxl_context *alloc, jxl_modular_params *p,
                                     uint32_t width, uint32_t height, uint32_t group_dim,
                                     uint32_t bit_depth, const jxl_channel_shift *shifts,
                                     size_t num_shifts);
 
 /* Build channel shifts for a modular-encoded frame (matches Rust GlobalModular). */
-int jxl_modular_params_set_for_modular_frame(jxl_allocator_state *alloc, jxl_context *ctx,
+int jxl_modular_params_set_for_modular_frame(jxl_context *alloc, jxl_context *ctx,
                                              jxl_modular_params *p,
                                              const jxl_parsed_image_header *image,
                                              const jxl_frame_header *frame);
-int jxl_modular_params_set_for_vardct_frame(jxl_allocator_state *alloc, jxl_context *ctx,
+int jxl_modular_params_set_for_vardct_frame(jxl_context *alloc, jxl_context *ctx,
                                               jxl_modular_params *p,
                                               const jxl_parsed_image_header *image,
                                               const jxl_frame_header *frame);

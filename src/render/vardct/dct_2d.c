@@ -17,7 +17,7 @@
 #include "render/vardct/dct_2d_wasm128.h"
 #endif
 
-void jxl_dct_2d(jxl_allocator_state *alloc, jxl_subgrid_f32 io, jxl_dct_direction direction) {
+void jxl_dct_2d(jxl_context *alloc, jxl_subgrid_f32 io, jxl_dct_direction direction) {
 #if defined(JXL_HAVE_SIMD_WASM128)
     if (jxl_dct_2d_wasm128(alloc, io, direction)) {
         return;
@@ -36,7 +36,7 @@ void jxl_dct_2d(jxl_allocator_state *alloc, jxl_subgrid_f32 io, jxl_dct_directio
     jxl_dct_2d_generic(alloc, io, direction);
 }
 
-void jxl_dct_2d_generic(jxl_allocator_state *alloc, jxl_subgrid_f32 io, jxl_dct_direction direction) {
+void jxl_dct_2d_generic(jxl_context *alloc, jxl_subgrid_f32 io, jxl_dct_direction direction) {
     size_t y;
     size_t by;
     size_t width = io.width;

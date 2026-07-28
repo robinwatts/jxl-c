@@ -26,7 +26,7 @@ typedef struct jxl_ma_config {
     size_t tree_depth;
     jxl_ma_tree_node *tree;
     jxl_coding_decoder *decoder;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
 } jxl_ma_config;
 
 typedef struct {
@@ -36,9 +36,9 @@ typedef struct {
 } jxl_ma_config_params;
 
 void jxl_ma_config_init(jxl_ma_config *cfg);
-void jxl_ma_config_destroy(jxl_allocator_state *alloc, jxl_ma_config *cfg);
+void jxl_ma_config_destroy(jxl_context *alloc, jxl_ma_config *cfg);
 
-jxl_modular_status_t jxl_ma_config_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_modular_status_t jxl_ma_config_parse(jxl_context *alloc, jxl_bs *bs,
                                          const jxl_ma_config_params *params, jxl_ma_config *out);
 
 const jxl_coding_decoder *jxl_ma_config_decoder(const jxl_ma_config *cfg);

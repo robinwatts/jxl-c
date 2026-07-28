@@ -24,7 +24,7 @@ typedef struct {
 
 typedef struct {
     jxl_context *ctx;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     const jxl_ma_flat_tree *ma_tree;
     const jxl_wp_header *wp_header;
     uint32_t dist_multiplier;

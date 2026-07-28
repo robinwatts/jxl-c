@@ -44,23 +44,23 @@ static void test_default_allocator(void) {
     jxl_allocator_state state;
     jxl_allocator_init(&state, NULL);
 
-    int *buf = jxl_calloc(&state, 4, sizeof(int));
+    int *buf = jxl_calloc_state(&state, 4, sizeof(int));
     assert(buf != NULL);
     for (i = 0; i < 4; ++i) {
         assert(buf[i] == 0);
     }
     buf[0] = 42;
 
-    int *grown = jxl_realloc(&state, buf, 8 * sizeof(int));
+    int *grown = jxl_realloc_state(&state, buf, 8 * sizeof(int));
     assert(grown != NULL);
     assert(grown[0] == 42);
 
-    jxl_free(&state, grown);
+    jxl_free_state(&state, grown);
 
-    char *copy = jxl_strdup(&state, "jxl");
+    char *copy = jxl_strdup_state(&state, "jxl");
     assert(copy != NULL);
     assert(strcmp(copy, "jxl") == 0);
-    jxl_free(&state, copy);
+    jxl_free_state(&state, copy);
 }
 
 static void test_custom_vtable_counts(void) {
@@ -76,20 +76,20 @@ static void test_custom_vtable_counts(void) {
 
     jxl_allocator_init(&state, &vtable);
 
-    void *a = jxl_alloc(&state, 16);
+    void *a = jxl_alloc_state(&state, 16);
     assert(a != NULL);
     assert(counts.alloc_calls == 1);
 
-    void *z = jxl_calloc(&state, 2, 8);
+    void *z = jxl_calloc_state(&state, 2, 8);
     assert(z != NULL);
     assert(counts.calloc_calls == 1);
 
-    void *b = jxl_realloc(&state, a, 32);
+    void *b = jxl_realloc_state(&state, a, 32);
     assert(b != NULL);
     assert(counts.realloc_calls == 1);
 
-    jxl_free(&state, b);
-    jxl_free(&state, z);
+    jxl_free_state(&state, b);
+    jxl_free_state(&state, z);
     assert(counts.free_calls == 2);
 }
 
@@ -106,25 +106,25 @@ static void test_alloc_only_vtable_gets_defaults(void) {
 
     jxl_allocator_init(&state, &vtable);
 
-    uint8_t *buf = jxl_calloc(&state, 1, 4);
+    uint8_t *buf = jxl_calloc_state(&state, 1, 4);
     assert(buf != NULL);
     assert(buf[0] == 0 && buf[1] == 0 && buf[2] == 0 && buf[3] == 0);
     assert(counts.alloc_calls == 1);
     assert(counts.calloc_calls == 0);
 
-    uint8_t *grown = jxl_realloc(&state, buf, 8);
+    uint8_t *grown = jxl_realloc_state(&state, buf, 8);
     assert(grown != NULL);
     assert(counts.alloc_calls == 2);
     assert(counts.realloc_calls == 0);
 
-    jxl_free(&state, grown);
+    jxl_free_state(&state, grown);
     assert(counts.free_calls == 2);
 }
 
 static void test_calloc_overflow(void) {
     jxl_allocator_state state;
     jxl_allocator_init(&state, NULL);
-    assert(jxl_calloc(&state, SIZE_MAX, 2) == NULL);
+    assert(jxl_calloc_state(&state, SIZE_MAX, 2) == NULL);
 }
 
 static void test_alloc_aligned_default(void) {
@@ -133,16 +133,16 @@ static void test_alloc_aligned_default(void) {
     jxl_allocator_init(&state, NULL);
 
     for (align = 16; align <= 32; align += 16) {
-        uint8_t *buf = jxl_alloc_aligned(&state, align, 64);
+        uint8_t *buf = jxl_alloc_aligned_state(&state, align, 64);
         assert(buf != NULL);
         assert(((uintptr_t)buf & (align - 1)) == 0);
         buf[0] = 0xab;
         buf[63] = 0xcd;
-        jxl_free_aligned(&state, buf);
+        jxl_free_aligned_state(&state, buf);
     }
 
-    assert(jxl_alloc_aligned(&state, 16, 0) == NULL);
-    assert(jxl_alloc_aligned(&state, 15, 16) == NULL);
+    assert(jxl_alloc_aligned_state(&state, 16, 0) == NULL);
+    assert(jxl_alloc_aligned_state(&state, 15, 16) == NULL);
     assert(jxl_alloc_aligned(NULL, 16, 16) == NULL);
 }
 
@@ -160,11 +160,11 @@ static void test_alloc_aligned_size_prefix_vtable(void) {
     jxl_allocator_init(&state, &vtable);
 
     __m128i *scratch =
-        (__m128i *)jxl_alloc_aligned(&state, JXL_ALLOC_ALIGN_SIMD128, 8 * sizeof(__m128i));
+        (__m128i *)jxl_alloc_aligned_state(&state, JXL_ALLOC_ALIGN_SIMD128, 8 * sizeof(__m128i));
     assert(scratch != NULL);
     assert(((uintptr_t)scratch & (JXL_ALLOC_ALIGN_SIMD128 - 1)) == 0);
     scratch[0] = _mm_set1_epi16(1);
-    jxl_free_aligned(&state, scratch);
+    jxl_free_aligned_state(&state, scratch);
     assert(counts.free_calls == 1);
 }
 

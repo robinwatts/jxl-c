@@ -26,7 +26,7 @@ static jxl_status_t bs_to_jxl(jxl_bs_status_t st) {
     return JXL_ERROR_INVALID_INPUT;
 }
 
-jxl_status_t jxl_decoder_init_from_codestream(jxl_allocator_state *alloc,
+jxl_status_t jxl_decoder_init_from_codestream(jxl_context *alloc,
                                               const uint8_t *codestream, size_t codestream_len,
                                               jxl_image_header *header_out,
                                               uint32_t *num_color_channels_out,
@@ -81,7 +81,7 @@ jxl_status_t jxl_decoder_init_from_codestream(jxl_allocator_state *alloc,
     return JXL_OK;
 }
 
-jxl_status_t jxl_decoder_init_from_input(jxl_allocator_state *alloc, const uint8_t *input,
+jxl_status_t jxl_decoder_init_from_input(jxl_context *alloc, const uint8_t *input,
                                          size_t input_len, jxl_image_header *header_out,
                                          uint32_t *num_color_channels_out,
                                          jxl_image_geometry *geometry_out, int *xyb_encoded_out,

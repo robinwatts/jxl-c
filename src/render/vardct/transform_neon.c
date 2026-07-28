@@ -182,7 +182,7 @@ static void transform_dct4x8_neon(jxl_subgrid_f32 coeff, int transpose) {
     }
 }
 
-int jxl_render_transform_varblock_neon(jxl_allocator_state *alloc, jxl_subgrid_f32 coeff,
+int jxl_render_transform_varblock_neon(jxl_context *alloc, jxl_subgrid_f32 coeff,
                                        jxl_transform_type dct_select) {
     switch (dct_select) {
     case JXL_TRANSFORM_DCT4:

@@ -24,7 +24,7 @@
 #include "render/render_util.h"
 #include "frame/filter.h"
 
-jxl_status_t jxl_decoder_init_from_codestream(jxl_allocator_state *alloc,
+jxl_status_t jxl_decoder_init_from_codestream(jxl_context *alloc,
                                               const uint8_t *codestream, size_t codestream_len,
                                               jxl_image_header *header_out,
                                               uint32_t *num_color_channels_out,
@@ -32,7 +32,7 @@ jxl_status_t jxl_decoder_init_from_codestream(jxl_allocator_state *alloc,
                                               int *xyb_encoded_out,
                                               jxl_parsed_image_header *parsed_out,
                                               size_t *frames_bit_offset_out);
-jxl_status_t jxl_decoder_init_from_input(jxl_allocator_state *alloc, const uint8_t *input,
+jxl_status_t jxl_decoder_init_from_input(jxl_context *alloc, const uint8_t *input,
                                          size_t input_len, jxl_image_header *header_out,
                                          uint32_t *num_color_channels_out,
                                          jxl_image_geometry *geometry_out, int *xyb_encoded_out,
@@ -189,9 +189,9 @@ struct jxl_decoder {
     int animation_cache_init;
 };
 
-static jxl_allocator_state *dec_alloc(jxl_decoder *dec) {
+static jxl_context *dec_alloc(jxl_decoder *dec) {
     /* Non-owning borrow of the context allocator (no per-decoder embed). */
-    return jxl_context_alloc_state(dec->ctx);
+    return dec->ctx;
 }
 
 typedef struct {
@@ -209,7 +209,7 @@ static int decoder_borrow_codestream(const jxl_decoder *dec, const uint8_t **cs_
     return *cs_out != NULL && *cs_len_out >= 3;
 }
 
-static int decoder_peek_first_frame(jxl_allocator_state *alloc, const uint8_t *codestream,
+static int decoder_peek_first_frame(jxl_context *alloc, const uint8_t *codestream,
                                     size_t codestream_len, jxl_decoder_frame_hint *out) {
     jxl_bs bs;
     jxl_parsed_image_header parsed;
@@ -244,7 +244,7 @@ static int decoder_peek_first_frame(jxl_allocator_state *alloc, const uint8_t *c
     return 1;
 }
 
-static int decoder_parse_for_padding(jxl_allocator_state *alloc, const uint8_t *codestream,
+static int decoder_parse_for_padding(jxl_context *alloc, const uint8_t *codestream,
                                      size_t codestream_len, jxl_parsed_image_header *parsed,
                                      jxl_frame_header *fh) {
     jxl_bs bs;
@@ -276,7 +276,7 @@ static jxl_status_t decoder_materialize_render_f32(jxl_decoder *dec, jxl_render 
     return jxl_render_ensure_all_planes_f32(dec_alloc(dec), r, &dec->parsed_header);
 }
 
-static jxl_render *decoder_extract_render_subregion(jxl_allocator_state *alloc, jxl_render *src,
+static jxl_render *decoder_extract_render_subregion(jxl_context *alloc, jxl_render *src,
                                                     const jxl_modular_region *inner,
                                                     const jxl_modular_region *outer) {
     uint32_t p;
@@ -353,7 +353,7 @@ static uint32_t decoder_postprocess_output_channels(const jxl_parsed_image_heade
     return fh->encoded_color_channels != 0u ? fh->encoded_color_channels : 3u;
 }
 
-static jxl_status_t decoder_finish_postprocess_planes(jxl_allocator_state *alloc, jxl_render *r,
+static jxl_status_t decoder_finish_postprocess_planes(jxl_context *alloc, jxl_render *r,
                                                       const jxl_parsed_image_header *parsed,
                                                       const jxl_decoder_frame_hint *fh) {
     uint32_t keep = decoder_postprocess_output_channels(parsed, fh);
@@ -531,7 +531,7 @@ static jxl_status_t decoder_apply_output_color_transform(jxl_decoder *dec, jxl_r
 }
 
 static void decoder_set_error(jxl_decoder *dec, const char *message) {
-    jxl_allocator_state *alloc = dec_alloc(dec);
+    jxl_context *alloc = dec_alloc(dec);
     jxl_free(alloc, dec->last_error);
     dec->last_error = jxl_strdup(alloc, message);
 }
@@ -604,7 +604,7 @@ jxl_status_t jxl_decoder_create(jxl_context *ctx, const jxl_decoder_options *opt
         return deps;
     }
 
-    dec = jxl_ctx_alloc(ctx, sizeof(*dec));
+    dec = jxl_alloc(ctx, sizeof(*dec));
     if (dec == NULL) {
         return JXL_ERROR_OUT_OF_MEMORY;
     }
@@ -612,9 +612,9 @@ jxl_status_t jxl_decoder_create(jxl_context *ctx, const jxl_decoder_options *opt
     dec->ctx = ctx;
     dec->header.bit_depth = 8;
     dec->animation_chain_upto = UINT32_MAX;
-    dec->reader = jxl_container_reader_create(jxl_context_alloc_state(ctx));
+    dec->reader = jxl_container_reader_create(ctx);
     if (dec->reader == NULL) {
-        jxl_ctx_free(ctx, dec);
+        jxl_free(ctx, dec);
         return JXL_ERROR_OUT_OF_MEMORY;
     }
     *out = dec;
@@ -628,17 +628,17 @@ void jxl_decoder_destroy(jxl_context *ctx, jxl_decoder *dec) {
     if (ctx != NULL && dec->ctx != ctx) {
         return;
     }
-    jxl_ctx_free(ctx, dec->last_error);
-    jxl_ctx_free(ctx, dec->input);
-    jxl_ctx_free(ctx, dec->requested_icc);
+    jxl_free(ctx, dec->last_error);
+    jxl_free(ctx, dec->input);
+    jxl_free(ctx, dec->requested_icc);
     if (dec->animation_cache_init) {
-        jxl_allocator_state *alloc = jxl_context_alloc_state(ctx);
+        jxl_context *alloc = ctx;
         jxl_reference_store_free(alloc, &dec->animation_refs);
         jxl_progressive_lf_store_free(alloc, &dec->animation_lf_store);
     }
-    jxl_container_reader_destroy(jxl_context_alloc_state(ctx), dec->reader);
-    jxl_parsed_image_header_free_embedded_icc(jxl_context_alloc_state(ctx), &dec->parsed_header);
-    jxl_ctx_free(ctx, dec);
+    jxl_container_reader_destroy(ctx, dec->reader);
+    jxl_parsed_image_header_free_embedded_icc(ctx, &dec->parsed_header);
+    jxl_free(ctx, dec);
 }
 
 jxl_status_t jxl_decoder_feed(jxl_decoder *dec, const uint8_t *data, size_t len) {
@@ -741,7 +741,7 @@ jxl_status_t jxl_decoder_set_crop(jxl_decoder *dec, const jxl_crop *crop) {
     return JXL_OK;
 }
 
-static jxl_status_t decoder_count_keyframes(jxl_allocator_state *alloc, const uint8_t *codestream,
+static jxl_status_t decoder_count_keyframes(jxl_context *alloc, const uint8_t *codestream,
                                             size_t codestream_len,
                                             const jxl_parsed_image_header *cached_parsed,
                                             size_t frames_bitstream_offset, uint32_t *count_out) {
@@ -798,7 +798,7 @@ static jxl_status_t decoder_render_keyframe(jxl_context *ctx, jxl_decoder *dec,
     uint32_t new_planes;
     uint32_t p;
     const uint8_t *codestream;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     const jxl_modular_region *output_ptr;
     jxl_render *r;
     jxl_render *compact;
@@ -830,7 +830,7 @@ static jxl_status_t decoder_render_keyframe(jxl_context *ctx, jxl_decoder *dec,
         return JXL_ERROR_INVALID_INPUT;
     }
 
-    alloc = jxl_context_alloc_state(ctx);
+    alloc = ctx;
 
     /* Render in codestream space (Rust internal grid); orientation runs once at export. */
     render_w = dec->codestream_width;
@@ -1098,7 +1098,7 @@ uint32_t jxl_decoder_num_keyframes(const jxl_decoder *dec) {
         return 0;
     }
     count = 0;
-    if (decoder_count_keyframes(jxl_context_alloc_state(dec->ctx), codestream, cs_len,
+    if (decoder_count_keyframes(dec->ctx, codestream, cs_len,
                                 &dec->parsed_header, dec->frames_bitstream_offset, &count) !=
         JXL_OK) {
         return 0;
@@ -1308,7 +1308,7 @@ static jxl_status_t decoder_load_first_frame(jxl_decoder *dec, jxl_parsed_image_
     jxl_parsed_image_header parsed;
     jxl_frame frame;
     size_t consumed;
-    jxl_allocator_state *alloc = dec_alloc(dec);
+    jxl_context *alloc = dec_alloc(dec);
     const uint8_t *cs = NULL;
     jxl_frame_status_t fst;
     jxl_status_t st;
@@ -1382,7 +1382,7 @@ static jxl_jpeg_reconstruction_status decoder_jbrd_status(const jxl_decoder *dec
         size_t cs_len;
         jxl_bs bs;
         jxl_parsed_image_header parsed;
-        jxl_allocator_state *alloc = dec_alloc((jxl_decoder *)dec);
+        jxl_context *alloc = dec_alloc((jxl_decoder *)dec);
         const uint8_t *codestream = NULL;
         jxl_jpeg_reconstruction_status icc_st = JXL_JPEG_RECONSTRUCTION_NEED_MORE_DATA;
 
@@ -1444,7 +1444,7 @@ jxl_jpeg_reconstruction_status jxl_decoder_jpeg_reconstruction_status(const jxl_
         jxl_bs bs;
         jxl_parsed_image_header parsed;
         jxl_frame_header fh;
-        jxl_allocator_state *alloc = dec_alloc((jxl_decoder *)dec);
+        jxl_context *alloc = dec_alloc((jxl_decoder *)dec);
         int ok;
         const uint8_t *cs = jxl_container_reader_codestream(dec->reader, &cs_len);
         if (cs == NULL || cs_len < 3) {
@@ -1499,7 +1499,7 @@ jxl_status_t jxl_decoder_reconstruct_jpeg(jxl_decoder *dec, uint8_t **jpeg_out, 
     size_t xmp_len;
     jxl_jbr_output out;
     jxl_aux_jbrd_data jbrd_box;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     jxl_status_t st;
     const uint8_t *icc;
     size_t icc_len;

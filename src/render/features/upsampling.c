@@ -82,14 +82,14 @@ typedef struct {
     size_t stride;
 } jxl_owned_grid;
 
-static void owned_grid_free(jxl_allocator_state *alloc, jxl_owned_grid *g) {
+static void owned_grid_free(jxl_context *alloc, jxl_owned_grid *g) {
     if (g != NULL && g->data != NULL) {
         jxl_free(alloc, g->data);
         g->data = NULL;
     }
 }
 
-static int owned_grid_alloc(jxl_allocator_state *alloc, uint32_t width, uint32_t height,
+static int owned_grid_alloc(jxl_context *alloc, uint32_t width, uint32_t height,
                             jxl_owned_grid *out) {
     size_t stride;
     size_t count;
@@ -163,7 +163,7 @@ static int build_weights_quarter(uint32_t k, const float *weights, float (*out)[
     return 1;
 }
 
-static int upsample_inner(jxl_allocator_state *alloc, jxl_const_subgrid_f32 grid, uint32_t k,
+static int upsample_inner(jxl_context *alloc, jxl_const_subgrid_f32 grid, uint32_t k,
                           const float *weights, jxl_owned_grid *out) {
                               uint32_t t;
                               uint32_t y;
@@ -272,7 +272,7 @@ static int upsample_inner(jxl_allocator_state *alloc, jxl_const_subgrid_f32 grid
     return 1;
 }
 
-int jxl_apply_nonseparable_upsampling_single(jxl_allocator_state *alloc, jxl_const_subgrid_f32 src,
+int jxl_apply_nonseparable_upsampling_single(jxl_context *alloc, jxl_const_subgrid_f32 src,
                                              const jxl_upsampling_weights *weights,
                                              uint32_t factor_log2, uint32_t target_w,
                                              uint32_t target_h, float *dst, size_t dst_stride) {

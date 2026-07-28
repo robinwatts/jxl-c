@@ -190,7 +190,7 @@ int jxl_modular_grid_group_view_at(jxl_modular_grid *parent, size_t group_width,
     return 1;
 }
 
-int jxl_modular_grid_create(jxl_allocator_state *alloc, size_t width, size_t height,
+int jxl_modular_grid_create(jxl_context *alloc, size_t width, size_t height,
                             jxl_grid_alloc_tracker *tracker,
                             jxl_modular_sample_kind kind, jxl_modular_grid_i32 *out) {
     size_t len;
@@ -239,13 +239,13 @@ int jxl_modular_grid_create(jxl_allocator_state *alloc, size_t width, size_t hei
     return 1;
 }
 
-int jxl_modular_grid_i32_create(jxl_allocator_state *alloc, size_t width, size_t height,
+int jxl_modular_grid_i32_create(jxl_context *alloc, size_t width, size_t height,
                                 jxl_grid_alloc_tracker *tracker,
                                 jxl_modular_grid_i32 *out) {
     return jxl_modular_grid_create(alloc, width, height, tracker, JXL_MODULAR_SAMPLE_I32, out);
 }
 
-int jxl_modular_grid_i16_create(jxl_allocator_state *alloc, size_t width, size_t height,
+int jxl_modular_grid_i16_create(jxl_context *alloc, size_t width, size_t height,
                                 jxl_grid_alloc_tracker *tracker,
                                 jxl_modular_grid_i32 *out) {
     return jxl_modular_grid_create(alloc, width, height, tracker, JXL_MODULAR_SAMPLE_I16, out);
@@ -264,7 +264,7 @@ static int grid_buf_seen(void *buf, void **seen, size_t seen_len) {
     return 0;
 }
 
-void jxl_modular_grid_i32_destroy(jxl_allocator_state *alloc, jxl_modular_grid_i32 *g) {
+void jxl_modular_grid_i32_destroy(jxl_context *alloc, jxl_modular_grid_i32 *g) {
     if (g == NULL) {
         return;
     }
@@ -273,7 +273,7 @@ void jxl_modular_grid_i32_destroy(jxl_allocator_state *alloc, jxl_modular_grid_i
     jxl_modular_grid_i32_init_empty(g);
 }
 
-int jxl_modular_grid_clone(jxl_allocator_state *alloc, const jxl_modular_grid_i32 *src,
+int jxl_modular_grid_clone(jxl_context *alloc, const jxl_modular_grid_i32 *src,
                            jxl_modular_grid_i32 *dst) {
     size_t y;
     size_t elem_size;
@@ -297,7 +297,7 @@ int jxl_modular_grid_clone(jxl_allocator_state *alloc, const jxl_modular_grid_i3
     return 1;
 }
 
-static void modular_grids_destroy_unique(jxl_allocator_state *alloc, jxl_modular_grid_i32 *grids, size_t len) {
+static void modular_grids_destroy_unique(jxl_context *alloc, jxl_modular_grid_i32 *grids, size_t len) {
     size_t i;
     size_t seen_len;
     size_t seen_handle_len;
@@ -361,7 +361,7 @@ void jxl_modular_image_destination_init(jxl_modular_image_destination *dest) {
     }
 }
 
-void jxl_modular_image_destination_free(jxl_allocator_state *alloc,
+void jxl_modular_image_destination_free(jxl_context *alloc,
                                        jxl_modular_image_destination *dest) {
     if (dest == NULL) {
         return;
@@ -393,7 +393,7 @@ static jxl_modular_sample_kind alloc_kind_for_destination(jxl_modular_sample_kin
 }
 
 jxl_modular_status_t jxl_modular_image_destination_create(
-    jxl_allocator_state *alloc, jxl_modular_header_ma *header_ma, uint32_t group_dim,
+    jxl_context *alloc, jxl_modular_header_ma *header_ma, uint32_t group_dim,
     uint32_t bit_depth, jxl_modular_sample_kind sample_kind, const jxl_modular_channels *channels,
     jxl_grid_alloc_tracker *tracker, jxl_modular_image_destination *out) {
     size_t i;

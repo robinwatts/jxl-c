@@ -11,11 +11,11 @@ static uint32_t permutation_context(uint32_t x) {
     return ctx < 7 ? ctx : 7;
 }
 
-void jxl_coding_permutation_destroy(jxl_allocator_state *alloc, size_t *permutation) {
+void jxl_coding_permutation_destroy(jxl_context *alloc, size_t *permutation) {
     jxl_free(alloc, permutation);
 }
 
-jxl_coding_status_t jxl_coding_read_permutation(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_coding_status_t jxl_coding_read_permutation(jxl_context *alloc, jxl_bs *bs,
                                                 jxl_coding_decoder *dec, uint32_t size,
                                                 uint32_t skip, size_t **permutation_out,
                                                 size_t *permutation_len_out) {

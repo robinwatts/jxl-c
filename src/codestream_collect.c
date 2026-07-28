@@ -10,7 +10,7 @@ typedef struct {
     uint8_t *data;
     size_t len;
     size_t cap;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
 } codestream_buf;
 
 static jxl_bs_status_t grow_codestream(codestream_buf *buf, size_t need) {
@@ -53,7 +53,7 @@ static jxl_bs_status_t collect_cb(void *ctx, const jxl_parse_event *event) {
     return JXL_BS_OK;
 }
 
-jxl_status_t jxl_collect_codestream(jxl_allocator_state *alloc, const uint8_t *file_data,
+jxl_status_t jxl_collect_codestream(jxl_context *alloc, const uint8_t *file_data,
                                     size_t file_len, uint8_t **out_data, size_t *out_len) {
     size_t remaining;
     jxl_container_parser *parser = jxl_container_parser_create(alloc);

@@ -59,15 +59,15 @@ struct jxl_render {
     jxl_image_buffer *bufs;
     jxl_render_plane_meta *meta;
     /* Borrowed from decoder context; enables lazy f32 materialization in jxl_render_plane. */
-    jxl_allocator_state *materialize_alloc;
+    jxl_context *materialize_alloc;
     uint32_t color_bit_depth_bits;
     uint32_t num_ec_bit_depths;
     uint8_t ec_bit_depth_bits[JXL_RENDER_MAX_EC_BIT_DEPTHS];
 };
 
-jxl_render *jxl_render_create(jxl_allocator_state *alloc, uint32_t num_planes,
+jxl_render *jxl_render_create(jxl_context *alloc, uint32_t num_planes,
                               uint32_t color_planes, uint32_t width, uint32_t height);
-void jxl_render_free(jxl_allocator_state *alloc, jxl_render *r);
+void jxl_render_free(jxl_context *alloc, jxl_render *r);
 
 void jxl_render_init_all_planes(jxl_render *r, const jxl_modular_region *frame_region);
 
@@ -75,15 +75,15 @@ void jxl_render_init_all_planes(jxl_render *r, const jxl_modular_region *frame_r
  * Rust ImageWithRegion::clone_gray — duplicate single color plane to three for filters/CT.
  * Extra channel planes are shifted to indices 3+.
  */
-jxl_status_t jxl_render_clone_gray(jxl_allocator_state *alloc, jxl_render *r);
+jxl_status_t jxl_render_clone_gray(jxl_context *alloc, jxl_render *r);
 
 /*
  * Rust ImageWithRegion::remove_color_channels — drop color planes above keep_count.
  */
-jxl_status_t jxl_render_shrink_to_encoded_layout(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_shrink_to_encoded_layout(jxl_context *alloc, jxl_render *r,
                                                uint32_t encoded_color, uint32_t extra_planes);
 
-jxl_status_t jxl_render_remove_color_planes(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_remove_color_planes(jxl_context *alloc, jxl_render *r,
                                             uint32_t keep_count);
 
 void jxl_render_set_plane_meta(jxl_render *r, uint32_t plane, const jxl_modular_region *region,
@@ -116,58 +116,58 @@ const jxl_render_plane_meta *jxl_render_get_plane_meta(const jxl_render *r, uint
  * Rust ImageWithRegion::extend_from_gmodular — move modular channel grids into render planes.
  * Transfers ownership from dest->image_channels[nb_meta + plane]; no i16→f32 copy.
  */
-jxl_status_t jxl_render_extend_from_modular_dest(jxl_allocator_state *alloc,
+jxl_status_t jxl_render_extend_from_modular_dest(jxl_context *alloc,
                                                  jxl_modular_image_destination *dest,
                                                  const jxl_frame_header *fh, jxl_render *r,
                                                  uint32_t num_planes, int32_t ox, int32_t oy,
                                                  const jxl_render_modular_placement *placement);
 
 /* Rust ImageBuffer::convert_to_float_modular for color planes. */
-jxl_status_t jxl_render_convert_modular_color(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_convert_modular_color(jxl_context *alloc, jxl_render *r,
                                               uint32_t bit_depth_bits, uint32_t color_planes);
 
 /* Materialize plane p as f32 (converts integer storage into render samples slot). */
-jxl_status_t jxl_render_ensure_plane_f32(jxl_allocator_state *alloc, jxl_render *r, uint32_t plane,
+jxl_status_t jxl_render_ensure_plane_f32(jxl_context *alloc, jxl_render *r, uint32_t plane,
                                          uint32_t bit_depth_bits);
 
-jxl_status_t jxl_render_ensure_all_planes_f32(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_ensure_all_planes_f32(jxl_context *alloc, jxl_render *r,
                                               const jxl_parsed_image_header *parsed);
 
 int jxl_render_plane_is_integer(const jxl_render *r, uint32_t plane);
 
 int jxl_render_any_plane_integer(const jxl_render *r);
 
-void jxl_render_bind_materialization(jxl_render *r, jxl_allocator_state *alloc,
+void jxl_render_bind_materialization(jxl_render *r, jxl_context *alloc,
                                      const jxl_parsed_image_header *parsed);
 
 uint32_t jxl_render_plane_bit_depth(const jxl_render *r, uint32_t plane);
 
-jxl_status_t jxl_render_materialize_plane_f32(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_materialize_plane_f32(jxl_context *alloc, jxl_render *r,
                                               uint32_t plane);
 
 void jxl_render_prepare_color_upsampling(jxl_render *r, const jxl_frame_header *fh);
 
-jxl_status_t jxl_render_upsample_plane_to_target(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_upsample_plane_to_target(jxl_context *alloc, jxl_render *r,
                                                  uint32_t plane,
                                                  const jxl_upsampling_weights *weights,
                                                  uint32_t frame_upsampling);
 
 /* JPEG chroma upsample to explicit dimensions (used before YCbCr when frame upsampling is deferred). */
-jxl_status_t jxl_render_upsample_plane_jpeg(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_upsample_plane_jpeg(jxl_context *alloc, jxl_render *r,
                                           uint32_t plane, uint32_t target_w, uint32_t target_h);
 
-jxl_status_t jxl_render_normalize_all_planes(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_normalize_all_planes(jxl_context *alloc, jxl_render *r,
                                              const jxl_frame_header *fh,
                                              const jxl_upsampling_weights *weights,
                                              const jxl_modular_region *valid_region);
 
-jxl_status_t jxl_render_upsample_nonseparable(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_upsample_nonseparable(jxl_context *alloc, jxl_render *r,
                                               const jxl_modular_region *valid_region,
                                               const jxl_frame_header *fh,
                                               const jxl_upsampling_weights *weights,
                                               int ec_to_color_only);
 
-jxl_status_t jxl_render_features_pipeline(jxl_context *ctx, jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_features_pipeline(jxl_context *ctx, jxl_context *alloc, jxl_render *r,
                                           const jxl_parsed_image_header *parsed,
                                           const jxl_frame_header *fh,
                                           const jxl_upsampling_weights *weights,
@@ -178,7 +178,7 @@ jxl_status_t jxl_render_features_pipeline(jxl_context *ctx, jxl_allocator_state 
                                           uint32_t invisible_frames,
                                           const jxl_modular_region *render_region);
 
-jxl_status_t jxl_render_apply_orientation(jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_apply_orientation(jxl_context *alloc, jxl_render *r,
                                           uint32_t orientation);
 
 #endif /* JXL_RENDER_RENDER_BUFFER_H_ */

@@ -58,20 +58,20 @@ typedef struct {
 } jxl_dequant_matrix_set_params;
 
 void jxl_dequant_matrix_params_init(jxl_dequant_matrix_params *p);
-void jxl_dequant_matrix_params_free(jxl_allocator_state *alloc, jxl_dequant_matrix_params *p);
+void jxl_dequant_matrix_params_free(jxl_context *alloc, jxl_dequant_matrix_params *p);
 void jxl_dequant_matrix_set_init(jxl_dequant_matrix_set *set);
 void jxl_dequant_matrix_set_free(jxl_dequant_matrix_set *set);
 
-jxl_vardct_status_t jxl_dequant_matrix_params_default(jxl_allocator_state *alloc,
+jxl_vardct_status_t jxl_dequant_matrix_params_default(jxl_context *alloc,
                                                      jxl_transform_type t,
                                                      jxl_dequant_matrix_params *out);
 
-jxl_vardct_status_t jxl_dequant_matrix_params_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_vardct_status_t jxl_dequant_matrix_params_parse(jxl_context *alloc, jxl_bs *bs,
                                                     jxl_transform_type dct_select,
                                                     const jxl_dequant_matrix_set_params *params,
                                                     jxl_dequant_matrix_params *out);
 
-jxl_vardct_status_t jxl_dequant_matrix_set_parse(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_vardct_status_t jxl_dequant_matrix_set_parse(jxl_context *ctx, jxl_context *alloc,
                                                  jxl_bs *bs,
                                                  const jxl_dequant_matrix_set_params *params,
                                                  jxl_dequant_matrix_set *out);

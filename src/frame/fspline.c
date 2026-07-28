@@ -18,7 +18,7 @@ void jxl_splines_init(jxl_splines *s) {
     }
 }
 
-static void quant_spline_free(jxl_allocator_state *alloc, jxl_quant_spline *q) {
+static void quant_spline_free(jxl_context *alloc, jxl_quant_spline *q) {
     if (q == NULL) {
         return;
     }
@@ -26,7 +26,7 @@ static void quant_spline_free(jxl_allocator_state *alloc, jxl_quant_spline *q) {
     memset(q, 0, sizeof(*q));
 }
 
-void jxl_splines_free(jxl_allocator_state *alloc, jxl_splines *s) {
+void jxl_splines_free(jxl_context *alloc, jxl_splines *s) {
     size_t i;
     if (s == NULL) {
         return;
@@ -121,7 +121,7 @@ uint64_t jxl_splines_estimate_area(const jxl_splines *splines, float corr_x, flo
     return total;
 }
 
-static jxl_frame_status_t parse_quant_spline(jxl_allocator_state *alloc, jxl_coding_decoder *dec,
+static jxl_frame_status_t parse_quant_spline(jxl_context *alloc, jxl_coding_decoder *dec,
                                              jxl_bs *bs, int64_t start_x, int64_t start_y,
                                              uint32_t num_pixels, size_t acc_control_points,
                                              jxl_quant_spline *out) {
@@ -221,7 +221,7 @@ static jxl_frame_status_t parse_quant_spline(jxl_allocator_state *alloc, jxl_cod
     return JXL_FRAME_OK;
 }
 
-jxl_frame_status_t jxl_splines_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_splines_parse(jxl_context *alloc, jxl_bs *bs,
                                      const jxl_frame_header *frame, jxl_splines *out) {
                                          uint32_t i;
     uint32_t num_splines_raw;

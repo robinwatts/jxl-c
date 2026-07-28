@@ -11,8 +11,8 @@
 
 typedef struct jxl_container_reader jxl_container_reader;
 
-jxl_container_reader *jxl_container_reader_create(jxl_allocator_state *alloc);
-void jxl_container_reader_destroy(jxl_allocator_state *alloc, jxl_container_reader *reader);
+jxl_container_reader *jxl_container_reader_create(jxl_context *alloc);
+void jxl_container_reader_destroy(jxl_context *alloc, jxl_container_reader *reader);
 
 jxl_bs_status_t jxl_container_reader_feed(jxl_container_reader *reader, const uint8_t *data,
                                           size_t len, size_t *consumed_out);

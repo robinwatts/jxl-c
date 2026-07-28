@@ -29,8 +29,8 @@ static void test_create_destroy_default(void) {
     jxl_context *ctx = NULL;
     JXL_TEST_ASSERT_EQ(jxl_context_create(NULL, &ctx), JXL_OK);
     assert(ctx != NULL);
-    assert(jxl_context_alloc_state(ctx) == &ctx->alloc);
-    assert(jxl_context_alloc_state_const(ctx) == &ctx->alloc);
+    assert(ctx == &ctx->alloc);
+    assert(ctx == &ctx->alloc);
     jxl_context_destroy(ctx);
 }
 
@@ -38,21 +38,21 @@ static void test_ctx_alloc_helpers(void) {
     jxl_context *ctx = NULL;
     JXL_TEST_ASSERT_EQ(jxl_context_create(NULL, &ctx), JXL_OK);
 
-    int *values = jxl_ctx_calloc(ctx, 4, sizeof(int));
+    int *values = jxl_calloc(ctx, 4, sizeof(int));
     assert(values != NULL);
     assert(values[0] == 0 && values[3] == 0);
     values[0] = 7;
 
-    int *grown = jxl_ctx_realloc(ctx, values, 8 * sizeof(int));
+    int *grown = jxl_realloc(ctx, values, 8 * sizeof(int));
     assert(grown != NULL);
     assert(grown[0] == 7);
 
-    char *copy = jxl_ctx_strdup(ctx, "ctx");
+    char *copy = jxl_strdup(ctx, "ctx");
     assert(copy != NULL);
     assert(strcmp(copy, "ctx") == 0);
 
-    jxl_ctx_free(ctx, grown);
-    jxl_ctx_free(ctx, copy);
+    jxl_free(ctx, grown);
+    jxl_free(ctx, copy);
     jxl_context_destroy(ctx);
 }
 
@@ -69,11 +69,11 @@ static void test_custom_allocator(void) {
     JXL_TEST_ASSERT_EQ(jxl_context_create(&opts, &ctx), JXL_OK);
     assert(counts.alloc_calls >= 1);
 
-    void *buf = jxl_ctx_alloc(ctx, 32);
+    void *buf = jxl_alloc(ctx, 32);
     assert(buf != NULL);
     assert(counts.alloc_calls >= 2);
 
-    jxl_ctx_free(ctx, buf);
+    jxl_free(ctx, buf);
     assert(counts.free_calls >= 1);
 
     size_t allocs_before_destroy = counts.alloc_calls;

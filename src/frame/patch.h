@@ -52,9 +52,9 @@ typedef struct {
 } jxl_patches;
 
 void jxl_patches_init(jxl_patches *p);
-void jxl_patches_free(jxl_allocator_state *alloc, jxl_patches *p);
+void jxl_patches_free(jxl_context *alloc, jxl_patches *p);
 
-jxl_frame_status_t jxl_patches_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_patches_parse(jxl_context *alloc, jxl_bs *bs,
                                      const jxl_parsed_image_header *image,
                                      const jxl_frame_header *frame, jxl_patches *out);
 

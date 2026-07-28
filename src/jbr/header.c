@@ -33,7 +33,7 @@ static jxl_jbr_status bs_to_jbr(jxl_bs_status_t st) {
     return JXL_JBR_BITSTREAM_ERROR;
 }
 
-static void scan_more_info_free(jxl_allocator_state *alloc, jxl_jbr_scan_more_info *smi) {
+static void scan_more_info_free(jxl_context *alloc, jxl_jbr_scan_more_info *smi) {
     if (smi == NULL) {
         return;
     }
@@ -49,7 +49,7 @@ void jxl_jbr_header_init(jxl_jbr_header *h) {
     }
 }
 
-void jxl_jbr_header_free(jxl_allocator_state *alloc, jxl_jbr_header *h) {
+void jxl_jbr_header_free(jxl_context *alloc, jxl_jbr_header *h) {
     size_t i;
     if (h == NULL) {
         return;
@@ -121,7 +121,7 @@ static jxl_jbr_status parse_scan_component(jxl_bs *bs, jxl_jbr_scan_component_in
     return JXL_JBR_OK;
 }
 
-static jxl_jbr_status parse_scan_info(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_jbr_status parse_scan_info(jxl_context *alloc, jxl_bs *bs,
                                       jxl_jbr_scan_info *out) {
                                           size_t i;
     uint32_t num_comps = 0;
@@ -161,7 +161,7 @@ static jxl_jbr_status parse_scan_info(jxl_allocator_state *alloc, jxl_bs *bs,
     return JXL_JBR_OK;
 }
 
-static jxl_jbr_status parse_scan_more_info(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_jbr_status parse_scan_more_info(jxl_context *alloc, jxl_bs *bs,
                                            jxl_jbr_scan_more_info *out) {
     uint32_t num_reset = 0;
     uint32_t num_ezr;
@@ -230,7 +230,7 @@ static jxl_jbr_status parse_scan_more_info(jxl_allocator_state *alloc, jxl_bs *b
     return JXL_JBR_OK;
 }
 
-static jxl_jbr_status parse_padding(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_jbr_status parse_padding(jxl_context *alloc, jxl_bs *bs,
                                       jxl_jbr_padding *out) {
                                           uint32_t i;
     uint32_t num_bits = 0;
@@ -264,7 +264,7 @@ static jxl_jbr_status parse_padding(jxl_allocator_state *alloc, jxl_bs *bs,
     return JXL_JBR_OK;
 }
 
-jxl_jbr_status jxl_jbr_header_parse(jxl_allocator_state *alloc, jxl_bs *bs, jxl_jbr_header *out) {
+jxl_jbr_status jxl_jbr_header_parse(jxl_context *alloc, jxl_bs *bs, jxl_jbr_header *out) {
     size_t i;
     int is_gray;
     size_t marker_cap;

@@ -57,8 +57,8 @@ typedef struct {
 
 void jxl_transform_rct_init_defaults(jxl_transform_rct *rct);
 void jxl_transform_squeeze_init(jxl_transform_squeeze *sq);
-void jxl_transform_squeeze_free(jxl_allocator_state *alloc, jxl_transform_squeeze *sq);
-void jxl_transform_squeeze_rebuild_default_params(jxl_allocator_state *alloc,
+void jxl_transform_squeeze_free(jxl_context *alloc, jxl_transform_squeeze *sq);
+void jxl_transform_squeeze_rebuild_default_params(jxl_context *alloc,
                                                 jxl_transform_squeeze *sq,
                                                 const jxl_modular_channels *channels);
 
@@ -69,17 +69,17 @@ typedef struct {
     int horizontal;
 } jxl_squeeze_inverse_step;
 
-size_t jxl_transform_squeeze_inverse_steps(jxl_allocator_state *alloc,
+size_t jxl_transform_squeeze_inverse_steps(jxl_context *alloc,
                                            const jxl_transform_squeeze *sq,
                                            const jxl_modular_params *params,
                                            jxl_squeeze_inverse_step *steps, size_t steps_cap);
-void jxl_transform_info_free(jxl_allocator_state *alloc, jxl_transform_info *tr);
+void jxl_transform_info_free(jxl_context *alloc, jxl_transform_info *tr);
 
-jxl_modular_status_t jxl_transform_info_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_modular_status_t jxl_transform_info_parse(jxl_context *alloc, jxl_bs *bs,
                                                 const jxl_wp_header *wp,
                                               jxl_transform_info *out);
 
-jxl_modular_status_t jxl_transform_prepare_channel_info(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_transform_prepare_channel_info(jxl_context *alloc,
                                                       jxl_transform_info *tr,
                                                       jxl_modular_channels *channels);
 

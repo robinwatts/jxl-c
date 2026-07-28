@@ -12,7 +12,7 @@ void jxl_transformed_grid_init_empty(jxl_transformed_grid *tg) {
     }
 }
 
-void jxl_transformed_grid_set_single(jxl_allocator_state *alloc, jxl_transformed_grid *tg, jxl_modular_grid grid) {
+void jxl_transformed_grid_set_single(jxl_context *alloc, jxl_transformed_grid *tg, jxl_modular_grid grid) {
     if (tg == NULL) {
         return;
     }
@@ -22,7 +22,7 @@ void jxl_transformed_grid_set_single(jxl_allocator_state *alloc, jxl_transformed
     tg->grid = grid;
 }
 
-void jxl_transformed_grid_teardown(jxl_allocator_state *alloc, jxl_transformed_grid *tg) {
+void jxl_transformed_grid_teardown(jxl_context *alloc, jxl_transformed_grid *tg) {
     if (tg == NULL) {
         return;
     }
@@ -40,7 +40,7 @@ const jxl_modular_grid *jxl_transformed_grid_leader_const(const jxl_transformed_
     return tg != NULL ? &tg->grid : NULL;
 }
 
-jxl_modular_status_t jxl_transformed_grid_merge(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_transformed_grid_merge(jxl_context *alloc,
                                               jxl_transformed_grid *tg,
                                               jxl_transformed_grid *members, size_t member_count) {
     size_t new_len;
@@ -69,7 +69,7 @@ jxl_modular_status_t jxl_transformed_grid_merge(jxl_allocator_state *alloc,
     return JXL_MODULAR_OK;
 }
 
-jxl_modular_status_t jxl_transformed_grid_unmerge(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_transformed_grid_unmerge(jxl_context *alloc,
                                                 jxl_transformed_grid *tg, size_t count,
                                                   jxl_transformed_grid **out_members) {
     size_t start;
@@ -94,7 +94,7 @@ jxl_modular_status_t jxl_transformed_grid_unmerge(jxl_allocator_state *alloc,
     return JXL_MODULAR_OK;
 }
 
-void jxl_transformed_grids_teardown(jxl_allocator_state *alloc, jxl_transformed_grid *grids,
+void jxl_transformed_grids_teardown(jxl_context *alloc, jxl_transformed_grid *grids,
                                     size_t len) {
     size_t i;
     if (grids == NULL) {
@@ -105,7 +105,7 @@ void jxl_transformed_grids_teardown(jxl_allocator_state *alloc, jxl_transformed_
     }
 }
 
-jxl_modular_status_t jxl_transformed_grids_resize(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_transformed_grids_resize(jxl_context *alloc,
                                                 jxl_transformed_grid **grids, size_t *len,
                                                 size_t new_len) {
     jxl_transformed_grid *grown;
@@ -127,7 +127,7 @@ jxl_modular_status_t jxl_transformed_grids_resize(jxl_allocator_state *alloc,
     return JXL_MODULAR_OK;
 }
 
-jxl_modular_status_t jxl_transformed_grids_insert_at(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_transformed_grids_insert_at(jxl_context *alloc,
                                                      jxl_transformed_grid **grids, size_t *len,
                                                      size_t at, const jxl_transformed_grid *insert,
                                                      size_t count) {
@@ -154,7 +154,7 @@ jxl_modular_status_t jxl_transformed_grids_insert_at(jxl_allocator_state *alloc,
     return JXL_MODULAR_OK;
 }
 
-void jxl_transformed_grids_remove_range(jxl_allocator_state *alloc, jxl_transformed_grid *grids,
+void jxl_transformed_grids_remove_range(jxl_context *alloc, jxl_transformed_grid *grids,
                                       size_t *len, size_t from,
                                       size_t count) {
                                           size_t i;

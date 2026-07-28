@@ -41,9 +41,9 @@ typedef struct {
 } jxl_toc;
 
 void jxl_toc_init(jxl_toc *t);
-void jxl_toc_free(jxl_allocator_state *alloc, jxl_toc *t);
+void jxl_toc_free(jxl_context *alloc, jxl_toc *t);
 
-jxl_frame_status_t jxl_toc_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_toc_parse(jxl_context *alloc, jxl_bs *bs,
                                  const jxl_frame_header *header, jxl_toc *out);
 
 void jxl_toc_adjust_offsets(jxl_toc *t, size_t global_frame_offset);

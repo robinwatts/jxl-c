@@ -76,7 +76,7 @@ int jxl_pass_group_block_info_subgrid(const jxl_frame_header *frame_header, uint
 
 typedef struct {
     jxl_context *ctx;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     const jxl_frame_header *frame_header;
     const jxl_ma_config *global_ma;
     const jxl_modular_params *modular_params;

@@ -77,21 +77,21 @@ int main(void) {
     jxl_bs_init(&bs, cs, cs_len);
     memset(&parsed, 0, sizeof(parsed));
     if (jxl_image_header_parse(&bs, &parsed) != JXL_BS_OK) {
-        jxl_free(&alloc, cs);
+        jxl_free_state(&alloc, cs);
         return 1;
     }
     if (jxl_image_skip_post_header(&alloc, &bs, &parsed) != JXL_BS_OK) {
-        jxl_free(&alloc, cs);
+        jxl_free_state(&alloc, cs);
         return 1;
     }
 
     jxl_frame_init(&frame);
     if (jxl_frame_parse(&alloc, &bs, &parsed, &frame) != JXL_FRAME_OK) {
         jxl_frame_free(&alloc, &frame);
-        jxl_free(&alloc, cs);
+        jxl_free_state(&alloc, cs);
         return 1;
     }
-    jxl_free(&alloc, cs);
+    jxl_free_state(&alloc, cs);
 
     if (frame.header.width != 500u || frame.header.height != 606u) {
         fprintf(stderr, "unexpected frame size %ux%u\n", frame.header.width, frame.header.height);

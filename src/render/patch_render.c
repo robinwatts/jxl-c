@@ -86,7 +86,7 @@ void jxl_reference_store_init(jxl_reference_store *store) {
     }
 }
 
-void jxl_reference_store_free(jxl_allocator_state *alloc, jxl_reference_store *store) {
+void jxl_reference_store_free(jxl_context *alloc, jxl_reference_store *store) {
     size_t i;
     if (store == NULL) {
         return;
@@ -107,7 +107,7 @@ void jxl_reference_store_free(jxl_allocator_state *alloc, jxl_reference_store *s
     }
 }
 
-void jxl_progressive_lf_image_free(jxl_allocator_state *alloc, jxl_progressive_lf_image *lf) {
+void jxl_progressive_lf_image_free(jxl_context *alloc, jxl_progressive_lf_image *lf) {
     size_t ch;
     if (lf == NULL) {
         return;
@@ -125,7 +125,7 @@ void jxl_progressive_lf_store_init(jxl_progressive_lf_store *store) {
     }
 }
 
-void jxl_progressive_lf_store_free(jxl_allocator_state *alloc, jxl_progressive_lf_store *store) {
+void jxl_progressive_lf_store_free(jxl_context *alloc, jxl_progressive_lf_store *store) {
     size_t i;
     if (store == NULL) {
         return;
@@ -173,7 +173,7 @@ static int32_t grid_sample_i32(const jxl_modular_grid_i32 *g, size_t x, size_t y
     return jxl_modular_grid_sample_as_i32(g, x, y);
 }
 
-static jxl_status_t upsample_plane_nn(jxl_allocator_state *alloc, const float *src, uint32_t sw,
+static jxl_status_t upsample_plane_nn(jxl_context *alloc, const float *src, uint32_t sw,
                                     uint32_t sh, uint32_t shift, float **out_plane,
                                     uint32_t *out_w, uint32_t *out_h) {
                                         uint32_t y;
@@ -225,7 +225,7 @@ static jxl_status_t upsample_plane_nn(jxl_allocator_state *alloc, const float *s
     return JXL_OK;
 }
 
-static jxl_status_t modular_dest_to_xyb_planes(jxl_context *library_ctx, jxl_allocator_state *alloc,
+static jxl_status_t modular_dest_to_xyb_planes(jxl_context *library_ctx, jxl_context *alloc,
                                                const jxl_modular_image_destination *dest,
                                                const jxl_lf_channel_dequant *dequant,
                                                jxl_ref_image *out) {
@@ -347,7 +347,7 @@ static jxl_status_t modular_dest_to_xyb_planes(jxl_context *library_ctx, jxl_all
     return JXL_OK;
 }
 
-static jxl_status_t modular_dest_to_planes(jxl_allocator_state *alloc,
+static jxl_status_t modular_dest_to_planes(jxl_context *alloc,
                                            const jxl_modular_image_destination *dest,
                                            uint32_t bit_depth, uint32_t num_planes,
                                            jxl_ref_image *out) {
@@ -404,7 +404,7 @@ static jxl_status_t modular_dest_to_planes(jxl_allocator_state *alloc,
     return JXL_OK;
 }
 
-static jxl_status_t modular_dest_append_extra_planes(jxl_allocator_state *alloc,
+static jxl_status_t modular_dest_append_extra_planes(jxl_context *alloc,
                                                      const jxl_modular_image_destination *dest,
                                                      uint32_t bit_depth, uint32_t color_channels,
                                                      uint32_t num_extra, jxl_ref_image *out) {
@@ -474,7 +474,7 @@ static jxl_status_t modular_dest_append_extra_planes(jxl_allocator_state *alloc,
     return JXL_OK;
 }
 
-jxl_status_t jxl_decode_modular_prereq_frame(jxl_context *library_ctx, jxl_allocator_state *alloc,
+jxl_status_t jxl_decode_modular_prereq_frame(jxl_context *library_ctx, jxl_context *alloc,
                                              const uint8_t *input, size_t input_len,
                                              const uint8_t *codestream, size_t cs_len, jxl_bs *bs,
                                              const jxl_parsed_image_header *parsed,
@@ -824,7 +824,7 @@ jxl_status_t jxl_decode_modular_prereq_frame(jxl_context *library_ctx, jxl_alloc
     return st;
 }
 
-static jxl_status_t decode_vardct_frame(jxl_context *library_ctx, jxl_allocator_state *alloc,
+static jxl_status_t decode_vardct_frame(jxl_context *library_ctx, jxl_context *alloc,
                                         const uint8_t *input, size_t input_len,
                                         const uint8_t *codestream, size_t cs_len, jxl_bs *bs,
                                         const jxl_parsed_image_header *parsed, jxl_frame *frame,
@@ -864,7 +864,7 @@ static jxl_status_t decode_vardct_frame(jxl_context *library_ctx, jxl_allocator_
     return jxl_render_vardct_prereq_to_ref(&vparams, parsed, frame, out);
 }
 
-jxl_status_t jxl_decode_prerequisite_frames(jxl_context *library_ctx, jxl_allocator_state *alloc,
+jxl_status_t jxl_decode_prerequisite_frames(jxl_context *library_ctx, jxl_context *alloc,
                                             const uint8_t *input, size_t input_len,
                                             jxl_reference_store *refs,
                                             jxl_progressive_lf_store *lf_store,
@@ -1140,7 +1140,7 @@ static void resize_plane_nn(const float *src, uint32_t src_w, uint32_t src_h, ui
     }
 }
 
-jxl_status_t jxl_copy_lf_quant_from_progressive(jxl_allocator_state *alloc,
+jxl_status_t jxl_copy_lf_quant_from_progressive(jxl_context *alloc,
                                               const jxl_progressive_lf_image *lf,
                                               jxl_lf_xyb_plane lf_xyb[3],
                                               const jxl_frame_header *fh) {
@@ -1455,7 +1455,7 @@ static void patch_blend_channel(jxl_patch_blend_mode mode, const jxl_patch_blend
     }
 }
 
-jxl_status_t jxl_apply_patches(jxl_allocator_state *alloc, const jxl_parsed_image_header *image,
+jxl_status_t jxl_apply_patches(jxl_context *alloc, const jxl_parsed_image_header *image,
                                const jxl_frame_header *frame, const jxl_patches *patches,
                                const jxl_reference_store *refs, float **planes,
                                uint32_t num_planes, uint32_t width, uint32_t height,

@@ -73,7 +73,7 @@ jxl_inline void transpose_i16x8(const __m128i in[8], __m128i out[8]) {
     out[7] = _mm_unpackhi_epi64(in[6], in[7]);
 }
 
-static void inverse_h_i16_x86_64_sse41(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+static void inverse_h_i16_x86_64_sse41(jxl_context *alloc, int16_t *merged, size_t width,
                                        size_t height, size_t row_stride) {
                                            size_t y8;
     if (row_stride == 0) {
@@ -212,7 +212,7 @@ static void inverse_h_i16_x86_64_sse41(jxl_allocator_state *alloc, int16_t *merg
     jxl_free_aligned(alloc, scratch);
 }
 
-static void inverse_v_i16_x86_64_sse41(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+static void inverse_v_i16_x86_64_sse41(jxl_context *alloc, int16_t *merged, size_t width,
                                        size_t height, size_t row_stride) {
                                            size_t x8;
     if (row_stride == 0) {
@@ -268,12 +268,12 @@ static void inverse_v_i16_x86_64_sse41(jxl_allocator_state *alloc, int16_t *merg
     jxl_free_aligned(alloc, scratch);
 }
 
-void jxl_squeeze_inverse_h_i16_x86_sse41(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+void jxl_squeeze_inverse_h_i16_x86_sse41(jxl_context *alloc, int16_t *merged, size_t width,
                                          size_t height, size_t row_stride) {
     inverse_h_i16_x86_64_sse41(alloc, merged, width, height, row_stride);
 }
 
-void jxl_squeeze_inverse_v_i16_x86_sse41(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+void jxl_squeeze_inverse_v_i16_x86_sse41(jxl_context *alloc, int16_t *merged, size_t width,
                                          size_t height, size_t row_stride) {
     inverse_v_i16_x86_64_sse41(alloc, merged, width, height, row_stride);
 }

@@ -24,11 +24,11 @@ typedef struct {
 } jxl_jbr_huffman_table;
 
 void jxl_jbr_huffman_code_init(jxl_jbr_huffman_code *hc);
-void jxl_jbr_huffman_code_free(jxl_allocator_state *alloc, jxl_jbr_huffman_code *hc);
+void jxl_jbr_huffman_code_free(jxl_context *alloc, jxl_jbr_huffman_code *hc);
 size_t jxl_jbr_huffman_code_encoded_len(const jxl_jbr_huffman_code *hc);
-jxl_jbr_status jxl_jbr_huffman_code_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_jbr_status jxl_jbr_huffman_code_parse(jxl_context *alloc, jxl_bs *bs,
                                           jxl_jbr_huffman_code *out);
-jxl_jbr_status jxl_jbr_huffman_code_build(jxl_allocator_state *alloc, const jxl_jbr_huffman_code *hc,
+jxl_jbr_status jxl_jbr_huffman_code_build(jxl_context *alloc, const jxl_jbr_huffman_code *hc,
                                           jxl_jbr_huffman_table *out);
 jxl_jbr_status jxl_jbr_huffman_table_lookup(const jxl_jbr_huffman_table *table, uint8_t symbol,
                                               uint8_t *len_out, uint64_t *bits_out);

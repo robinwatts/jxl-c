@@ -110,13 +110,13 @@ jxl_bs_status_t jxl_size_header_parse(jxl_bs *bs, jxl_size_header *out);
 jxl_bs_status_t jxl_preview_header_parse(jxl_bs *bs, jxl_size_header *out);
 jxl_bs_status_t jxl_image_header_parse(jxl_bs *bs, jxl_parsed_image_header *out);
 
-jxl_bs_status_t jxl_image_skip_post_header(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_bs_status_t jxl_image_skip_post_header(jxl_context *alloc, jxl_bs *bs,
                                            const jxl_parsed_image_header *parsed);
 
-jxl_bs_status_t jxl_image_decode_post_header(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_bs_status_t jxl_image_decode_post_header(jxl_context *alloc, jxl_bs *bs,
                                              jxl_parsed_image_header *parsed);
 
-void jxl_parsed_image_header_free_embedded_icc(jxl_allocator_state *alloc,
+void jxl_parsed_image_header_free_embedded_icc(jxl_context *alloc,
                                              jxl_parsed_image_header *parsed);
 
 uint32_t jxl_parsed_ec_bit_depth(const jxl_parsed_image_header *parsed, uint32_t ec_idx);

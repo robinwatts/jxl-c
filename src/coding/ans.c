@@ -99,7 +99,7 @@ static jxl_coding_status_t ans_read_prefix(jxl_bs *bs, uint16_t *out) {
     }
 }
 
-void jxl_ans_histogram_destroy(jxl_allocator_state *alloc, jxl_ans_histogram *hist) {
+void jxl_ans_histogram_destroy(jxl_context *alloc, jxl_ans_histogram *hist) {
     if (hist == NULL) {
         return;
     }
@@ -108,7 +108,7 @@ void jxl_ans_histogram_destroy(jxl_allocator_state *alloc, jxl_ans_histogram *hi
     hist->bucket_count = 0;
 }
 
-jxl_coding_status_t jxl_ans_histogram_clone(jxl_allocator_state *alloc,
+jxl_coding_status_t jxl_ans_histogram_clone(jxl_context *alloc,
                                             const jxl_ans_histogram *src,
                                             jxl_ans_histogram *out) {
     if (src == NULL || out == NULL) {
@@ -128,7 +128,7 @@ jxl_coding_status_t jxl_ans_histogram_clone(jxl_allocator_state *alloc,
     return JXL_CODING_OK;
 }
 
-jxl_coding_status_t jxl_ans_histogram_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_coding_status_t jxl_ans_histogram_parse(jxl_context *alloc, jxl_bs *bs,
                                             uint32_t log_alphabet_size, jxl_ans_histogram *out) {
                                                 size_t i;
                                                 size_t idx;

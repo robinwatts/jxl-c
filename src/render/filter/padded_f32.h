@@ -42,10 +42,10 @@ void jxl_filter_pad_params_compute(jxl_filter_pad_params *out,
                                    uint32_t frame_width, uint32_t frame_height,
                                    int32_t frame_left, int32_t frame_top);
 
-int jxl_padded_f32_alloc(jxl_allocator_state *alloc, size_t buf_width, size_t buf_height,
+int jxl_padded_f32_alloc(jxl_context *alloc, size_t buf_width, size_t buf_height,
                          jxl_padded_f32 *out);
 
-void jxl_padded_f32_free(jxl_allocator_state *alloc, jxl_padded_f32 *out);
+void jxl_padded_f32_free(jxl_context *alloc, jxl_padded_f32 *out);
 
 int jxl_padded_f32_place(const jxl_subgrid_f32 *src, jxl_padded_f32 *dst, size_t dst_x,
                          size_t dst_y);

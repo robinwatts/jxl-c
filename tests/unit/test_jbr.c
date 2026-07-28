@@ -108,7 +108,7 @@ static void test_jbr_reconstruction(const jbr_case *tc) {
         assert(0);
     }
 
-    jxl_free(jxl_context_alloc_state(ctx), jpeg);
+    jxl_free(ctx, jpeg);
     jxl_decoder_destroy(ctx, dec);
     jxl_context_destroy(ctx);
     free(data);

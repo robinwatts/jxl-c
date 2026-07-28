@@ -29,9 +29,9 @@ typedef struct jxl_grid_f32 {
 } jxl_grid_f32;
 
 void jxl_grid_u32_init_empty(jxl_grid_u32 *g);
-int jxl_grid_u32_create(jxl_allocator_state *alloc, size_t width, size_t height,
+int jxl_grid_u32_create(jxl_context *alloc, size_t width, size_t height,
                         jxl_grid_alloc_tracker *tracker, jxl_grid_u32 *out, jxl_grid_oom *oom);
-void jxl_grid_u32_destroy(jxl_allocator_state *alloc, jxl_grid_u32 *g);
+void jxl_grid_u32_destroy(jxl_context *alloc, jxl_grid_u32 *g);
 
 size_t jxl_grid_u32_width(const jxl_grid_u32 *g);
 size_t jxl_grid_u32_height(const jxl_grid_u32 *g);
@@ -43,9 +43,9 @@ void jxl_grid_u32_set(jxl_grid_u32 *g, size_t x, size_t y, uint32_t v);
 const uint32_t *jxl_grid_u32_row(const jxl_grid_u32 *g, size_t row);
 
 void jxl_grid_f32_init_empty(jxl_grid_f32 *g);
-int jxl_grid_f32_create(jxl_allocator_state *alloc, size_t width, size_t height,
+int jxl_grid_f32_create(jxl_context *alloc, size_t width, size_t height,
                         jxl_grid_alloc_tracker *tracker, jxl_grid_f32 *out, jxl_grid_oom *oom);
-void jxl_grid_f32_destroy(jxl_allocator_state *alloc, jxl_grid_f32 *g);
+void jxl_grid_f32_destroy(jxl_context *alloc, jxl_grid_f32 *g);
 
 size_t jxl_grid_f32_width(const jxl_grid_f32 *g);
 size_t jxl_grid_f32_height(const jxl_grid_f32 *g);

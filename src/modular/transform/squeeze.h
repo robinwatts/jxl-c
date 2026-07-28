@@ -8,11 +8,11 @@
 
 #include <stddef.h>
 
-void jxl_squeeze_inverse_h_i32(jxl_allocator_state *alloc, int32_t *merged, size_t width, size_t height, size_t row_stride);
-void jxl_squeeze_inverse_v_i32(jxl_allocator_state *alloc, int32_t *merged, size_t width, size_t height, size_t row_stride);
-void jxl_squeeze_inverse_h_i16(jxl_context *ctx, jxl_allocator_state *alloc, int16_t *merged,
+void jxl_squeeze_inverse_h_i32(jxl_context *alloc, int32_t *merged, size_t width, size_t height, size_t row_stride);
+void jxl_squeeze_inverse_v_i32(jxl_context *alloc, int32_t *merged, size_t width, size_t height, size_t row_stride);
+void jxl_squeeze_inverse_h_i16(jxl_context *ctx, jxl_context *alloc, int16_t *merged,
                                size_t width, size_t height, size_t row_stride);
-void jxl_squeeze_inverse_v_i16(jxl_context *ctx, jxl_allocator_state *alloc, int16_t *merged,
+void jxl_squeeze_inverse_v_i16(jxl_context *ctx, jxl_context *alloc, int16_t *merged,
                                size_t width, size_t height, size_t row_stride);
 
 #endif /* JXL_MODULAR_TRANSFORM_SQUEEZE_H_ */

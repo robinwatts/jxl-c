@@ -863,7 +863,7 @@ jxl_encoder* jxl_encoder_create(jxl_context* ctx) {
     return NULL;
   }
 
-  enc = (jxl_encoder*)jxl_ctx_alloc(ctx, sizeof(jxl_encoder));
+  enc = (jxl_encoder*)jxl_alloc(ctx, sizeof(jxl_encoder));
   if (!enc) return NULL;
   /* Install encoder-owned MM copy first so nested arrays/lists point at it.
    * The copy bridges to ctx->alloc; prefer enc->ctx + jxl_ctx_* for new code. */
@@ -895,7 +895,7 @@ void jxl_encoder_destroy(jxl_encoder* enc) {
     jxl_context* ctx = enc->ctx;
     // Destroy owning members directly since custom free function is used.
     jxl_encoder_destroy_contents(enc);
-    jxl_ctx_free(ctx, enc);
+    jxl_free(ctx, enc);
   }
 }
 

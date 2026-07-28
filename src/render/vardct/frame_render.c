@@ -246,7 +246,7 @@ cleanup:
     return st;
 }
 
-static jxl_status_t render_planes_to_ref_image(jxl_allocator_state *alloc, struct jxl_render *r,
+static jxl_status_t render_planes_to_ref_image(jxl_context *alloc, struct jxl_render *r,
                                                  jxl_ref_image *out) {
     uint32_t p;
     uint32_t np;

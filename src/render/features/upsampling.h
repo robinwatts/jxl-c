@@ -17,7 +17,7 @@ typedef struct {
 void jxl_upsampling_weights_set_defaults(jxl_upsampling_weights *out);
 
 /* Upsample `factor_log2` times (8x per 3 steps, then optional 2x/4x). */
-int jxl_apply_nonseparable_upsampling_single(jxl_allocator_state *alloc, jxl_const_subgrid_f32 src,
+int jxl_apply_nonseparable_upsampling_single(jxl_context *alloc, jxl_const_subgrid_f32 src,
                                              const jxl_upsampling_weights *weights,
                                              uint32_t factor_log2, uint32_t target_w,
                                              uint32_t target_h, float *dst, size_t dst_stride);

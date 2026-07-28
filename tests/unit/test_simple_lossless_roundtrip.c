@@ -50,7 +50,7 @@ static int expect_gray_roundtrip(void) {
     }
     if (jxl_len < 2 || jxl[0] != 0xFF || jxl[1] != 0x0A) {
         fprintf(stderr, "bad JXL signature\n");
-        jxl_ctx_free(ctx, jxl);
+        jxl_free(ctx, jxl);
         jxl_context_destroy(ctx);
         return 1;
     }
@@ -62,7 +62,7 @@ static int expect_gray_roundtrip(void) {
     if (hdr == NULL || hdr->width != width || hdr->height != height) {
         fprintf(stderr, "header size mismatch\n");
         jxl_decoder_destroy(ctx, dec);
-        jxl_ctx_free(ctx, jxl);
+        jxl_free(ctx, jxl);
         jxl_context_destroy(ctx);
         return 1;
     }
@@ -72,7 +72,7 @@ static int expect_gray_roundtrip(void) {
         fprintf(stderr, "expected i16 plane\n");
         jxl_render_destroy(ctx, render);
         jxl_decoder_destroy(ctx, dec);
-        jxl_ctx_free(ctx, jxl);
+        jxl_free(ctx, jxl);
         jxl_context_destroy(ctx);
         return 1;
     }
@@ -85,7 +85,7 @@ static int expect_gray_roundtrip(void) {
                         expected);
                 jxl_render_destroy(ctx, render);
                 jxl_decoder_destroy(ctx, dec);
-                jxl_ctx_free(ctx, jxl);
+                jxl_free(ctx, jxl);
                 jxl_context_destroy(ctx);
                 return 1;
             }
@@ -94,7 +94,7 @@ static int expect_gray_roundtrip(void) {
 
     jxl_render_destroy(ctx, render);
     jxl_decoder_destroy(ctx, dec);
-    jxl_ctx_free(ctx, jxl);
+    jxl_free(ctx, jxl);
     jxl_context_destroy(ctx);
     return 0;
 }

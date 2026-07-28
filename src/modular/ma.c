@@ -34,7 +34,7 @@ void jxl_ma_config_init(jxl_ma_config *cfg) {
     }
 }
 
-static void ma_tree_free(jxl_allocator_state *alloc, jxl_ma_tree_node *node) {
+static void ma_tree_free(jxl_context *alloc, jxl_ma_tree_node *node) {
     if (node == NULL) {
         return;
     }
@@ -45,7 +45,7 @@ static void ma_tree_free(jxl_allocator_state *alloc, jxl_ma_tree_node *node) {
     jxl_free(alloc, node);
 }
 
-void jxl_ma_config_destroy(jxl_allocator_state *alloc, jxl_ma_config *cfg) {
+void jxl_ma_config_destroy(jxl_context *alloc, jxl_ma_config *cfg) {
     (void)alloc;
     if (cfg == NULL) {
         return;
@@ -86,7 +86,7 @@ const jxl_ma_tree_node *jxl_ma_config_tree_root(const jxl_ma_config *cfg) {
     return cfg != NULL ? cfg->tree : NULL;
 }
 
-jxl_modular_status_t jxl_ma_config_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_modular_status_t jxl_ma_config_parse(jxl_context *alloc, jxl_bs *bs,
                                          const jxl_ma_config_params *params, jxl_ma_config *out) {
                                              size_t ni;
     size_t nodes_left;

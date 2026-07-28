@@ -27,7 +27,7 @@ typedef struct {
     size_t permutation_lens[JXL_HF_PASS_ORDER_COUNT][JXL_HF_PASS_CHANNELS];
     jxl_coding_decoder *order_decoder;
     jxl_coding_decoder *hf_dist;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     jxl_context *ctx;
 } jxl_hf_pass;
 
@@ -37,9 +37,9 @@ typedef struct {
 } jxl_hf_pass_params;
 
 void jxl_hf_pass_init(jxl_hf_pass *pass);
-void jxl_hf_pass_destroy(jxl_allocator_state *alloc, jxl_hf_pass *pass);
+void jxl_hf_pass_destroy(jxl_context *alloc, jxl_hf_pass *pass);
 
-jxl_vardct_status_t jxl_hf_pass_parse(jxl_context *ctx, jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_vardct_status_t jxl_hf_pass_parse(jxl_context *ctx, jxl_context *alloc, jxl_bs *bs,
                                       const jxl_hf_pass_params *params, jxl_hf_pass *out);
 
 const jxl_coeff_order *jxl_hf_pass_order(const jxl_hf_pass *pass, size_t order_id, size_t channel,
@@ -49,6 +49,6 @@ const jxl_coeff_order *jxl_hf_pass_dct8_natural_order(jxl_context *ctx, size_t *
 
 jxl_coding_decoder *jxl_hf_pass_hf_dist(const jxl_hf_pass *pass);
 
-jxl_allocator_state *jxl_hf_pass_alloc(const jxl_hf_pass *pass);
+jxl_context *jxl_hf_pass_alloc(const jxl_hf_pass *pass);
 
 #endif /* JXL_VARDCT_HF_PASS_H_ */

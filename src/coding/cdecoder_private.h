@@ -44,7 +44,7 @@ typedef struct jxl_lz77_state {
 } jxl_lz77_state;
 
 struct jxl_coding_decoder {
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     jxl_context *ctx;
     int lz77_enabled;
     uint32_t lz_min_symbol;

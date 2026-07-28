@@ -52,21 +52,21 @@ typedef struct {
 void jxl_ref_image_set_crop_from_frame(jxl_ref_image *img, const jxl_frame_header *fh);
 
 void jxl_reference_store_init(jxl_reference_store *store);
-void jxl_reference_store_free(jxl_allocator_state *alloc, jxl_reference_store *store);
-void jxl_progressive_lf_image_free(jxl_allocator_state *alloc, jxl_progressive_lf_image *lf);
+void jxl_reference_store_free(jxl_context *alloc, jxl_reference_store *store);
+void jxl_progressive_lf_image_free(jxl_context *alloc, jxl_progressive_lf_image *lf);
 void jxl_progressive_lf_store_init(jxl_progressive_lf_store *store);
-void jxl_progressive_lf_store_free(jxl_allocator_state *alloc, jxl_progressive_lf_store *store);
+void jxl_progressive_lf_store_free(jxl_context *alloc, jxl_progressive_lf_store *store);
 const jxl_progressive_lf_image *jxl_progressive_lf_store_get(const jxl_progressive_lf_store *store,
                                                              uint32_t lf_level);
 
-jxl_status_t jxl_decode_prerequisite_frames(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_status_t jxl_decode_prerequisite_frames(jxl_context *ctx, jxl_context *alloc,
                                             const uint8_t *input, size_t input_len,
                                             jxl_reference_store *refs,
                                             jxl_progressive_lf_store *lf_store,
                                             uint32_t target_keyframe_index,
                                             const uint8_t *codestream, size_t codestream_len);
 
-jxl_status_t jxl_decode_modular_prereq_frame(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_status_t jxl_decode_modular_prereq_frame(jxl_context *ctx, jxl_context *alloc,
                                              const uint8_t *input,
                                              size_t input_len, const uint8_t *codestream,
                                              size_t cs_len, jxl_bs *bs,
@@ -82,7 +82,7 @@ typedef struct {
 } jxl_lf_xyb_plane;
 
 /* Rust vardct Copy LFQuant: copy rendered LF frame planes into sample-resolution lf_xyb. */
-jxl_status_t jxl_copy_lf_quant_from_progressive(jxl_allocator_state *alloc,
+jxl_status_t jxl_copy_lf_quant_from_progressive(jxl_context *alloc,
                                                 const jxl_progressive_lf_image *lf,
                                                 jxl_lf_xyb_plane lf_xyb[3],
                                                 const jxl_frame_header *fh);
@@ -99,7 +99,7 @@ void jxl_lf_xyb_subgrid_for_group(const jxl_lf_xyb_plane lf_xyb[3], const jxl_fr
                                   int32_t lf_region_top, uint32_t lf_region_width,
                                   uint32_t lf_region_height, jxl_const_subgrid_f32 lf_out[3]);
 
-jxl_status_t jxl_apply_patches(jxl_allocator_state *alloc, const jxl_parsed_image_header *image,
+jxl_status_t jxl_apply_patches(jxl_context *alloc, const jxl_parsed_image_header *image,
                                const jxl_frame_header *frame, const jxl_patches *patches,
                                const jxl_reference_store *refs, float **planes,
                                uint32_t num_planes, uint32_t width, uint32_t height,

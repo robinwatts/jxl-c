@@ -77,7 +77,7 @@ static float continuous_idct(const float dct[32], float t) {
     return res;
 }
 
-static void spline_dequant_free(jxl_allocator_state *alloc, jxl_spline_dequant *s) {
+static void spline_dequant_free(jxl_context *alloc, jxl_spline_dequant *s) {
     if (s == NULL) {
         return;
     }
@@ -85,7 +85,7 @@ static void spline_dequant_free(jxl_allocator_state *alloc, jxl_spline_dequant *
     memset(s, 0, sizeof(*s));
 }
 
-static int spline_dequant_from_quant(jxl_allocator_state *alloc, const jxl_quant_spline *qs,
+static int spline_dequant_from_quant(jxl_context *alloc, const jxl_quant_spline *qs,
                                      int32_t quant_adjust, float corr_x, float corr_b,
                                      jxl_spline_dequant *out) {
     size_t i;
@@ -124,7 +124,7 @@ static int spline_dequant_from_quant(jxl_allocator_state *alloc, const jxl_quant
     return 1;
 }
 
-static jxl_spline_point *spline_get_upsampled_points(jxl_allocator_state *alloc, const jxl_spline_dequant *s, size_t *out_len) {
+static jxl_spline_point *spline_get_upsampled_points(jxl_context *alloc, const jxl_spline_dequant *s, size_t *out_len) {
     size_t i;
     size_t ups_cap;
     size_t nu;
@@ -198,7 +198,7 @@ static jxl_spline_point *spline_get_upsampled_points(jxl_allocator_state *alloc,
     return upsampled;
 }
 
-static jxl_spline_arc *spline_get_samples(jxl_allocator_state *alloc, const jxl_spline_point *upsampled, size_t upsampled_len,
+static jxl_spline_arc *spline_get_samples(jxl_context *alloc, const jxl_spline_point *upsampled, size_t upsampled_len,
                                           size_t *out_len) {
     size_t n;
     size_t next_idx;
@@ -293,7 +293,7 @@ done:
     return all;
 }
 
-int jxl_render_splines(jxl_allocator_state *alloc, const jxl_frame_header *fh, const jxl_splines *splines, float corr_x,
+int jxl_render_splines(jxl_context *alloc, const jxl_frame_header *fh, const jxl_splines *splines, float corr_x,
                        float corr_b, float *planes[3], uint32_t width, uint32_t height,
                        const jxl_modular_region *render_region) {
     size_t si;

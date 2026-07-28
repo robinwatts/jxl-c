@@ -29,7 +29,7 @@
  */
 typedef struct {
     jxl_context *ctx;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     const jxl_parsed_image_header *parsed;
     const jxl_frame_header *fh;
     jxl_render *r;
@@ -55,7 +55,7 @@ jxl_status_t jxl_render_pre_features_stage(const jxl_render_pre_features_params 
  */
 typedef struct {
     jxl_context *ctx;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     const jxl_parsed_image_header *parsed;
     const jxl_frame_header *fh;
     jxl_render *r;
@@ -86,7 +86,7 @@ typedef struct {
  * Rust render.rs after render_vardct: JPEG upsample (YCbCr), Gabor/EPF on fb_xyb.
  * Call immediately after jxl_vardct_encode_frame; post_encode skips duplicate filter work.
  */
-jxl_status_t jxl_render_vardct_apply_color_filters(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_status_t jxl_render_vardct_apply_color_filters(jxl_context *ctx, jxl_context *alloc,
                                                    const jxl_parsed_image_header *parsed,
                                                    const jxl_frame_header *fh,
                                                    jxl_vardct_encode_ctx *enc,
@@ -98,18 +98,18 @@ jxl_status_t jxl_render_post_encode_stage(const jxl_render_post_encode_params *p
  * Rust util::convert_color_for_record — XYB/YCbCr to display space for intermediate
  * animation frames stored as references (!save_before_ct && !is_last).
  */
-jxl_status_t jxl_render_convert_color_for_record(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_status_t jxl_render_convert_color_for_record(jxl_context *ctx, jxl_context *alloc,
                                                  const jxl_parsed_image_header *parsed,
                                                  const jxl_frame_header *fh, jxl_render *r,
                                                  int ref_image_output);
 
 jxl_status_t jxl_render_post_encode_from_modular_result(
-    jxl_context *ctx, jxl_allocator_state *alloc, const jxl_parsed_image_header *parsed,
+    jxl_context *ctx, jxl_context *alloc, const jxl_parsed_image_header *parsed,
     jxl_modular_encode_result *enc, const jxl_modular_region *output_region,
     jxl_reference_store *refs, jxl_render *r);
 
 jxl_status_t jxl_render_post_encode_from_vardct_ctx(
-    jxl_context *ctx, jxl_allocator_state *alloc, const jxl_parsed_image_header *parsed,
+    jxl_context *ctx, jxl_context *alloc, const jxl_parsed_image_header *parsed,
     const jxl_frame_header *fh, const jxl_vardct_encode_ctx *enc,
     const jxl_modular_region *output_region, const jxl_modular_region *gmodular_extend_region,
     const jxl_reference_store *refs, int ref_image_output, uint32_t visible_frames,
@@ -138,7 +138,7 @@ typedef struct {
 jxl_status_t jxl_render_frame(const jxl_render_frame_params *params, jxl_render *r);
 
 /* Shared keyframe tail: features pipeline. padded_regions NULL computes from output_region. */
-jxl_status_t jxl_render_keyframe_features(jxl_context *ctx, jxl_allocator_state *alloc, jxl_render *r,
+jxl_status_t jxl_render_keyframe_features(jxl_context *ctx, jxl_context *alloc, jxl_render *r,
                                           const jxl_parsed_image_header *parsed,
                                           const jxl_frame_header *fh,
                                           const jxl_lf_global *lf_global,

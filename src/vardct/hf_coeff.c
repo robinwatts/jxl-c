@@ -95,7 +95,7 @@ jxl_vardct_status_t jxl_write_hf_coeff(jxl_bs *bs, const jxl_hf_coeff_params *pa
     size_t dbg_coeff_reads;
     size_t dbg_order_exhausted;
     const jxl_hf_block_context *hf_block_ctx;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     const jxl_coding_decoder *hf_dist;
     jxl_coding_decoder *dist;
     jxl_coding_status_t cst;

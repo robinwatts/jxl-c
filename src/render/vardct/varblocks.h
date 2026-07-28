@@ -22,7 +22,7 @@ typedef void (*jxl_varblock_fn)(const jxl_varblock_info *info, void *ctx);
 void jxl_for_each_varblocks(jxl_block_info_subgrid block_info, jxl_channel_shift shift,
                           jxl_varblock_fn fn, void *ctx);
 
-void jxl_render_transform_varblocks(jxl_context *ctx, jxl_allocator_state *alloc,
+void jxl_render_transform_varblocks(jxl_context *ctx, jxl_context *alloc,
                                     const jxl_const_subgrid_f32 lf[3],
                                     jxl_subgrid_f32 coeff_out[3],
                                     const jxl_channel_shift shifts_cbycr[3],

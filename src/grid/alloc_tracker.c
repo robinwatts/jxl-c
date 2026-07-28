@@ -4,7 +4,7 @@
 #include <string.h>
 
 struct jxl_grid_alloc_tracker {
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     size_t bytes_left;
 };
 
@@ -13,7 +13,7 @@ struct jxl_grid_alloc_handle {
     jxl_grid_alloc_tracker *tracker;
 };
 
-jxl_grid_alloc_tracker *jxl_grid_alloc_tracker_create(jxl_allocator_state *alloc,
+jxl_grid_alloc_tracker *jxl_grid_alloc_tracker_create(jxl_context *alloc,
                                                       size_t bytes_limit) {
     jxl_grid_alloc_tracker *t;
     if (alloc == NULL) {
@@ -29,7 +29,7 @@ jxl_grid_alloc_tracker *jxl_grid_alloc_tracker_create(jxl_allocator_state *alloc
 }
 
 void jxl_grid_alloc_tracker_destroy(jxl_grid_alloc_tracker *tracker) {
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     if (tracker == NULL) {
         return;
     }
@@ -65,7 +65,7 @@ int jxl_grid_alloc_tracker_alloc(jxl_grid_alloc_tracker *tracker, size_t bytes,
 }
 
 void jxl_grid_alloc_handle_release(jxl_grid_alloc_handle *handle) {
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     if (handle == NULL) {
         return;
     }

@@ -27,9 +27,9 @@ typedef struct {
 } jxl_hf_global;
 
 void jxl_hf_global_init(jxl_hf_global *hf);
-void jxl_hf_global_free(jxl_allocator_state *alloc, jxl_hf_global *hf);
+void jxl_hf_global_free(jxl_context *alloc, jxl_hf_global *hf);
 
-jxl_frame_status_t jxl_hf_global_parse(jxl_context *ctx, jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_hf_global_parse(jxl_context *ctx, jxl_context *alloc, jxl_bs *bs,
                                        const jxl_hf_global_params *params, jxl_hf_global *out);
 
 #endif /* JXL_FRAME_HF_GLOBAL_H_ */

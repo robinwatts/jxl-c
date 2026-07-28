@@ -15,8 +15,8 @@ typedef struct {
 } jxl_jbr_output;
 
 void jxl_jbr_output_init(jxl_jbr_output *out);
-void jxl_jbr_output_free(jxl_allocator_state *alloc, jxl_jbr_output *out);
-jxl_jbr_status jxl_jbr_output_write(jxl_allocator_state *alloc, jxl_jbr_output *out,
+void jxl_jbr_output_free(jxl_context *alloc, jxl_jbr_output *out);
+jxl_jbr_status jxl_jbr_output_write(jxl_context *alloc, jxl_jbr_output *out,
                                     const uint8_t *data, size_t len);
 
 #endif /* JXL_JBR_OUTPUT_H_ */

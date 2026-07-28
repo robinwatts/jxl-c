@@ -21,7 +21,7 @@ typedef struct {
 } jxl_frame_group_data;
 
 typedef struct {
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     jxl_frame_header header;
     jxl_toc toc;
     jxl_frame_group_data *data;
@@ -30,22 +30,22 @@ typedef struct {
 } jxl_frame;
 
 void jxl_frame_init(jxl_frame *f);
-void jxl_frame_free(jxl_allocator_state *alloc, jxl_frame *f);
+void jxl_frame_free(jxl_context *alloc, jxl_frame *f);
 
-jxl_frame_status_t jxl_frame_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_frame_parse(jxl_context *alloc, jxl_bs *bs,
                                    const jxl_parsed_image_header *image, jxl_frame *out);
 
-jxl_frame_status_t jxl_frame_parse_keyframe(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_frame_parse_keyframe(jxl_context *alloc, jxl_bs *bs,
                                             const jxl_parsed_image_header *image,
                                             const uint8_t *codestream, size_t cs_len,
                                             jxl_frame *out);
 
-jxl_frame_status_t jxl_frame_parse_nth_keyframe(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_frame_parse_nth_keyframe(jxl_context *alloc, jxl_bs *bs,
                                                 const jxl_parsed_image_header *image,
                                                 const uint8_t *codestream, size_t cs_len,
                                                 uint32_t keyframe_index, jxl_frame *out);
 
-jxl_frame_status_t jxl_count_keyframes(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_count_keyframes(jxl_context *alloc, jxl_bs *bs,
                                        const jxl_parsed_image_header *image,
                                        const uint8_t *codestream, size_t cs_len,
                                        uint32_t *count_out);

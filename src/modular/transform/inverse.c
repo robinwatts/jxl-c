@@ -299,7 +299,7 @@ static void resolve_palette_pixel(const jxl_modular_grid_i32 *palette, int32_t i
 }
 
 static jxl_modular_status_t inverse_palette_apply_delta(
-    jxl_allocator_state *alloc, jxl_modular_grid_i32 *grid,
+    jxl_context *alloc, jxl_modular_grid_i32 *grid,
     const jxl_palette_delta_pos *positions, size_t pos_count, const jxl_transform_palette *pal) {
         size_t y;
     jxl_modular_predictor_state predictor;
@@ -355,7 +355,7 @@ static jxl_modular_status_t inverse_palette_simple(const jxl_modular_grid_i32 *p
                                                    jxl_modular_grid_i32 **members,
                                                    size_t member_count);
 
-static jxl_modular_status_t inverse_palette_tile(jxl_allocator_state *alloc,
+static jxl_modular_status_t inverse_palette_tile(jxl_context *alloc,
                                                  const jxl_modular_grid_i32 *palette,
                                                  jxl_modular_grid_i32 *index,
                                                  jxl_modular_grid_i32 **members,
@@ -571,7 +571,7 @@ static int grid_buf_used_elsewhere(const jxl_modular_image_destination *dest, si
     return grid_buf_used_in_meta(dest, g->buf);
 }
 
-static void dest_remove_image_channels(jxl_allocator_state *alloc,
+static void dest_remove_image_channels(jxl_context *alloc,
                                        jxl_modular_image_destination *dest, size_t from,
                                        size_t count) {
     size_t i;
@@ -623,7 +623,7 @@ static int grids_mergeable_v(const jxl_modular_grid_i32 *main, const jxl_modular
            residu->offset == main->offset + main->height * stride;
 }
 
-static jxl_modular_status_t inverse_squeeze_channel(jxl_context *ctx, jxl_allocator_state *alloc,
+static jxl_modular_status_t inverse_squeeze_channel(jxl_context *ctx, jxl_context *alloc,
                                                     jxl_modular_grid_i32 *main,
                                                     const jxl_modular_grid_i32 *residu,
                                                     int horizontal) {
@@ -836,7 +836,7 @@ static jxl_modular_status_t inverse_squeeze_channel(jxl_context *ctx, jxl_alloca
     return JXL_MODULAR_OK;
 }
 
-static jxl_modular_status_t inverse_palette_grids(jxl_allocator_state *alloc, jxl_transformed_grid **grids, size_t *grids_len,
+static jxl_modular_status_t inverse_palette_grids(jxl_context *alloc, jxl_transformed_grid **grids, size_t *grids_len,
                                                 uint32_t bit_depth,
                                                 const jxl_transform_palette *pal,
                                                 jxl_modular_image_destination *dest) {
@@ -933,7 +933,7 @@ static jxl_modular_status_t inverse_palette_grids(jxl_allocator_state *alloc, jx
 }
 
 /* Squeeze inverse on a grid array (Rust Squeeze::inverse). */
-static jxl_modular_status_t inverse_squeeze_grids(jxl_context *ctx, jxl_allocator_state *alloc,
+static jxl_modular_status_t inverse_squeeze_grids(jxl_context *ctx, jxl_context *alloc,
                                                   jxl_transformed_grid **grids, size_t *grids_len,
                                                   const jxl_transform_squeeze *sq,
                                                   jxl_modular_image_destination *dest) {
@@ -998,7 +998,7 @@ static jxl_modular_status_t inverse_squeeze_grids(jxl_context *ctx, jxl_allocato
     return JXL_MODULAR_OK;
 }
 
-static void sync_channels_from_grids(jxl_allocator_state *alloc, jxl_modular_image_destination *dest) {
+static void sync_channels_from_grids(jxl_context *alloc, jxl_modular_image_destination *dest) {
     size_t i;
     size_t n = inv_len(dest);
     if (n == 0) {
@@ -1042,7 +1042,7 @@ static void sync_channels_from_grids(jxl_allocator_state *alloc, jxl_modular_ima
     }
 }
 
-jxl_modular_status_t jxl_modular_subimage_finish(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_modular_subimage_finish(jxl_context *ctx, jxl_context *alloc,
                                                  const jxl_modular_header *header,
                                                  jxl_transformed_grid **grids, size_t *grids_len,
                                                  uint32_t bit_depth,
@@ -1089,7 +1089,7 @@ jxl_modular_status_t jxl_modular_subimage_finish(jxl_context *ctx, jxl_allocator
 }
 
 jxl_modular_status_t jxl_modular_image_apply_inverse_transforms(
-    jxl_context *ctx, jxl_allocator_state *alloc, jxl_modular_image_destination *dest,
+    jxl_context *ctx, jxl_context *alloc, jxl_modular_image_destination *dest,
     uint32_t frame_width, uint32_t frame_height, uint32_t bit_depth,
     const jxl_modular_params *mod_params) {
     jxl_transformed_grid **storage;

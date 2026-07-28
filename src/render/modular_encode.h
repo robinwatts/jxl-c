@@ -28,7 +28,7 @@ typedef struct {
 } jxl_modular_encode_result;
 
 void jxl_modular_encode_result_init(jxl_modular_encode_result *result);
-void jxl_modular_encode_result_free(jxl_allocator_state *alloc, jxl_modular_encode_result *result);
+void jxl_modular_encode_result_free(jxl_context *alloc, jxl_modular_encode_result *result);
 
 /*
  * Decode modular frames, blit planes into r (extend_from_gmodular equivalent).

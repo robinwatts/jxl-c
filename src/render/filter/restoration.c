@@ -79,7 +79,7 @@ static void gabor_publish_extent(jxl_filter_extent *ext, float **scratch_slot, i
     *swapped = 0;
 }
 
-static int run_restoration_on_extents(jxl_context *ctx, jxl_allocator_state *alloc,
+static int run_restoration_on_extents(jxl_context *ctx, jxl_context *alloc,
                                       jxl_filter_extent extents[3],
                                       jxl_subgrid_f32 parent_channels[3],
                                       const jxl_restoration_filter *restoration,
@@ -128,7 +128,7 @@ static int run_restoration_on_extents(jxl_context *ctx, jxl_allocator_state *all
     return ok;
 }
 
-int jxl_apply_restoration_filters(jxl_context *ctx, jxl_allocator_state *alloc,
+int jxl_apply_restoration_filters(jxl_context *ctx, jxl_context *alloc,
                                   jxl_subgrid_f32 channels[3],
                                   const jxl_restoration_filter *restoration,
                                   const jxl_frame_header *frame_header,

@@ -179,7 +179,7 @@ void jxl_modular_params_init(jxl_modular_params *p) {
     memset(p, 0, sizeof(*p));
 }
 
-void jxl_modular_params_free(jxl_allocator_state *alloc, jxl_modular_params *p) {
+void jxl_modular_params_free(jxl_context *alloc, jxl_modular_params *p) {
     if (p == NULL || alloc == NULL) {
         return;
     }
@@ -188,7 +188,7 @@ void jxl_modular_params_free(jxl_allocator_state *alloc, jxl_modular_params *p) 
     p->num_channels = 0;
 }
 
-int jxl_modular_params_set_channels(jxl_allocator_state *alloc, jxl_modular_params *p,
+int jxl_modular_params_set_channels(jxl_context *alloc, jxl_modular_params *p,
                                     uint32_t width, uint32_t height, uint32_t group_dim,
                                     uint32_t bit_depth, const jxl_channel_shift *shifts,
                                     size_t num_shifts) {
@@ -216,7 +216,7 @@ int jxl_modular_params_set_channels(jxl_allocator_state *alloc, jxl_modular_para
     return 1;
 }
 
-int jxl_modular_params_set_for_modular_frame(jxl_allocator_state *alloc, jxl_context *ctx,
+int jxl_modular_params_set_for_modular_frame(jxl_context *alloc, jxl_context *ctx,
                                              jxl_modular_params *p,
                                              const jxl_parsed_image_header *image,
                                              const jxl_frame_header *frame) {
@@ -277,7 +277,7 @@ int jxl_modular_params_set_for_modular_frame(jxl_allocator_state *alloc, jxl_con
     return 1;
 }
 
-int jxl_modular_params_set_for_vardct_frame(jxl_allocator_state *alloc, jxl_context *ctx,
+int jxl_modular_params_set_for_vardct_frame(jxl_context *alloc, jxl_context *ctx,
                                               jxl_modular_params *p,
                                               const jxl_parsed_image_header *image,
                                               const jxl_frame_header *frame) {

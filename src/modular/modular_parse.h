@@ -22,9 +22,9 @@ typedef struct {
 } jxl_modular_header;
 
 void jxl_modular_header_init(jxl_modular_header *h);
-void jxl_modular_header_free(jxl_allocator_state *alloc, jxl_modular_header *h);
+void jxl_modular_header_free(jxl_context *alloc, jxl_modular_header *h);
 
-jxl_modular_status_t jxl_modular_header_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_modular_status_t jxl_modular_header_parse(jxl_context *alloc, jxl_bs *bs,
                                                 jxl_modular_header *out);
 
 typedef struct {
@@ -34,7 +34,7 @@ typedef struct {
 } jxl_modular_header_ma;
 
 void jxl_modular_header_ma_init(jxl_modular_header_ma *hm);
-void jxl_modular_header_ma_free(jxl_allocator_state *alloc, jxl_modular_header_ma *hm);
+void jxl_modular_header_ma_free(jxl_context *alloc, jxl_modular_header_ma *hm);
 
 typedef struct {
     const jxl_modular_params *params;
@@ -46,7 +46,7 @@ typedef struct {
     int retain_pretransform_channels;
 } jxl_modular_parse_ctx;
 
-jxl_modular_status_t jxl_modular_read_local_header(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_modular_status_t jxl_modular_read_local_header(jxl_context *alloc, jxl_bs *bs,
                                                  const jxl_modular_parse_ctx *ctx,
                                                  jxl_modular_header_ma *out,
                                                  jxl_modular_channels *channels_out);

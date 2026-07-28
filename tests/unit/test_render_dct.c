@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static jxl_allocator_state *test_alloc_state(void) {
+static jxl_context *test_alloc_state(void) {
     static jxl_allocator_state alloc;
     static int init = 0;
     if (!init) { jxl_allocator_init(&alloc, NULL); init = 1; }
@@ -153,7 +153,7 @@ static void test_roundtrip_8(void) {
 
 static void test_dct_2d_simd_matches_generic(void) {
     size_t i;
-    jxl_allocator_state *alloc = test_alloc_state();
+    jxl_context *alloc = test_alloc_state();
     float *generic_buf = (float *)jxl_alloc_aligned(alloc, 16, 64 * sizeof(float));
     float *simd_buf = (float *)jxl_alloc_aligned(alloc, 16, 64 * sizeof(float));
     assert(generic_buf != NULL && simd_buf != NULL);
@@ -194,7 +194,7 @@ static void test_transform_simd_matches_fallback(void) {
     static const jxl_transform_type types[] = {
         JXL_TRANSFORM_DCT8, JXL_TRANSFORM_DCT4, JXL_TRANSFORM_DCT4X8, JXL_TRANSFORM_DCT8X4,
     };
-    jxl_allocator_state *alloc = test_alloc_state();
+    jxl_context *alloc = test_alloc_state();
 
     for (t = 0; t < sizeof(types) / sizeof(types[0]); ++t) {
         size_t i;

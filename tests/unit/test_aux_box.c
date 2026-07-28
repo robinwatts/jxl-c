@@ -24,7 +24,7 @@ static jxl_bs_status_t feed_cb(void *ctx, const jxl_parse_event *event) {
     return st;
 }
 
-static void append_bytes(uint8_t **buf, size_t *len, size_t *cap, jxl_allocator_state *alloc,
+static void append_bytes(uint8_t **buf, size_t *len, size_t *cap, jxl_context *alloc,
                          const uint8_t *data, size_t data_len) {
     size_t need = *len + data_len;
     if (need > *cap) {
@@ -41,7 +41,7 @@ static void append_bytes(uint8_t **buf, size_t *len, size_t *cap, jxl_allocator_
     *len = need;
 }
 
-static void append_u32_be(uint8_t **buf, size_t *len, size_t *cap, jxl_allocator_state *alloc,
+static void append_u32_be(uint8_t **buf, size_t *len, size_t *cap, jxl_context *alloc,
                         uint32_t value) {
     uint8_t bytes[4];
     bytes[0] = (uint8_t)(value >> 24);
@@ -52,7 +52,7 @@ static void append_u32_be(uint8_t **buf, size_t *len, size_t *cap, jxl_allocator
     append_bytes(buf, len, cap, alloc, bytes, sizeof(bytes));
 }
 
-static void append_box(uint8_t **buf, size_t *len, size_t *cap, jxl_allocator_state *alloc,
+static void append_box(uint8_t **buf, size_t *len, size_t *cap, jxl_context *alloc,
                        const char *type, const uint8_t *payload, size_t payload_len, int last_box) {
     if (last_box) {
         append_u32_be(buf, len, cap, alloc, 0);
@@ -114,7 +114,7 @@ static void test_brob_exif_decompresses(void) {
 
     jxl_container_parser_destroy(&alloc, parser);
     jxl_aux_box_list_destroy(&alloc, aux);
-    jxl_free(&alloc, file);
+    jxl_free_state(&alloc, file);
 }
 
 static void test_raw_exif_roundtrip(void) {
@@ -155,7 +155,7 @@ static void test_raw_exif_roundtrip(void) {
 
     jxl_container_parser_destroy(&alloc, parser);
     jxl_aux_box_list_destroy(&alloc, aux);
-    jxl_free(&alloc, file);
+    jxl_free_state(&alloc, file);
 }
 
 int main(void) {

@@ -14,7 +14,7 @@ void jxl_frame_init(jxl_frame *f) {
     }
 }
 
-static void group_data_free(jxl_allocator_state *alloc, jxl_frame_group_data *g) {
+static void group_data_free(jxl_context *alloc, jxl_frame_group_data *g) {
     if (g == NULL) {
         return;
     }
@@ -22,7 +22,7 @@ static void group_data_free(jxl_allocator_state *alloc, jxl_frame_group_data *g)
     memset(g, 0, sizeof(*g));
 }
 
-void jxl_frame_free(jxl_allocator_state *alloc, jxl_frame *f) {
+void jxl_frame_free(jxl_context *alloc, jxl_frame *f) {
     if (f == NULL) {
         return;
     }
@@ -38,7 +38,7 @@ void jxl_frame_free(jxl_allocator_state *alloc, jxl_frame *f) {
     jxl_frame_init(f);
 }
 
-static jxl_frame_status_t ensure_group_cap(jxl_allocator_state *alloc, jxl_frame_group_data *g,
+static jxl_frame_status_t ensure_group_cap(jxl_context *alloc, jxl_frame_group_data *g,
                                            size_t need) {
     size_t new_cap;
     uint8_t *p;
@@ -62,7 +62,7 @@ static jxl_frame_status_t ensure_group_cap(jxl_allocator_state *alloc, jxl_frame
     return JXL_FRAME_OK;
 }
 
-jxl_frame_status_t jxl_frame_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_frame_parse(jxl_context *alloc, jxl_bs *bs,
                                    const jxl_parsed_image_header *image, jxl_frame *out) {
     size_t base_offset;
     if (alloc == NULL || bs == NULL || out == NULL) {
@@ -115,7 +115,7 @@ jxl_frame_status_t jxl_frame_parse(jxl_allocator_state *alloc, jxl_bs *bs,
     return JXL_FRAME_OK;
 }
 
-jxl_frame_status_t jxl_frame_parse_nth_keyframe(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_frame_parse_nth_keyframe(jxl_context *alloc, jxl_bs *bs,
                                                 const jxl_parsed_image_header *image,
                                                 const uint8_t *codestream, size_t cs_len,
                                                 uint32_t keyframe_index, jxl_frame *out) {
@@ -156,14 +156,14 @@ jxl_frame_status_t jxl_frame_parse_nth_keyframe(jxl_allocator_state *alloc, jxl_
     }
 }
 
-jxl_frame_status_t jxl_frame_parse_keyframe(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_frame_parse_keyframe(jxl_context *alloc, jxl_bs *bs,
                                             const jxl_parsed_image_header *image,
                                             const uint8_t *codestream, size_t cs_len,
                                             jxl_frame *out) {
     return jxl_frame_parse_nth_keyframe(alloc, bs, image, codestream, cs_len, 0, out);
 }
 
-jxl_frame_status_t jxl_count_keyframes(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_count_keyframes(jxl_context *alloc, jxl_bs *bs,
                                        const jxl_parsed_image_header *image,
                                        const uint8_t *codestream, size_t cs_len,
                                        uint32_t *count_out) {

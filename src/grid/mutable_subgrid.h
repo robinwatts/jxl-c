@@ -66,16 +66,16 @@ typedef struct {
     size_t count;
 } jxl_mutable_subgrid_u32_list;
 
-jxl_mutable_subgrid_u32_list jxl_mutable_subgrid_u32_into_groups(jxl_allocator_state *alloc,
+jxl_mutable_subgrid_u32_list jxl_mutable_subgrid_u32_into_groups(jxl_context *alloc,
                                                                  jxl_mutable_subgrid_u32 sg,
                                                                  size_t group_width,
                                                                  size_t group_height);
 
 jxl_mutable_subgrid_u32_list jxl_mutable_subgrid_u32_into_groups_fixed(
-    jxl_allocator_state *alloc, jxl_mutable_subgrid_u32 sg, size_t group_width,
+    jxl_context *alloc, jxl_mutable_subgrid_u32 sg, size_t group_width,
     size_t group_height, size_t num_cols, size_t num_rows);
 
-void jxl_mutable_subgrid_u32_list_destroy(jxl_allocator_state *alloc,
+void jxl_mutable_subgrid_u32_list_destroy(jxl_context *alloc,
                                           jxl_mutable_subgrid_u32_list *list);
 
 #endif /* JXL_GRID_MUTABLE_SUBGRID_H_ */

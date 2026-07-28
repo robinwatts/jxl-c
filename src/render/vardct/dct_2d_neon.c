@@ -230,7 +230,7 @@ static void dct8x8_lane(jxl_lane_subgrid *io, jxl_dct_direction direction) {
     }
 }
 
-static void dct_2d_lane(jxl_lane_subgrid *io, jxl_allocator_state *alloc, jxl_dct_direction direction) {
+static void dct_2d_lane(jxl_lane_subgrid *io, jxl_context *alloc, jxl_dct_direction direction) {
     const size_t scratch_size =
         (io->height > io->width * JXL_LANE_SIZE ? io->height : io->width * JXL_LANE_SIZE) * 2;
     jxl_lane *scratch = (jxl_lane *)jxl_alloc_aligned(alloc, JXL_ALLOC_ALIGN_SIMD128,
@@ -255,7 +255,7 @@ static int subgrid_as_lane(jxl_subgrid_f32 sg, jxl_lane_subgrid *out) {
     return 1;
 }
 
-int jxl_dct_2d_aarch64_neon(jxl_allocator_state *alloc, jxl_subgrid_f32 io, jxl_dct_direction direction) {
+int jxl_dct_2d_aarch64_neon(jxl_context *alloc, jxl_subgrid_f32 io, jxl_dct_direction direction) {
     jxl_lane_subgrid lane_io;
     if (io.width % JXL_LANE_SIZE != 0 || io.height % JXL_LANE_SIZE != 0) {
         return 0;

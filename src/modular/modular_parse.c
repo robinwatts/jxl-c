@@ -16,7 +16,7 @@ void jxl_modular_header_init(jxl_modular_header *h) {
     }
 }
 
-void jxl_modular_header_free(jxl_allocator_state *alloc, jxl_modular_header *h) {
+void jxl_modular_header_free(jxl_context *alloc, jxl_modular_header *h) {
     size_t i;
     if (h == NULL) {
         return;
@@ -29,7 +29,7 @@ void jxl_modular_header_free(jxl_allocator_state *alloc, jxl_modular_header *h) 
     h->transform_len = 0;
 }
 
-jxl_modular_status_t jxl_modular_header_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_modular_status_t jxl_modular_header_parse(jxl_context *alloc, jxl_bs *bs,
                                                 jxl_modular_header *out) {
     int use_global;
     if (bs == NULL || out == NULL) {
@@ -73,7 +73,7 @@ void jxl_modular_header_ma_init(jxl_modular_header_ma *hm) {
     }
 }
 
-void jxl_modular_header_ma_free(jxl_allocator_state *alloc, jxl_modular_header_ma *hm) {
+void jxl_modular_header_ma_free(jxl_context *alloc, jxl_modular_header_ma *hm) {
     if (hm == NULL) {
         return;
     }
@@ -86,7 +86,7 @@ void jxl_modular_header_ma_free(jxl_allocator_state *alloc, jxl_modular_header_m
     hm->ma_owns = 0;
 }
 
-jxl_modular_status_t jxl_modular_read_local_header(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_modular_status_t jxl_modular_read_local_header(jxl_context *alloc, jxl_bs *bs,
                                                  const jxl_modular_parse_ctx *ctx,
                                                  jxl_modular_header_ma *out,
                                                  jxl_modular_channels *channels_out) {

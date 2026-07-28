@@ -34,7 +34,7 @@ void jxl_modular_channels_init(jxl_modular_channels *ch) {
     }
 }
 
-void jxl_modular_channels_free(jxl_allocator_state *alloc, jxl_modular_channels *ch) {
+void jxl_modular_channels_free(jxl_context *alloc, jxl_modular_channels *ch) {
     if (ch == NULL || alloc == NULL) {
         return;
     }
@@ -44,7 +44,7 @@ void jxl_modular_channels_free(jxl_allocator_state *alloc, jxl_modular_channels 
     ch->info_cap = 0;
 }
 
-jxl_modular_status_t jxl_modular_channels_reserve(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_modular_channels_reserve(jxl_context *alloc,
                                                   jxl_modular_channels *ch, size_t need) {
     size_t cap;
     jxl_modular_channel_info *grown;
@@ -70,7 +70,7 @@ jxl_modular_status_t jxl_modular_channels_reserve(jxl_allocator_state *alloc,
     return JXL_MODULAR_OK;
 }
 
-jxl_modular_status_t jxl_modular_channels_from_params(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_modular_channels_from_params(jxl_context *alloc,
                                                       const jxl_modular_params *params,
                                                       jxl_modular_channels *out) {
                                                           size_t i;
@@ -94,7 +94,7 @@ jxl_modular_status_t jxl_modular_channels_from_params(jxl_allocator_state *alloc
     return JXL_MODULAR_OK;
 }
 
-jxl_modular_status_t jxl_modular_channels_push(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_modular_channels_push(jxl_context *alloc,
                                                jxl_modular_channels *ch,
                                                jxl_modular_channel_info info) {
     if (alloc == NULL || ch == NULL) {
@@ -107,7 +107,7 @@ jxl_modular_status_t jxl_modular_channels_push(jxl_allocator_state *alloc,
     return JXL_MODULAR_OK;
 }
 
-jxl_modular_status_t jxl_modular_channels_insert(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_modular_channels_insert(jxl_context *alloc,
                                                  jxl_modular_channels *ch, size_t at,
                                                  jxl_modular_channel_info info) {
     if (alloc == NULL || ch == NULL || at > ch->info_len) {
@@ -135,7 +135,7 @@ void jxl_modular_channels_remove_range(jxl_modular_channels *ch, size_t begin, s
     ch->info_len -= end - begin;
 }
 
-void jxl_modular_channels_append_slice(jxl_allocator_state *alloc, jxl_modular_channels *ch,
+void jxl_modular_channels_append_slice(jxl_context *alloc, jxl_modular_channels *ch,
                                        const jxl_modular_channel_info *items, size_t count) {
     if (alloc == NULL || ch == NULL || items == NULL || count == 0) {
         return;

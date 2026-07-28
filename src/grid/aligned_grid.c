@@ -10,7 +10,7 @@ static size_t align_offset_elements(const void *ptr, size_t elem_size) {
     return ((align - extra) % align) / elem_size;
 }
 
-static int grid_u32_empty_aligned(jxl_allocator_state *alloc, size_t width, size_t height,
+static int grid_u32_empty_aligned(jxl_context *alloc, size_t width, size_t height,
                                   jxl_grid_alloc_tracker *tracker, jxl_grid_u32 *out,
                                   jxl_grid_oom *oom) {
     size_t len;
@@ -67,7 +67,7 @@ void jxl_grid_u32_init_empty(jxl_grid_u32 *g) {
     memset(g, 0, sizeof(*g));
 }
 
-int jxl_grid_u32_create(jxl_allocator_state *alloc, size_t width, size_t height,
+int jxl_grid_u32_create(jxl_context *alloc, size_t width, size_t height,
                         jxl_grid_alloc_tracker *tracker, jxl_grid_u32 *out, jxl_grid_oom *oom) {
     size_t len;
     if (out == NULL || alloc == NULL) {
@@ -86,7 +86,7 @@ int jxl_grid_u32_create(jxl_allocator_state *alloc, size_t width, size_t height,
     return 1;
 }
 
-void jxl_grid_u32_destroy(jxl_allocator_state *alloc, jxl_grid_u32 *g) {
+void jxl_grid_u32_destroy(jxl_context *alloc, jxl_grid_u32 *g) {
     if (g == NULL || alloc == NULL) {
         return;
     }
@@ -136,7 +136,7 @@ void jxl_grid_f32_init_empty(jxl_grid_f32 *g) {
     memset(g, 0, sizeof(*g));
 }
 
-int jxl_grid_f32_create(jxl_allocator_state *alloc, size_t width, size_t height,
+int jxl_grid_f32_create(jxl_context *alloc, size_t width, size_t height,
                         jxl_grid_alloc_tracker *tracker, jxl_grid_f32 *out, jxl_grid_oom *oom) {
     size_t len;
     size_t buf_len;
@@ -188,7 +188,7 @@ int jxl_grid_f32_create(jxl_allocator_state *alloc, size_t width, size_t height,
     return 1;
 }
 
-void jxl_grid_f32_destroy(jxl_allocator_state *alloc, jxl_grid_f32 *g) {
+void jxl_grid_f32_destroy(jxl_context *alloc, jxl_grid_f32 *g) {
     if (g == NULL || alloc == NULL) {
         return;
     }

@@ -83,7 +83,7 @@ jxl_vardct_status_t jxl_lf_channel_correlation_parse(jxl_bs *bs, jxl_lf_channel_
     return JXL_VARDCT_OK;
 }
 
-jxl_vardct_status_t jxl_hf_block_context_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_vardct_status_t jxl_hf_block_context_parse(jxl_context *alloc, jxl_bs *bs,
                                                jxl_hf_block_context *out) {
                                                    size_t ch;
     int use_default;
@@ -182,7 +182,7 @@ jxl_vardct_status_t jxl_hf_block_context_parse(jxl_allocator_state *alloc, jxl_b
     return JXL_VARDCT_OK;
 }
 
-void jxl_hf_block_context_free(jxl_allocator_state *alloc, jxl_hf_block_context *ctx) {
+void jxl_hf_block_context_free(jxl_context *alloc, jxl_hf_block_context *ctx) {
     if (ctx == NULL) {
         return;
     }

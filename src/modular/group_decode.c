@@ -37,7 +37,7 @@ static jxl_status_t frame_to_status(jxl_frame_status_t st) {
     }
 }
 
-jxl_status_t jxl_modular_decode_pass_group_fallback(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_status_t jxl_modular_decode_pass_group_fallback(jxl_context *ctx, jxl_context *alloc,
                                                     const jxl_parsed_image_header *parsed,
                                                     const jxl_frame *frame, int has_ma,
                                                     jxl_ma_config *global_ma,
@@ -104,7 +104,7 @@ jxl_status_t jxl_modular_decode_pass_group_fallback(jxl_context *ctx, jxl_alloca
 }
 
 jxl_status_t jxl_modular_decode_frame_group_coefficients(
-    jxl_context *ctx, jxl_allocator_state *alloc, const jxl_frame *frame,
+    jxl_context *ctx, jxl_context *alloc, const jxl_frame *frame,
     const jxl_parsed_image_header *parsed, const jxl_ma_config *global_ma, int has_ma,
     const jxl_modular_params *mod_params, jxl_modular_image_destination *dest, int multi_group,
     int allow_partial, const jxl_modular_region *filter_region) {
@@ -148,7 +148,7 @@ jxl_status_t jxl_modular_decode_frame_group_coefficients(
     return JXL_OK;
 }
 
-jxl_status_t jxl_modular_decode_frame_lf_groups(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_status_t jxl_modular_decode_frame_lf_groups(jxl_context *ctx, jxl_context *alloc,
                                                 const jxl_frame *frame, const jxl_ma_config *global_ma,
                                                 int has_ma, jxl_modular_image_destination *dest,
                                                 int allow_partial,
@@ -214,7 +214,7 @@ jxl_status_t jxl_modular_decode_frame_lf_groups(jxl_context *ctx, jxl_allocator_
     return JXL_OK;
 }
 
-jxl_status_t jxl_modular_decode_frame_pass_groups(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_status_t jxl_modular_decode_frame_pass_groups(jxl_context *ctx, jxl_context *alloc,
                                                   const jxl_frame *frame,
                                                   const jxl_ma_config *global_ma, int has_ma,
                                                   const jxl_modular_params *mod_params,

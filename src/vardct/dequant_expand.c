@@ -8,7 +8,7 @@
 #include <string.h>
 
 static void buf_free(jxl_context *ctx, jxl_context_dequant_buf *b) {
-    jxl_ctx_free(ctx, b->data);
+    jxl_free(ctx, b->data);
     b->data = NULL;
     b->len = 0;
 }
@@ -18,7 +18,7 @@ static jxl_vardct_status_t buf_alloc(jxl_context *ctx, jxl_context_dequant_buf *
     if (len == 0) {
         return JXL_VARDCT_OK;
     }
-    b->data = jxl_ctx_calloc(ctx, len, sizeof(float));
+    b->data = jxl_calloc(ctx, len, sizeof(float));
     if (b->data == NULL) {
         return JXL_VARDCT_OUT_OF_MEMORY;
     }
@@ -66,7 +66,7 @@ static jxl_vardct_status_t dct_quant_weights(jxl_context *ctx, const float *para
                                                  uint32_t y;
     float max_dist;
     float last_band;
-    float *bands = jxl_ctx_calloc(ctx, param_len, sizeof(float));
+    float *bands = jxl_calloc(ctx, param_len, sizeof(float));
     jxl_vardct_status_t st;
     if (bands == NULL) {
         return JXL_VARDCT_OUT_OF_MEMORY;
@@ -76,7 +76,7 @@ static jxl_vardct_status_t dct_quant_weights(jxl_context *ctx, const float *para
     for (i = 1; i < param_len; ++i) {
         float band = last_band * mult_factor(params[i]);
         if (band <= 0.0f) {
-            jxl_ctx_free(ctx, bands);
+            jxl_free(ctx, bands);
             return JXL_VARDCT_VALIDATION_ERROR;
         }
         bands[i] = band;
@@ -85,7 +85,7 @@ static jxl_vardct_status_t dct_quant_weights(jxl_context *ctx, const float *para
 
     st = buf_alloc(ctx, out, (size_t)width * (size_t)height);
     if (st != JXL_VARDCT_OK) {
-        jxl_ctx_free(ctx, bands);
+        jxl_free(ctx, bands);
         return st;
     }
 
@@ -99,7 +99,7 @@ static jxl_vardct_status_t dct_quant_weights(jxl_context *ctx, const float *para
             out->data[(size_t)y * width + x] = interpolate(distance, max_dist, bands, param_len);
         }
     }
-    jxl_ctx_free(ctx, bands);
+    jxl_free(ctx, bands);
     return JXL_VARDCT_OK;
 }
 

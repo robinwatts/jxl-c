@@ -14,7 +14,7 @@ struct jxl_render;
 
 typedef struct {
     jxl_context *ctx;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     const uint8_t *input;
     size_t input_len;
     char **error_out;

@@ -57,7 +57,7 @@ static jxl_frame_status_t modular_to_frame(jxl_modular_status_t st) {
     }
 }
 
-static int modular_params_set_custom(jxl_allocator_state *alloc, jxl_modular_params *p, uint32_t group_dim, uint32_t bit_depth,
+static int modular_params_set_custom(jxl_context *alloc, jxl_modular_params *p, uint32_t group_dim, uint32_t bit_depth,
                                      const jxl_modular_channel_params *ch, size_t n) {
     jxl_modular_params_free(alloc, p);
     p->group_dim = group_dim;
@@ -79,7 +79,7 @@ static int32_t grid_get(const jxl_modular_grid_i32 *g, size_t x, size_t y) {
 }
 
 static jxl_modular_status_t modular_parse_decode_finish(
-    jxl_allocator_state *alloc, jxl_bs *bs, const jxl_modular_parse_ctx *ctx, uint32_t stream_index,
+    jxl_context *alloc, jxl_bs *bs, const jxl_modular_parse_ctx *ctx, uint32_t stream_index,
     uint32_t region_w, uint32_t region_h, jxl_modular_image_destination *dest, int allow_partial) {
     jxl_modular_status_t st = jxl_modular_dest_apply_local_header(alloc, bs, ctx, dest);
     if (st != JXL_MODULAR_OK) {
@@ -126,7 +126,7 @@ static void lf_group_sync_lf_quant_views(jxl_lf_group *g) {
     }
 }
 
-static jxl_frame_status_t lf_coeff_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_frame_status_t lf_coeff_parse(jxl_context *alloc, jxl_bs *bs,
                                          const jxl_lf_group_params *params, uint32_t lf_width,
                                          uint32_t lf_height, jxl_lf_group *out) {
                                              size_t i;
@@ -179,10 +179,10 @@ static jxl_frame_status_t lf_coeff_parse(jxl_allocator_state *alloc, jxl_bs *bs,
     return JXL_FRAME_OK;
 }
 
-static jxl_frame_status_t mlf_group_decode(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_frame_status_t mlf_group_decode(jxl_context *alloc, jxl_bs *bs,
                                            const jxl_lf_group_params *params, int *mlf_complete);
 
-jxl_frame_status_t jxl_decode_lf_group_modular_coefficients(jxl_allocator_state *alloc,
+jxl_frame_status_t jxl_decode_lf_group_modular_coefficients(jxl_context *alloc,
                                                             jxl_bs *bs,
                                                             const jxl_lf_group_params *params) {
     int complete;
@@ -196,7 +196,7 @@ jxl_frame_status_t jxl_decode_lf_group_modular_coefficients(jxl_allocator_state 
     return fst;
 }
 
-static jxl_frame_status_t mlf_group_decode(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_frame_status_t mlf_group_decode(jxl_context *alloc, jxl_bs *bs,
                                            const jxl_lf_group_params *params, int *mlf_complete) {
     jxl_modular_params mod_params;
     int complete;
@@ -255,7 +255,7 @@ static int block_info_is_occupied(const jxl_block_info *info) {
            (info->kind == JXL_BLOCK_INFO_OCCUPIED || info->kind == JXL_BLOCK_INFO_DATA);
 }
 
-static int copy_modular_grid_i32(jxl_allocator_state *alloc, const jxl_modular_grid_i32 *src,
+static int copy_modular_grid_i32(jxl_context *alloc, const jxl_modular_grid_i32 *src,
                                  int32_t **out_data, size_t *width_out, size_t *height_out,
                                  size_t *stride_out) {
     size_t y;
@@ -286,7 +286,7 @@ static int copy_modular_grid_i32(jxl_allocator_state *alloc, const jxl_modular_g
     return 1;
 }
 
-static jxl_frame_status_t hf_metadata_expand(jxl_allocator_state *alloc, uint32_t lf_group_idx,
+static jxl_frame_status_t hf_metadata_expand(jxl_context *alloc, uint32_t lf_group_idx,
                                              size_t bw, size_t bh,
                                              const jxl_modular_grid_i32 *block_info_raw,
                                              const jxl_modular_grid_i32 *sharpness,
@@ -388,7 +388,7 @@ static jxl_frame_status_t hf_metadata_expand(jxl_allocator_state *alloc, uint32_
     return JXL_FRAME_OK;
 }
 
-static jxl_frame_status_t hf_metadata_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+static jxl_frame_status_t hf_metadata_parse(jxl_context *alloc, jxl_bs *bs,
                                             const jxl_lf_group_params *params, uint32_t lf_width,
                                             uint32_t lf_height, jxl_lf_group *out) {
                                                 size_t i;
@@ -526,7 +526,7 @@ void jxl_lf_group_init(jxl_lf_group *g) {
     jxl_modular_image_destination_init(&g->lf_quant);
 }
 
-void jxl_lf_group_free(jxl_allocator_state *alloc, jxl_lf_group *g) {
+void jxl_lf_group_free(jxl_context *alloc, jxl_lf_group *g) {
     if (g == NULL) {
         return;
     }
@@ -574,7 +574,7 @@ void jxl_lf_group_fill_view(const jxl_lf_group *g, jxl_lf_group_view *out) {
     }
 }
 
-jxl_frame_status_t jxl_lf_group_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_lf_group_parse(jxl_context *alloc, jxl_bs *bs,
                                       const jxl_lf_group_params *params, jxl_lf_group *out) {
     uint32_t lf_width;
     uint32_t lf_height;

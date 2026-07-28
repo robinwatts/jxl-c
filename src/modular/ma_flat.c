@@ -15,7 +15,7 @@ void jxl_ma_flat_tree_init(jxl_ma_flat_tree *t) {
     }
 }
 
-void jxl_ma_flat_tree_free(jxl_allocator_state *alloc, jxl_ma_flat_tree *t) {
+void jxl_ma_flat_tree_free(jxl_context *alloc, jxl_ma_flat_tree *t) {
     size_t i;
     if (t == NULL) {
         return;
@@ -51,7 +51,7 @@ static const jxl_ma_tree_node *next_decision_node(const jxl_ma_tree_node *node, 
     return node;
 }
 
-static int flat_push(jxl_allocator_state *alloc, jxl_ma_flat_tree *out,
+static int flat_push(jxl_context *alloc, jxl_ma_flat_tree *out,
                      const jxl_ma_flat_node *node) {
     jxl_ma_flat_node *grown = jxl_realloc(alloc, out->nodes, (out->len + 1) * sizeof(*grown));
     if (grown == NULL) {
@@ -99,7 +99,7 @@ static int range_end_cmp(const void *a, const void *b) {
     return 0;
 }
 
-static int ma_stack_push(jxl_allocator_state *alloc, ma_compile_stack_entry **stack, size_t *stack_len,
+static int ma_stack_push(jxl_context *alloc, ma_compile_stack_entry **stack, size_t *stack_len,
                          size_t *stack_cap, const jxl_ma_tree_node *node, int32_t range_start,
                          int32_t range_end) {
     size_t new_cap;
@@ -121,7 +121,7 @@ static int ma_stack_push(jxl_allocator_state *alloc, ma_compile_stack_entry **st
     return 1;
 }
 
-static ma_table_compile_result try_compile_to_table(jxl_allocator_state *alloc,
+static ma_table_compile_result try_compile_to_table(jxl_context *alloc,
                                                     const jxl_ma_tree_node *target,
                                                     uint32_t channel, uint32_t stream_idx,
                                                     uint32_t prev_channels,
@@ -343,7 +343,7 @@ static void update_meta(jxl_ma_flat_tree *t, const jxl_ma_flat_node *node) {
     }
 }
 
-static int ma_queue_push(jxl_allocator_state *alloc, const jxl_ma_tree_node ***queue, size_t *queue_len,
+static int ma_queue_push(jxl_context *alloc, const jxl_ma_tree_node ***queue, size_t *queue_len,
                          size_t *queue_cap, const jxl_ma_tree_node *node) {
     size_t new_cap;
     const jxl_ma_tree_node **grown;
@@ -368,7 +368,7 @@ jxl_modular_status_t jxl_ma_flat_tree_build(const jxl_ma_config *cfg, uint32_t c
     size_t queue_len;
     size_t queue_cap;
     uint32_t next_base;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     const jxl_ma_tree_node **queue;
     const jxl_ma_tree_node *start;
 

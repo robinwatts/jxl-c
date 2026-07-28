@@ -27,12 +27,12 @@ typedef struct jxl_ans_histogram {
     uint32_t single_symbol;
 } jxl_ans_histogram;
 
-jxl_coding_status_t jxl_ans_histogram_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_coding_status_t jxl_ans_histogram_parse(jxl_context *alloc, jxl_bs *bs,
                                             uint32_t log_alphabet_size, jxl_ans_histogram *out);
 
-void jxl_ans_histogram_destroy(jxl_allocator_state *alloc, jxl_ans_histogram *hist);
+void jxl_ans_histogram_destroy(jxl_context *alloc, jxl_ans_histogram *hist);
 
-jxl_coding_status_t jxl_ans_histogram_clone(jxl_allocator_state *alloc,
+jxl_coding_status_t jxl_ans_histogram_clone(jxl_context *alloc,
                                             const jxl_ans_histogram *src,
                                             jxl_ans_histogram *out);
 

@@ -125,7 +125,7 @@ void jxl_hf_pass_init(jxl_hf_pass *pass) {
     }
 }
 
-static void free_permutations(jxl_allocator_state *alloc, jxl_hf_pass *pass) {
+static void free_permutations(jxl_context *alloc, jxl_hf_pass *pass) {
     size_t i;
     for (i = 0; i < JXL_HF_PASS_ORDER_COUNT; ++i) {
         size_t c;
@@ -137,7 +137,7 @@ static void free_permutations(jxl_allocator_state *alloc, jxl_hf_pass *pass) {
     }
 }
 
-void jxl_hf_pass_destroy(jxl_allocator_state *alloc, jxl_hf_pass *pass) {
+void jxl_hf_pass_destroy(jxl_context *alloc, jxl_hf_pass *pass) {
     if (pass == NULL) {
         return;
     }
@@ -155,7 +155,7 @@ void jxl_hf_pass_destroy(jxl_allocator_state *alloc, jxl_hf_pass *pass) {
     jxl_hf_pass_init(pass);
 }
 
-jxl_vardct_status_t jxl_hf_pass_parse(jxl_context *ctx, jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_vardct_status_t jxl_hf_pass_parse(jxl_context *ctx, jxl_context *alloc, jxl_bs *bs,
                                      const jxl_hf_pass_params *params, jxl_hf_pass *out) {
     uint32_t num_dist;
     jxl_coding_status_t cst;
@@ -263,6 +263,6 @@ jxl_coding_decoder *jxl_hf_pass_hf_dist(const jxl_hf_pass *pass) {
     return pass != NULL ? pass->hf_dist : NULL;
 }
 
-jxl_allocator_state *jxl_hf_pass_alloc(const jxl_hf_pass *pass) {
+jxl_context *jxl_hf_pass_alloc(const jxl_hf_pass *pass) {
     return pass != NULL ? pass->alloc : NULL;
 }

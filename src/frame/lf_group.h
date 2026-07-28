@@ -55,12 +55,12 @@ typedef struct {
 } jxl_lf_group;
 
 void jxl_lf_group_init(jxl_lf_group *g);
-void jxl_lf_group_free(jxl_allocator_state *alloc, jxl_lf_group *g);
+void jxl_lf_group_free(jxl_context *alloc, jxl_lf_group *g);
 
-jxl_frame_status_t jxl_lf_group_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_lf_group_parse(jxl_context *alloc, jxl_bs *bs,
                                       const jxl_lf_group_params *params, jxl_lf_group *out);
 
-jxl_frame_status_t jxl_decode_lf_group_modular_coefficients(jxl_allocator_state *alloc,
+jxl_frame_status_t jxl_decode_lf_group_modular_coefficients(jxl_context *alloc,
                                                             jxl_bs *bs,
                                                             const jxl_lf_group_params *params);
 

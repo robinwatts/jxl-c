@@ -50,7 +50,7 @@ typedef struct {
 } jxl_ma_flat_tree;
 
 void jxl_ma_flat_tree_init(jxl_ma_flat_tree *t);
-void jxl_ma_flat_tree_free(jxl_allocator_state *alloc, jxl_ma_flat_tree *t);
+void jxl_ma_flat_tree_free(jxl_context *alloc, jxl_ma_flat_tree *t);
 
 jxl_modular_status_t jxl_ma_flat_tree_build(const jxl_ma_config *cfg, uint32_t channel,
                                             uint32_t stream_idx, uint32_t prev_channels,

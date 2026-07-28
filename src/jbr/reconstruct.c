@@ -127,7 +127,7 @@ static void frame_fb_channel_size(const uint32_t jpeg_upsampling_ycbcr[3], uint3
     *out_h = lh * 8u;
 }
 
-static int group_coeff_bufs_alloc(jxl_allocator_state *alloc, const jxl_frame_header *fh,
+static int group_coeff_bufs_alloc(jxl_context *alloc, const jxl_frame_header *fh,
                                   const uint32_t jpeg_upsampling_ycbcr[3],
                                   const uint32_t fb_wh[3][2], uint32_t group_idx,
                                   jxl_jbr_group_coeff_bufs *bufs) {
@@ -160,7 +160,7 @@ static int group_coeff_bufs_alloc(jxl_allocator_state *alloc, const jxl_frame_he
     return 1;
 }
 
-static void group_coeff_bufs_free(jxl_allocator_state *alloc, jxl_jbr_group_coeff_bufs *bufs) {
+static void group_coeff_bufs_free(jxl_context *alloc, jxl_jbr_group_coeff_bufs *bufs) {
     size_t i;
     if (bufs == NULL) {
         return;
@@ -172,7 +172,7 @@ static void group_coeff_bufs_free(jxl_allocator_state *alloc, jxl_jbr_group_coef
     memset(bufs, 0, sizeof(*bufs));
 }
 
-static void parsed_frame_free(jxl_allocator_state *alloc, jxl_jbr_parsed_frame *parsed) {
+static void parsed_frame_free(jxl_context *alloc, jxl_jbr_parsed_frame *parsed) {
     if (parsed == NULL) {
         return;
     }
@@ -295,7 +295,7 @@ static void integer_cfl(const jxl_frame_header *fh, const jxl_hf_global *hf_glob
     }
 }
 
-static jxl_jbr_status parse_frame_coeffs(jxl_allocator_state *alloc, jxl_context *ctx,
+static jxl_jbr_status parse_frame_coeffs(jxl_context *alloc, jxl_context *ctx,
                                          const jxl_jbr_header *jbr_header,
                                          const jxl_frame *frame,
                                          const jxl_parsed_image_header *image,
@@ -586,7 +586,7 @@ static jxl_jbr_status recon_init_streams(jxl_jbr_reconstructor *recon, const jxl
     return JXL_JBR_OK;
 }
 
-static jxl_jbr_status write_bytes(jxl_allocator_state *alloc, jxl_jbr_output *out,
+static jxl_jbr_status write_bytes(jxl_context *alloc, jxl_jbr_output *out,
                                   const void *data, size_t len) {
     return jxl_jbr_output_write(alloc, out, (const uint8_t *)data, len);
 }
@@ -621,7 +621,7 @@ static uint32_t trailing_zeros_u32(uint32_t n) {
 #endif
 }
 
-static jxl_jbr_status process_sos(jxl_jbr_reconstructor *recon, jxl_allocator_state *alloc,
+static jxl_jbr_status process_sos(jxl_jbr_reconstructor *recon, jxl_context *alloc,
                                   jxl_jbr_output *out) {
                                       size_t i;
     jxl_channel_shift upsampling_shifts_ycbcr[3];
@@ -768,7 +768,7 @@ static jxl_jbr_status process_sos(jxl_jbr_reconstructor *recon, jxl_allocator_st
     return st;
 }
 
-static jxl_jbr_status process_next(jxl_jbr_reconstructor *recon, jxl_allocator_state *alloc,
+static jxl_jbr_status process_next(jxl_jbr_reconstructor *recon, jxl_context *alloc,
                                    const jxl_parsed_image_header *image, jxl_jbr_output *out) {
     const jxl_jbr_header *header = recon->header;
     if (recon->marker_ptr >= header->markers_len) {
@@ -1211,7 +1211,7 @@ static jxl_jbr_status process_next(jxl_jbr_reconstructor *recon, jxl_allocator_s
     return st;
 }
 
-jxl_jbr_status jxl_jbr_reconstruct(jxl_allocator_state *alloc, jxl_context *ctx,
+jxl_jbr_status jxl_jbr_reconstruct(jxl_context *alloc, jxl_context *ctx,
                                    const jxl_jbr_data *jbrd, const jxl_frame *frame,
                                    const jxl_parsed_image_header *image, const uint8_t *icc,
                                    size_t icc_len, const uint8_t *exif, size_t exif_len,

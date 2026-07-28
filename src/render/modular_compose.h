@@ -15,7 +15,7 @@
 
 typedef struct {
     jxl_context *ctx;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     const jxl_parsed_image_header *parsed;
     const jxl_frame_header *fh;
     jxl_modular_image_destination *dest;

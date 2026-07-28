@@ -82,7 +82,7 @@ static void transpose_i16x8_wasm128(const jxl_i16x8 vs_in[8], jxl_i16x8 out[8]) 
     out[7] = wasm_i64x2_shuffle(vs[6], vs[7], 1, 3);
 }
 
-static void inverse_h_i16_wasm128(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+static void inverse_h_i16_wasm128(jxl_context *alloc, int16_t *merged, size_t width,
                                   size_t height, size_t row_stride) {
     size_t y8;
     if (width <= 8) {
@@ -213,7 +213,7 @@ static void inverse_h_i16_wasm128(jxl_allocator_state *alloc, int16_t *merged, s
     jxl_free_aligned(alloc, scratch);
 }
 
-static void inverse_v_i16_wasm128(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+static void inverse_v_i16_wasm128(jxl_context *alloc, int16_t *merged, size_t width,
                                   size_t height, size_t row_stride) {
     size_t x8;
     if (height <= 1) {
@@ -270,7 +270,7 @@ static void inverse_v_i16_wasm128(jxl_allocator_state *alloc, int16_t *merged, s
     jxl_free_aligned(alloc, scratch);
 }
 
-void jxl_squeeze_inverse_h_i16_wasm128(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+void jxl_squeeze_inverse_h_i16_wasm128(jxl_context *alloc, int16_t *merged, size_t width,
                                        size_t height, size_t row_stride) {
     if (row_stride == 0) {
         row_stride = width;
@@ -278,7 +278,7 @@ void jxl_squeeze_inverse_h_i16_wasm128(jxl_allocator_state *alloc, int16_t *merg
     inverse_h_i16_wasm128(alloc, merged, width, height, row_stride);
 }
 
-void jxl_squeeze_inverse_v_i16_wasm128(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+void jxl_squeeze_inverse_v_i16_wasm128(jxl_context *alloc, int16_t *merged, size_t width,
                                        size_t height, size_t row_stride) {
     if (row_stride == 0) {
         row_stride = width;

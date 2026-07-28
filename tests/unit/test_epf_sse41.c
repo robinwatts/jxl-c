@@ -33,7 +33,7 @@ static void test_epf_force_scalar(int on) {
 
 #endif
 
-static jxl_allocator_state *test_alloc_state(void) {
+static jxl_context *test_alloc_state(void) {
     static jxl_allocator_state alloc;
     static int init = 0;
     if (!init) {
@@ -207,7 +207,7 @@ static int run_epf_step1_padded(size_t width, size_t height, int32_t frame_left)
     int cmp;
     int ok;
     jxl_epf_filter epf;
-    jxl_allocator_state *alloc = test_alloc_state();
+    jxl_context *alloc = test_alloc_state();
     size_t w = width;
     size_t h = height;
 

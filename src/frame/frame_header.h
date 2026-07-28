@@ -84,11 +84,11 @@ typedef struct {
     jxl_restoration_filter restoration;
 } jxl_frame_header;
 
-void jxl_frame_passes_free(jxl_allocator_state *alloc, jxl_frame_passes *p);
+void jxl_frame_passes_free(jxl_context *alloc, jxl_frame_passes *p);
 void jxl_frame_header_init(jxl_frame_header *h);
-void jxl_frame_header_free(jxl_allocator_state *alloc, jxl_frame_header *h);
+void jxl_frame_header_free(jxl_context *alloc, jxl_frame_header *h);
 
-jxl_frame_status_t jxl_frame_header_parse(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_frame_header_parse(jxl_context *alloc, jxl_bs *bs,
                                           const jxl_parsed_image_header *image,
                                           jxl_frame_header *out);
 

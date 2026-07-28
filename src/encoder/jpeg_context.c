@@ -12,16 +12,16 @@
 #include "lib/jxl/memory_manager.h"
 
 static void* jxl_ctx_mm_alloc(void* opaque, size_t size) {
-  return jxl_alloc((jxl_allocator_state*)opaque, size);
+  return jxl_alloc((jxl_context *)opaque, size);
 }
 
 static void jxl_ctx_mm_free(void* opaque, void* address) {
-  jxl_free((jxl_allocator_state*)opaque, address);
+  jxl_free((jxl_context *)opaque, address);
 }
 
 void jxl_context_bind_memory_manager(jxl_context* ctx) {
   if (ctx == NULL) return;
-  ctx->mm.opaque = &ctx->alloc;
+  ctx->mm.opaque = ctx;
   ctx->mm.alloc = jxl_ctx_mm_alloc;
   ctx->mm.free = jxl_ctx_mm_free;
 }
@@ -37,7 +37,7 @@ int jxl_jpeg_encoder_context_init(jxl_context* ctx) {
   if (ctx == NULL) return 0;
   jxl_context_bind_memory_manager(ctx);
   mm = &ctx->mm;
-  je = (jxl_jpeg_encoder_context*)jxl_ctx_alloc(ctx, sizeof(*je));
+  je = (jxl_jpeg_encoder_context*)jxl_alloc(ctx, sizeof(*je));
   if (je == NULL) return 0;
   memset(je, 0, sizeof(*je));
   jxl_enc_color_encoding_construct_empty(&je->srgb[0], mm);
@@ -46,7 +46,7 @@ int jxl_jpeg_encoder_context_init(jxl_context* ctx) {
   if (je->lcms == NULL) {
     jxl_enc_color_encoding_destroy(&je->srgb[0]);
     jxl_enc_color_encoding_destroy(&je->srgb[1]);
-    jxl_ctx_free(ctx, je);
+    jxl_free(ctx, je);
     return 0;
   }
   ctx->jpeg_enc = je;
@@ -64,7 +64,7 @@ void jxl_jpeg_encoder_context_fini(jxl_context* ctx) {
   }
   jxl_cms_destroy_lcms_context(je->lcms);
   je->lcms = NULL;
-  jxl_ctx_free(ctx, je);
+  jxl_free(ctx, je);
   ctx->jpeg_enc = NULL;
 }
 

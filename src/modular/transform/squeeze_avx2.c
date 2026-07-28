@@ -114,7 +114,7 @@ static __m128i tendency_i16_x86_64_sse41_via_avx2(__m128i a, __m128i b, __m128i 
     return _mm256_extracti128_si256(tendency_i16_x86_64_avx2(av, bv, cv), 0);
 }
 
-static void inverse_h_i16_x86_64_avx2(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+static void inverse_h_i16_x86_64_avx2(jxl_context *alloc, int16_t *merged, size_t width,
                                       size_t height, size_t row_stride) {
                                           size_t y8;
     size_t avg_width;
@@ -292,7 +292,7 @@ static void inverse_h_i16_x86_64_avx2(jxl_allocator_state *alloc, int16_t *merge
     jxl_free_aligned(alloc, scratch);
 }
 
-static void inverse_v_i16_x86_64_avx2(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+static void inverse_v_i16_x86_64_avx2(jxl_context *alloc, int16_t *merged, size_t width,
                                       size_t height, size_t row_stride) {
                                           size_t x16;
     if (height <= 1) {
@@ -348,7 +348,7 @@ static void inverse_v_i16_x86_64_avx2(jxl_allocator_state *alloc, int16_t *merge
     jxl_free_aligned(alloc, scratch);
 }
 
-void jxl_squeeze_inverse_h_i16_x86_avx2(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+void jxl_squeeze_inverse_h_i16_x86_avx2(jxl_context *alloc, int16_t *merged, size_t width,
                                         size_t height, size_t row_stride) {
     if (row_stride == 0) {
         row_stride = width;
@@ -357,7 +357,7 @@ void jxl_squeeze_inverse_h_i16_x86_avx2(jxl_allocator_state *alloc, int16_t *mer
     _mm256_zeroupper();
 }
 
-void jxl_squeeze_inverse_v_i16_x86_avx2(jxl_allocator_state *alloc, int16_t *merged, size_t width,
+void jxl_squeeze_inverse_v_i16_x86_avx2(jxl_context *alloc, int16_t *merged, size_t width,
                                         size_t height, size_t row_stride) {
     if (row_stride == 0) {
         row_stride = width;

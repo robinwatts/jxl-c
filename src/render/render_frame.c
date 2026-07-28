@@ -42,7 +42,7 @@ static uint32_t color_filter_height(const jxl_frame_header *fh, const jxl_render
     return r->height;
 }
 
-static jxl_status_t jpeg_upsample_color_planes(jxl_allocator_state *alloc, jxl_render *r,
+static jxl_status_t jpeg_upsample_color_planes(jxl_context *alloc, jxl_render *r,
                                                uint32_t color_planes, const jxl_frame_header *fh) {
                                                    uint32_t p;
     uint32_t target_w = color_filter_width(fh, r);
@@ -75,7 +75,7 @@ static jxl_modular_region render_image_region(const jxl_parsed_image_header *par
     return image_region;
 }
 
-static jxl_status_t upsample_written_crop_planes(jxl_allocator_state *alloc, jxl_render *r,
+static jxl_status_t upsample_written_crop_planes(jxl_context *alloc, jxl_render *r,
                                                  uint32_t color_planes) {
                                                      uint32_t p;
     for (p = 0; p < color_planes; ++p) {
@@ -92,7 +92,7 @@ typedef struct {
     float *owned[3];
 } jxl_prepared_color_fb;
 
-static void prepared_color_fb_free(jxl_allocator_state *alloc, jxl_prepared_color_fb *prep) {
+static void prepared_color_fb_free(jxl_context *alloc, jxl_prepared_color_fb *prep) {
     size_t ch;
     if (alloc == NULL || prep == NULL) {
         return;
@@ -120,7 +120,7 @@ static jxl_modular_region modular_region_downsample_with_shift(jxl_modular_regio
 
 }
 
-static jxl_status_t prepare_color_fb_jpeg_upsample(jxl_allocator_state *alloc,
+static jxl_status_t prepare_color_fb_jpeg_upsample(jxl_context *alloc,
                                                    const jxl_frame_header *fh,
                                                    const jxl_const_subgrid_f32 color_fb[3],
                                                    const jxl_modular_region *color_fb_region,
@@ -250,7 +250,7 @@ static jxl_modular_region color_padded_local_in_fb(const jxl_modular_region *col
 }
 
 static jxl_status_t restore_color_fb_padded_local(
-    jxl_context *ctx, jxl_allocator_state *alloc, const jxl_frame_header *fh,
+    jxl_context *ctx, jxl_context *alloc, const jxl_frame_header *fh,
     const jxl_lf_group *lf_groups, uint32_t num_lf_groups, jxl_subgrid_f32 channels[3],
     const jxl_modular_region *color_padded, const jxl_modular_region *fb_region) {
     size_t ch;
@@ -332,7 +332,7 @@ static jxl_status_t restore_color_fb_padded_local(
 }
 
 static jxl_status_t apply_color_restoration_on_fb_channels(
-    jxl_context *ctx, jxl_allocator_state *alloc, const jxl_frame_header *fh,
+    jxl_context *ctx, jxl_context *alloc, const jxl_frame_header *fh,
     const jxl_lf_group *lf_groups, uint32_t num_lf_groups, const jxl_const_subgrid_f32 color_fb[3],
     const jxl_modular_region *fb_region, const jxl_modular_region *color_padded) {
     size_t ch;
@@ -378,7 +378,7 @@ static void enc_take_prepared_fb(jxl_vardct_encode_ctx *enc, jxl_prepared_color_
     enc->use_prepared_fb = enc->prepared_fb_data[0] != NULL;
 }
 
-jxl_status_t jxl_render_vardct_apply_color_filters(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_status_t jxl_render_vardct_apply_color_filters(jxl_context *ctx, jxl_context *alloc,
                                                    const jxl_parsed_image_header *parsed,
                                                    const jxl_frame_header *fh,
                                                    jxl_vardct_encode_ctx *enc,
@@ -658,7 +658,7 @@ jxl_status_t jxl_render_pre_features_stage(const jxl_render_pre_features_params 
     return JXL_OK;
 }
 
-static int blit_modular_channel_to_plane(jxl_allocator_state *alloc,
+static int blit_modular_channel_to_plane(jxl_context *alloc,
                                          const jxl_modular_grid_i32 *grid,
                                          const jxl_modular_channel_info *info, uint32_t bit_depth_bits,
                                          uint32_t dst_stride, float *dst, uint32_t *out_gw,
@@ -668,7 +668,7 @@ static int blit_modular_channel_to_plane(jxl_allocator_state *alloc,
                                              out_gh);
 }
 
-static jxl_status_t extend_from_gmodular(jxl_allocator_state *alloc,
+static jxl_status_t extend_from_gmodular(jxl_context *alloc,
                                        jxl_modular_image_destination *dest,
                                        const jxl_parsed_image_header *parsed,
                                        const jxl_frame_header *fh, struct jxl_render *r,
@@ -854,7 +854,7 @@ jxl_status_t jxl_render_post_encode_stage(const jxl_render_post_encode_params *p
     return st;
 }
 
-jxl_status_t jxl_render_keyframe_features(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_status_t jxl_render_keyframe_features(jxl_context *ctx, jxl_context *alloc,
                                           jxl_render *r, const jxl_parsed_image_header *parsed,
                                           const jxl_frame_header *fh,
                                           const jxl_lf_global *lf_global,
@@ -890,7 +890,7 @@ jxl_status_t jxl_render_keyframe_features(jxl_context *ctx, jxl_allocator_state 
                                         invisible_frames, output_region);
 }
 
-jxl_status_t jxl_render_convert_color_for_record(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_status_t jxl_render_convert_color_for_record(jxl_context *ctx, jxl_context *alloc,
                                                  const jxl_parsed_image_header *parsed,
                                                  const jxl_frame_header *fh, jxl_render *r,
                                                  int ref_image_output) {
@@ -998,7 +998,7 @@ jxl_status_t jxl_render_convert_color_for_record(jxl_context *ctx, jxl_allocator
 }
 
 jxl_status_t jxl_render_post_encode_from_modular_result(
-    jxl_context *ctx, jxl_allocator_state *alloc, const jxl_parsed_image_header *parsed,
+    jxl_context *ctx, jxl_context *alloc, const jxl_parsed_image_header *parsed,
     jxl_modular_encode_result *enc, const jxl_modular_region *output_region,
     jxl_reference_store *refs, jxl_render *r) {
     jxl_const_subgrid_f32 empty_fb[3] = {{0}};
@@ -1055,7 +1055,7 @@ jxl_status_t jxl_render_post_encode_from_modular_result(
 }
 
 jxl_status_t jxl_render_post_encode_from_vardct_ctx(
-    jxl_context *ctx, jxl_allocator_state *alloc, const jxl_parsed_image_header *parsed,
+    jxl_context *ctx, jxl_context *alloc, const jxl_parsed_image_header *parsed,
     const jxl_frame_header *fh, const jxl_vardct_encode_ctx *enc,
     const jxl_modular_region *output_region, const jxl_modular_region *gmodular_extend_region,
     const jxl_reference_store *refs, int ref_image_output, uint32_t visible_frames,

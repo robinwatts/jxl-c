@@ -7,11 +7,11 @@ typedef struct {
     uint8_t *data;
     size_t len;
     size_t cap;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
 } codestream_buf;
 
 struct jxl_container_reader {
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
     jxl_container_parser *parser;
     jxl_aux_box_list *aux_boxes;
     codestream_buf codestream;
@@ -73,7 +73,7 @@ static jxl_bs_status_t reader_event_cb(void *ctx, const jxl_parse_event *event) 
     return st;
 }
 
-jxl_container_reader *jxl_container_reader_create(jxl_allocator_state *alloc) {
+jxl_container_reader *jxl_container_reader_create(jxl_context *alloc) {
     jxl_container_reader *reader = jxl_calloc(alloc, 1, sizeof(*reader));
     if (reader == NULL) {
         return NULL;
@@ -94,8 +94,8 @@ jxl_container_reader *jxl_container_reader_create(jxl_allocator_state *alloc) {
     return reader;
 }
 
-void jxl_container_reader_destroy(jxl_allocator_state *alloc, jxl_container_reader *reader) {
-    jxl_allocator_state *a;
+void jxl_container_reader_destroy(jxl_context *alloc, jxl_container_reader *reader) {
+    jxl_context *a;
     if (reader == NULL) {
         return;
     }

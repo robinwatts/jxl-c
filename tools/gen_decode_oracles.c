@@ -88,20 +88,20 @@ static jxl_frame *load_modular_frame(const char *decode_dir, const char *fixture
     jxl_bs_init(&bs, cs, cs_len);
     memset(&image, 0, sizeof(image));
     if (jxl_image_header_parse(&bs, &image) != JXL_BS_OK) {
-        jxl_free(&g_alloc, cs);
+        jxl_free_state(&g_alloc, cs);
         return NULL;
     }
 
     frame = malloc(sizeof(*frame));
     if (frame == NULL) {
-        jxl_free(&g_alloc, cs);
+        jxl_free_state(&g_alloc, cs);
         return NULL;
     }
     jxl_frame_init(frame);
     if (jxl_frame_parse(&g_alloc, &bs, &image, frame) != JXL_FRAME_OK) {
         jxl_frame_free(&g_alloc, frame);
         free(frame);
-        jxl_free(&g_alloc, cs);
+        jxl_free_state(&g_alloc, cs);
         return NULL;
     }
 
@@ -113,7 +113,7 @@ static jxl_frame *load_modular_frame(const char *decode_dir, const char *fixture
     if (consumed != frame->toc.total_size || !jxl_frame_is_loading_done(frame)) {
         jxl_frame_free(&g_alloc, frame);
         free(frame);
-        jxl_free(&g_alloc, cs);
+        jxl_free_state(&g_alloc, cs);
         return NULL;
     }
 
@@ -268,7 +268,7 @@ static int write_pass_group_offsets(const char *fixtures_dir, const char *oracle
         fprintf(out, "%s %zu\n", fixtures[i], bits);
         jxl_frame_free(&g_alloc, frame);
         free(frame);
-        jxl_free(&g_alloc, cs);
+        jxl_free_state(&g_alloc, cs);
     }
 
     fclose(out);
@@ -314,7 +314,7 @@ static int write_transformed_layouts(const char *fixtures_dir, const char *oracl
             jxl_ma_config_destroy(&g_alloc, &global_ma);
             jxl_frame_free(&g_alloc, frame);
             free(frame);
-            jxl_free(&g_alloc, cs);
+            jxl_free_state(&g_alloc, cs);
             fclose(out);
             return 1;
         }
@@ -323,7 +323,7 @@ static int write_transformed_layouts(const char *fixtures_dir, const char *oracl
         jxl_ma_config_destroy(&g_alloc, &global_ma);
         jxl_frame_free(&g_alloc, frame);
         free(frame);
-        jxl_free(&g_alloc, cs);
+        jxl_free_state(&g_alloc, cs);
     }
 
     fclose(out);

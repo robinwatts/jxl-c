@@ -35,7 +35,7 @@ static jxl_frame_status_t vardct_to_frame(jxl_vardct_status_t st) {
     }
 }
 
-jxl_frame_status_t jxl_lf_global_parse_prefix(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_lf_global_parse_prefix(jxl_context *alloc, jxl_bs *bs,
                                               const jxl_parsed_image_header *image,
                                               const jxl_frame_header *frame,
                                               jxl_patches *patches_out, jxl_splines *splines_out,
@@ -106,7 +106,7 @@ void jxl_lf_global_init(jxl_lf_global *lf) {
     jxl_modular_image_destination_init(&lf->gmodular);
 }
 
-void jxl_lf_global_free(jxl_allocator_state *alloc, jxl_lf_global *lf) {
+void jxl_lf_global_free(jxl_context *alloc, jxl_lf_global *lf) {
     if (lf == NULL) {
         return;
     }
@@ -132,7 +132,7 @@ void jxl_lf_global_free(jxl_allocator_state *alloc, jxl_lf_global *lf) {
     lf->has_splines = 0;
 }
 
-jxl_frame_status_t jxl_lf_global_consume(jxl_allocator_state *alloc, jxl_bs *bs,
+jxl_frame_status_t jxl_lf_global_consume(jxl_context *alloc, jxl_bs *bs,
                                          const jxl_lf_global_params *params, jxl_lf_global *out) {
     int has_ma;
     jxl_modular_params mod_params;

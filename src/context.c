@@ -153,7 +153,7 @@ jxl_status_t jxl_context_create(const jxl_context_options *opts, jxl_context **o
 
     jxl_allocator_init(&scratch, opts != NULL ? &opts->alloc : NULL);
 
-    ctx = jxl_alloc(&scratch, sizeof(*ctx));
+    ctx = jxl_alloc_state(&scratch, sizeof(*ctx));
     if (ctx == NULL) {
         return JXL_ERROR_OUT_OF_MEMORY;
     }
@@ -162,7 +162,7 @@ jxl_status_t jxl_context_create(const jxl_context_options *opts, jxl_context **o
 #if defined(JXL_C_ENABLE_JPEG_ENCODER)
     if (!jxl_jpeg_encoder_context_init(ctx)) {
         jxl_context_fini_inplace(ctx);
-        jxl_free(&scratch, ctx);
+        jxl_free_state(&scratch, ctx);
         return JXL_ERROR_OUT_OF_MEMORY;
     }
 #endif
@@ -175,13 +175,5 @@ void jxl_context_destroy(jxl_context *ctx) {
         return;
     }
     jxl_context_fini_inplace(ctx);
-    jxl_ctx_free(ctx, ctx);
-}
-
-jxl_allocator_state *jxl_context_alloc_state(jxl_context *ctx) {
-    return ctx != NULL ? &ctx->alloc : NULL;
-}
-
-const jxl_allocator_state *jxl_context_alloc_state_const(const jxl_context *ctx) {
-    return ctx != NULL ? &ctx->alloc : NULL;
+    jxl_free(ctx, ctx);
 }

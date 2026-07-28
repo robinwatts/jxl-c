@@ -106,30 +106,30 @@ typedef struct jxl_jbr_reconstructor {
     size_t intermarker_length_ptr;
 } jxl_jbr_reconstructor;
 
-void jxl_jbr_scan_state_init(jxl_jbr_scan_state *state, jxl_allocator_state *alloc, size_t num_comps);
-void jxl_jbr_scan_state_free(jxl_allocator_state *alloc, jxl_jbr_scan_state *state);
+void jxl_jbr_scan_state_init(jxl_jbr_scan_state *state, jxl_context *alloc, size_t num_comps);
+void jxl_jbr_scan_state_free(jxl_context *alloc, jxl_jbr_scan_state *state);
 
-jxl_jbr_status jxl_jbr_process_sequential(jxl_jbr_scan_state *state, jxl_allocator_state *alloc,
+jxl_jbr_status jxl_jbr_process_sequential(jxl_jbr_scan_state *state, jxl_context *alloc,
                                           size_t component_idx, const jxl_jbr_huffman_table *dc_table,
                                           const jxl_jbr_huffman_table *ac_table, int16_t dc,
                                           const int16_t *ac, size_t ac_len, int has_extra_zero_runs,
                                           uint32_t extra_zero_runs);
 
 jxl_jbr_status jxl_jbr_process_progressive_first(jxl_jbr_scan_state *state,
-                                                 jxl_allocator_state *alloc, size_t component_idx,
+                                                 jxl_context *alloc, size_t component_idx,
                                                  const jxl_jbr_huffman_table *dc_table,
                                                  const jxl_jbr_huffman_table *ac_table, int has_dc,
                                                  int16_t dc, const int16_t *ac, size_t ac_len,
                                                  int has_extra_zero_runs, uint32_t extra_zero_runs);
 
 jxl_jbr_status jxl_jbr_process_progressive_refinement(jxl_jbr_scan_state *state,
-                                                      jxl_allocator_state *alloc,
+                                                      jxl_context *alloc,
                                                       const jxl_jbr_huffman_table *ac_table,
                                                       int has_dc, int16_t dc, const int16_t *ac,
                                                       size_t ac_len, int has_extra_zero_runs,
                                                       uint32_t extra_zero_runs);
 
-jxl_jbr_status jxl_jbr_process_scan(jxl_jbr_reconstructor *recon, jxl_allocator_state *alloc,
+jxl_jbr_status jxl_jbr_process_scan(jxl_jbr_reconstructor *recon, jxl_context *alloc,
                                     int scan_type, const jxl_jbr_scan_params *params,
                                     jxl_jbr_output *out);
 

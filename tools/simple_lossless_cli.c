@@ -260,14 +260,14 @@ int main(int argc, char **argv) {
     out_file = fopen(out_path, "wb");
     if (!out_file) {
         fprintf(stderr, "error opening %s: %s\n", out_path, strerror(errno));
-        jxl_ctx_free(ctx, encoded);
+        jxl_free(ctx, encoded);
         jxl_context_destroy(ctx);
         return 1;
     }
     if (fwrite(encoded, 1, encoded_len, out_file) != encoded_len)
         fprintf(stderr, "error writing to %s: %s\n", out_path, strerror(errno));
     fclose(out_file);
-    jxl_ctx_free(ctx, encoded);
+    jxl_free(ctx, encoded);
     jxl_context_destroy(ctx);
     return 0;
 }

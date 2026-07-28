@@ -94,7 +94,7 @@ typedef struct {
     jxl_context *ctx;
     jxl_const_subgrid_f32 lf;
     jxl_subgrid_f32 coeff;
-    jxl_allocator_state *alloc;
+    jxl_context *alloc;
 } jxl_transform_varblocks_ctx;
 
 static void transform_varblock_cb(const jxl_varblock_info *info, void *ctx_void) {
@@ -159,7 +159,7 @@ static void transform_varblock_cb(const jxl_varblock_info *info, void *ctx_void)
     jxl_render_transform_varblock(ctx->ctx, ctx->alloc, block, info->dct_select);
 }
 
-static void transform_varblocks_channel(jxl_context *ctx, jxl_allocator_state *alloc,
+static void transform_varblocks_channel(jxl_context *ctx, jxl_context *alloc,
                                       jxl_const_subgrid_f32 lf, jxl_subgrid_f32 coeff,
                                       jxl_channel_shift shift, jxl_block_info_subgrid block_info) {
     jxl_transform_varblocks_ctx vctx = {0};
@@ -171,7 +171,7 @@ static void transform_varblocks_channel(jxl_context *ctx, jxl_allocator_state *a
     jxl_for_each_varblocks(block_info, shift, transform_varblock_cb, &vctx);
 }
 
-void jxl_render_transform_varblocks(jxl_context *ctx, jxl_allocator_state *alloc,
+void jxl_render_transform_varblocks(jxl_context *ctx, jxl_context *alloc,
                                     const jxl_const_subgrid_f32 lf[3],
                                     jxl_subgrid_f32 coeff_out[3],
                                     const jxl_channel_shift shifts_cbycr[3],

@@ -109,7 +109,7 @@ void jxl_modular_transformed_subimage_init(jxl_modular_transformed_subimage *sub
     }
 }
 
-static void subimage_teardown_header(jxl_allocator_state *alloc,
+static void subimage_teardown_header(jxl_context *alloc,
                                      jxl_modular_transformed_subimage *sub) {
     if (sub == NULL) {
         return;
@@ -127,7 +127,7 @@ static void subimage_teardown_header(jxl_allocator_state *alloc,
     }
 }
 
-void jxl_modular_subimage_teardown_prepared(jxl_allocator_state *alloc,
+void jxl_modular_subimage_teardown_prepared(jxl_context *alloc,
                                             jxl_modular_transformed_subimage *sub) {
     if (sub == NULL) {
         return;
@@ -145,7 +145,7 @@ int jxl_modular_transformed_subimage_is_prepared(const jxl_modular_transformed_s
     return sub != NULL && sub->prepared;
 }
 
-void jxl_modular_transformed_subimage_free(jxl_allocator_state *alloc,
+void jxl_modular_transformed_subimage_free(jxl_context *alloc,
                                            jxl_modular_transformed_subimage *sub) {
     if (sub == NULL) {
         return;
@@ -172,7 +172,7 @@ void jxl_modular_global_groups_init(jxl_modular_global_groups *groups) {
     }
 }
 
-void jxl_modular_global_groups_free(jxl_allocator_state *alloc,
+void jxl_modular_global_groups_free(jxl_context *alloc,
                                     jxl_modular_global_groups *groups) {
     if (groups == NULL) {
         return;
@@ -195,7 +195,7 @@ void jxl_modular_global_groups_free(jxl_allocator_state *alloc,
     jxl_modular_global_groups_init(groups);
 }
 
-static jxl_modular_status_t subimage_reserve_tiles(jxl_allocator_state *alloc, jxl_modular_transformed_subimage *sub,
+static jxl_modular_status_t subimage_reserve_tiles(jxl_context *alloc, jxl_modular_transformed_subimage *sub,
                                                    size_t need) {
     size_t cap;
     jxl_modular_pg_tile *grown;
@@ -218,7 +218,7 @@ static jxl_modular_status_t subimage_reserve_tiles(jxl_allocator_state *alloc, j
     return JXL_MODULAR_OK;
 }
 
-static jxl_modular_status_t subimage_push_tile(jxl_allocator_state *alloc, jxl_modular_transformed_subimage *sub,
+static jxl_modular_status_t subimage_push_tile(jxl_context *alloc, jxl_modular_transformed_subimage *sub,
                                                size_t global_channel_idx,
                                                const jxl_modular_pg_tile *tile) {
     jxl_modular_status_t st;
@@ -245,7 +245,7 @@ static jxl_modular_status_t subimage_push_tile(jxl_allocator_state *alloc, jxl_m
     return JXL_MODULAR_OK;
 }
 
-static jxl_modular_status_t ensure_lf_groups(jxl_allocator_state *alloc, jxl_modular_global_groups *groups, size_t count) {
+static jxl_modular_status_t ensure_lf_groups(jxl_context *alloc, jxl_modular_global_groups *groups, size_t count) {
     size_t i;
     jxl_modular_transformed_subimage *grown;
     if (groups->num_lf_groups >= count) {
@@ -263,7 +263,7 @@ static jxl_modular_status_t ensure_lf_groups(jxl_allocator_state *alloc, jxl_mod
     return JXL_MODULAR_OK;
 }
 
-static jxl_modular_status_t ensure_pass_groups(jxl_allocator_state *alloc, jxl_modular_global_groups *groups,
+static jxl_modular_status_t ensure_pass_groups(jxl_context *alloc, jxl_modular_global_groups *groups,
                                                size_t num_passes, size_t num_groups) {
     size_t new_total;
     size_t new_passes;
@@ -304,7 +304,7 @@ static jxl_modular_transformed_subimage *pass_group_slot(jxl_modular_global_grou
     return &groups->pass_groups[(size_t)pass_idx * groups->num_groups + (size_t)group_idx];
 }
 
-jxl_modular_status_t jxl_modular_prepare_global_groups(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_modular_prepare_global_groups(jxl_context *alloc,
                                                      jxl_modular_image_destination *dest,
                                                        const jxl_frame_header *frame_header,
                                                        jxl_modular_global_groups *out) {
@@ -502,7 +502,7 @@ jxl_modular_global_groups *jxl_modular_dest_group_layout(jxl_modular_image_desti
     return dest->group_layout;
 }
 
-void jxl_modular_clear_group_layout(jxl_allocator_state *alloc,
+void jxl_modular_clear_group_layout(jxl_context *alloc,
                                     jxl_modular_image_destination *dest) {
     jxl_modular_global_groups *groups;
     if (dest == NULL) {
@@ -517,7 +517,7 @@ void jxl_modular_clear_group_layout(jxl_allocator_state *alloc,
     dest->group_layout_valid = 0;
 }
 
-jxl_modular_status_t jxl_modular_ensure_group_layout(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_modular_ensure_group_layout(jxl_context *alloc,
                                                    jxl_modular_image_destination *dest,
                                                    const jxl_frame_header *frame_header) {
     jxl_modular_global_groups *groups;
@@ -545,7 +545,7 @@ jxl_modular_status_t jxl_modular_ensure_group_layout(jxl_allocator_state *alloc,
 }
 
 jxl_modular_status_t jxl_modular_subimage_recursive_decode(
-    jxl_context *ctx, jxl_allocator_state *alloc, jxl_bs *bs, jxl_modular_transformed_subimage *sub,
+    jxl_context *ctx, jxl_context *alloc, jxl_bs *bs, jxl_modular_transformed_subimage *sub,
     jxl_modular_image_destination *dest, const jxl_modular_params *mod_params,
     const jxl_ma_config *global_ma, uint32_t stream_index, int allow_partial, int *out_complete) {
     jxl_modular_recursive_image recursive;

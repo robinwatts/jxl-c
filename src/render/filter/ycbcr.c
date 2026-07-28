@@ -120,7 +120,7 @@ static void upsample_row_horizontal(const float *row, size_t src_width, float *o
     }
 }
 
-int jxl_apply_jpeg_upsampling_single(jxl_allocator_state *alloc, jxl_const_subgrid_f32 src,
+int jxl_apply_jpeg_upsampling_single(jxl_context *alloc, jxl_const_subgrid_f32 src,
                                      jxl_channel_shift shift, uint32_t target_w, uint32_t target_h,
                                      float *dst, size_t dst_stride) {
                                          size_t y;

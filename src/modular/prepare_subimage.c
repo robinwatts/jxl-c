@@ -38,7 +38,7 @@ size_t jxl_modular_dest_work_grids_len(const jxl_modular_image_destination *dest
     return 0;
 }
 
-void jxl_modular_transformed_grids_teardown(jxl_allocator_state *alloc,
+void jxl_modular_transformed_grids_teardown(jxl_context *alloc,
                                             jxl_modular_image_destination *dest) {
     if (dest == NULL) {
         return;
@@ -53,7 +53,7 @@ void jxl_modular_transformed_grids_teardown(jxl_allocator_state *alloc,
     dest->channel_info_transformed = 0;
 }
 
-static jxl_modular_status_t transformed_grids_init_views(jxl_allocator_state *alloc,
+static jxl_modular_status_t transformed_grids_init_views(jxl_context *alloc,
                                                          jxl_modular_image_destination *dest) {
                                                              size_t i;
     if (dest == NULL || dest->image_channels == NULL) {
@@ -75,7 +75,7 @@ static jxl_modular_status_t transformed_grids_init_views(jxl_allocator_state *al
     return JXL_MODULAR_OK;
 }
 
-void jxl_modular_dest_finalize_after_inverse(jxl_allocator_state *alloc,
+void jxl_modular_dest_finalize_after_inverse(jxl_context *alloc,
                                              jxl_modular_image_destination *dest) {
     size_t i;
     size_t n;
@@ -160,7 +160,7 @@ jxl_modular_grid *jxl_modular_dest_channel_grid(jxl_modular_image_destination *d
     return g;
 }
 
-static jxl_modular_status_t transformed_insert_front(jxl_allocator_state *alloc, jxl_transformed_grid **grids, size_t *len,
+static jxl_modular_status_t transformed_insert_front(jxl_context *alloc, jxl_transformed_grid **grids, size_t *len,
                                                      const jxl_modular_grid *grid) {
     jxl_transformed_grid slot;
     jxl_transformed_grid_init_empty(&slot);
@@ -169,7 +169,7 @@ static jxl_modular_status_t transformed_insert_front(jxl_allocator_state *alloc,
 }
 
 /* Rust Transform::transform_channels for palette (dest + pass-group prepare). */
-static jxl_modular_status_t apply_palette_transform(jxl_allocator_state *alloc, const jxl_transform_palette *pal,
+static jxl_modular_status_t apply_palette_transform(jxl_context *alloc, const jxl_transform_palette *pal,
                                                     jxl_transformed_grid **grids, size_t *grids_len,
                                                     const jxl_modular_grid *meta_channels,
                                                     size_t *work_meta_len) {
@@ -228,7 +228,7 @@ static jxl_modular_status_t apply_palette_transform(jxl_allocator_state *alloc, 
 }
 
 /* Rust Transform::transform_channels for squeeze (dest + pass-group prepare). */
-static jxl_modular_status_t apply_squeeze_transform(jxl_allocator_state *alloc, const jxl_transform_squeeze *sq,
+static jxl_modular_status_t apply_squeeze_transform(jxl_context *alloc, const jxl_transform_squeeze *sq,
                                                     jxl_transformed_grid **grids,
                                                     size_t *grids_len) {
                                                         size_t si;
@@ -293,7 +293,7 @@ static jxl_modular_status_t apply_squeeze_transform(jxl_allocator_state *alloc, 
     return JXL_MODULAR_OK;
 }
 
-jxl_modular_status_t jxl_modular_dest_sync_image_channels(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_modular_dest_sync_image_channels(jxl_context *alloc,
                                                           jxl_modular_image_destination *dest) {
     size_t n;
     if (dest == NULL || !dest->subimage_grids_prepared) {
@@ -339,7 +339,7 @@ static void sync_transformed_dims_from_grids(jxl_modular_image_destination *dest
     }
 }
 
-static jxl_modular_status_t dest_init_transformed_channels(jxl_allocator_state *alloc, jxl_modular_image_destination *dest) {
+static jxl_modular_status_t dest_init_transformed_channels(jxl_context *alloc, jxl_modular_image_destination *dest) {
     jxl_modular_channels_free(alloc, &dest->transformed_channels);
     jxl_modular_channels_init(&dest->transformed_channels);
     if (dest->channels.info_len == 0) {
@@ -357,7 +357,7 @@ static jxl_modular_status_t dest_init_transformed_channels(jxl_allocator_state *
 }
 
 jxl_modular_status_t jxl_modular_channels_transform_info(
-    jxl_allocator_state *alloc, jxl_modular_image_destination *dest, jxl_modular_channels *out) {
+    jxl_context *alloc, jxl_modular_image_destination *dest, jxl_modular_channels *out) {
     size_t i;
     const jxl_modular_channels *src;
     if (dest == NULL || out == NULL) {
@@ -384,7 +384,7 @@ jxl_modular_status_t jxl_modular_channels_transform_info(
     return JXL_MODULAR_OK;
 }
 
-jxl_modular_status_t jxl_modular_image_prepare_subimage_grids(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_modular_image_prepare_subimage_grids(jxl_context *alloc,
                                                               jxl_modular_image_destination *dest) {
     size_t i;
     jxl_modular_status_t st;
@@ -467,7 +467,7 @@ size_t jxl_modular_gmodular_channel_count(jxl_modular_image_destination *dest) {
     return count;
 }
 
-jxl_modular_status_t jxl_modular_prepare_gmodular(jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_modular_prepare_gmodular(jxl_context *alloc,
                                                   jxl_modular_image_destination *dest) {
     if (dest == NULL || dest->group_dim == 0) {
         return JXL_MODULAR_BITSTREAM_ERROR;
@@ -475,7 +475,7 @@ jxl_modular_status_t jxl_modular_prepare_gmodular(jxl_allocator_state *alloc,
     return jxl_modular_image_prepare_subimage_grids(alloc, dest);
 }
 
-jxl_modular_status_t jxl_modular_gmodular_finish(jxl_context *ctx, jxl_allocator_state *alloc,
+jxl_modular_status_t jxl_modular_gmodular_finish(jxl_context *ctx, jxl_context *alloc,
                                                  jxl_modular_image_destination *dest,
                                                  uint32_t frame_width, uint32_t frame_height,
                                                  uint32_t bit_depth,
@@ -500,7 +500,7 @@ jxl_modular_status_t jxl_modular_gmodular_finish(jxl_context *ctx, jxl_allocator
 }
 
 jxl_modular_status_t jxl_modular_recursive_image_prepare_subimage(
-    jxl_allocator_state *alloc, jxl_modular_recursive_image *recursive,
+    jxl_context *alloc, jxl_modular_recursive_image *recursive,
     jxl_modular_transformed_subimage *sub, jxl_modular_image_destination *dest) {
     size_t ti;
     size_t i;
