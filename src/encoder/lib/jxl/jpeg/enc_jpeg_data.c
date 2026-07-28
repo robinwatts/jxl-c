@@ -203,10 +203,10 @@ static inline bool jxl_is_jpg(const jxl_bytes* bytes) {
 jxl_status jxl_set_color_encoding_from_jpeg_data(jxl_context* ctx,
                                     const jxl_cms_interface* cms,
                                     const jxl_jpeg_data* jpg,
-                                    jxl_enc_color_encoding* color_encoding) {
+                                    jxl_enc_color_encoding* colour_encoding) {
   jxl_icc_bytes icc_profile;
   jxl_array_construct_empty(&icc_profile,
-                            color_encoding->storage_.icc.ctx);
+                            colour_encoding->storage_.icc.ctx);
   jxl_bytes icc_tag = jxl_bytes_make(kIccProfileTag, sizeof(kIccProfileTag));
   if (!jxl_status_ok(jxl_parse_chunked_marker(jpg, kApp2, &icc_tag, &icc_profile))) {
     JXL_WARNING("ReJPEG: corrupted ICC profile\n");
@@ -221,9 +221,9 @@ jxl_status jxl_set_color_encoding_from_jpeg_data(jxl_context* ctx,
       jxl_array_destroy(&icc_profile);
       return JXL_FAILURE("Missing library context for sRGB encoding");
     }
-    JXL_RETURN_IF_ERROR(jxl_enc_color_encoding_copy_from(color_encoding, srgb));
+    JXL_RETURN_IF_ERROR(jxl_enc_color_encoding_copy_from(colour_encoding, srgb));
   } else {
-    status = jxl_enc_color_encoding_set_icc(color_encoding, &icc_profile, cms);
+    status = jxl_enc_color_encoding_set_icc(colour_encoding, &icc_profile, cms);
   }
   jxl_array_destroy(&icc_profile);
   return status;

@@ -18,7 +18,7 @@
 #ifndef JXL_CMS_INTERFACE_H_
 #define JXL_CMS_INTERFACE_H_
 
-#include <jxl/color_encoding.h>
+#include <jxl/colour_encoding.h>
 #include <jxl/types.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -32,14 +32,14 @@ extern "C" {
  * @param user_data @ref jxl_cms_interface::set_fields_data passed as-is.
  * @param icc_data the ICC data to parse.
  * @param icc_size how many bytes of icc_data are valid.
- * @param c a @ref jxl_color_encoding to populate if applicable.
+ * @param c a @ref jxl_colour_encoding to populate if applicable.
  * @param cmyk a boolean to set to whether the colorspace is a CMYK colorspace.
  * @return Whether the relevant fields in @p c were successfully populated.
  */
 typedef JXL_BOOL (*jxl_cms_set_fields_from_icc_func)(void* user_data,
                                                         const uint8_t* icc_data,
                                                         size_t icc_size,
-                                                        jxl_color_encoding* c,
+                                                        jxl_colour_encoding* c,
                                                         JXL_BOOL* cmyk);
 
 /** Represents an input or output colorspace to a color transform, as a
@@ -56,7 +56,7 @@ typedef struct {
    * ICC representation of the colorspace. If some are "unknown", those that are
    * not are still valid and can still be used on their own if they are useful.
    */
-  jxl_color_encoding color_encoding;
+  jxl_colour_encoding colour_encoding;
 
   /** Number of components per pixel. This can be deduced from the other
    * representations of the colorspace but is provided for convenience and
@@ -227,7 +227,7 @@ typedef void (*jxl_cms_destroy_func)(void*);
 typedef struct {
   /** CMS-specific data that will be passed to @ref set_fields_from_icc. */
   void* set_fields_data;
-  /** Populates a @ref jxl_color_encoding from an ICC profile. */
+  /** Populates a @ref jxl_colour_encoding from an ICC profile. */
   jxl_cms_set_fields_from_icc_func set_fields_from_icc;
 
   /** CMS-specific data that will be passed to @ref init. */

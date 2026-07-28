@@ -437,8 +437,8 @@ static int jxl_required_codestream_level(const jxl_encoder* enc) {
   const uint64_t xsize = jxl_size_header_x_size(&enc->metadata.size);
   const uint64_t ysize = jxl_size_header_y_size(&enc->metadata.size);
   size_t icc_size = 0;
-  if (jxl_enc_color_encoding_want_icc(&m->color_encoding)) {
-    icc_size = jxl_array_len(jxl_enc_color_encoding_icc(&m->color_encoding));
+  if (jxl_enc_color_encoding_want_icc(&m->colour_encoding)) {
+    icc_size = jxl_array_len(jxl_enc_color_encoding_icc(&m->colour_encoding));
   }
 
   if (xsize > (1ull << 30ull) || ysize > (1ull << 30ull) ||
@@ -472,7 +472,7 @@ static jxl_status_t jxl_setup_metadata_from_jpeg(jxl_encoder* enc,
     return JXL_OK;
   }
   if (!jxl_status_ok(jxl_set_color_encoding_from_jpeg_data(
-          enc->ctx, &enc->cms, jpeg_data, &enc->metadata.m.color_encoding))) {
+          enc->ctx, &enc->cms, jpeg_data, &enc->metadata.m.colour_encoding))) {
     return JXL_API_ERROR(
         enc, JXL_ERROR_INVALID_INPUT,
         "Error decoding the ICC profile embedded in the input JPEG");
@@ -563,10 +563,10 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
       return JXL_API_ERROR_AS_STATUS(self, JXL_ERROR_GENERIC,
                            "Failed to write codestream header");
     }
-    if (jxl_enc_color_encoding_want_icc(&self->metadata.m.color_encoding)) {
+    if (jxl_enc_color_encoding_want_icc(&self->metadata.m.colour_encoding)) {
       jxl_bytes icc_bytes = jxl_bytes_make(
-          jxl_array_data_const(jxl_enc_color_encoding_icc(&self->metadata.m.color_encoding)),
-          jxl_array_len(jxl_enc_color_encoding_icc(&self->metadata.m.color_encoding)));
+          jxl_array_data_const(jxl_enc_color_encoding_icc(&self->metadata.m.colour_encoding)),
+          jxl_array_len(jxl_enc_color_encoding_icc(&self->metadata.m.colour_encoding)));
       if (!jxl_status_ok(jxl_write_icc(&icc_bytes, &writer, kLayerHeader))) {
         jxl_bit_writer_destroy(&writer);
         return JXL_API_ERROR_AS_STATUS(self, JXL_ERROR_GENERIC,
@@ -670,7 +670,7 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
       JXL_MAX(24u, max_bits_per_sample + 3);
   size_t upper_bound_on_compressed_size_bits =
       jxl_codec_metadata_x_size(&self->metadata) * jxl_codec_metadata_y_size(&self->metadata) *
-      jxl_enc_color_encoding_channels(&self->metadata.m.color_encoding) * bits_per_channels_estimate;
+      jxl_enc_color_encoding_channels(&self->metadata.m.colour_encoding) * bits_per_channels_estimate;
   size_t upper_bound_on_compressed_size_bytes =
       0x100000 + (upper_bound_on_compressed_size_bits >> 3);
   bool use_large_box = upper_bound_on_compressed_size_bytes >=

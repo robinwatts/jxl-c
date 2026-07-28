@@ -630,7 +630,7 @@ static inline bool jxl_frame_header_can_be_referenced(const jxl_frame_header* se
 static inline void jxl_frame_header_init(jxl_frame_header* self,
                                    const jxl_codec_metadata* metadata) {
   jxl_context* mm =
-      metadata != NULL ? metadata->m.color_encoding.storage_.icc.ctx
+      metadata != NULL ? metadata->m.colour_encoding.storage_.icc.ctx
                        : NULL;
   self->encoding = kModular;
   self->frame_type = kRegularFrame;

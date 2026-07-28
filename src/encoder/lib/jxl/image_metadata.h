@@ -430,7 +430,7 @@ typedef struct jxl_image_metadata {
   // the decoder can receive the pixels in without needing a CMS.
   bool xyb_encoded;
 
-  jxl_enc_color_encoding color_encoding;
+  jxl_enc_color_encoding colour_encoding;
 
   // These values are initialized to defaults such that the 'extra_fields'
   // condition in VisitFields uses correctly initialized values.
@@ -477,7 +477,7 @@ static inline void jxl_image_metadata_construct_empty(jxl_image_metadata* self,
   jxl_fields_construct_empty(&self->intrinsic_size.fields);
   jxl_fields_construct_empty(&self->preview_size.fields);
   jxl_fields_construct_empty(&self->animation.fields);
-  jxl_enc_color_encoding_construct_empty(&self->color_encoding, mm);
+  jxl_enc_color_encoding_construct_empty(&self->colour_encoding, mm);
   self->orientation = 1;
   self->have_preview = false;
   self->have_animation = false;
@@ -486,13 +486,13 @@ static inline void jxl_image_metadata_construct_empty(jxl_image_metadata* self,
   self->extra_channel_info.ctx = mm;
 }
 static inline void jxl_image_metadata_destroy(jxl_image_metadata* self) {
-  jxl_enc_color_encoding_destroy(&self->color_encoding);
+  jxl_enc_color_encoding_destroy(&self->colour_encoding);
   jxl_extra_channel_infos_destroy(&self->extra_channel_info);
 }
 
 static inline void jxl_image_metadata_init(jxl_image_metadata* self) {
   jxl_enc_bit_depth_init(&self->bit_depth);
-  jxl_enc_color_encoding_init(&self->color_encoding);
+  jxl_enc_color_encoding_init(&self->colour_encoding);
   jxl_tone_mapping_init(&self->tone_mapping);
   jxl_size_header_init(&self->intrinsic_size);
   jxl_preview_header_init(&self->preview_size);

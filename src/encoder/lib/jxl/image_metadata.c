@@ -311,7 +311,7 @@ jxl_status jxl_image_metadata_visit_fields(jxl_image_metadata* self, jxl_visitor
   }
 
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, true, &self->xyb_encoded));
-  JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->color_encoding.fields));
+  JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->colour_encoding.fields));
   if (jxl_status_ok(jxl_visitor_conditional(visitor, extra_fields))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->tone_mapping.fields));
   }

@@ -718,7 +718,7 @@ jxl_status_t jxl_decoder_request_icc(jxl_decoder *dec, const uint8_t *icc, size_
     return JXL_OK;
 }
 
-jxl_status_t jxl_decoder_request_color_encoding(jxl_decoder *dec, jxl_colour_encoding enc) {
+jxl_status_t jxl_decoder_request_colour_encoding(jxl_decoder *dec, jxl_colour_encoding enc) {
     if (dec == NULL) {
         return JXL_ERROR_INVALID_INPUT;
     }

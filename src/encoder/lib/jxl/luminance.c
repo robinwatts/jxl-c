@@ -10,10 +10,10 @@
 
 
 void jxl_set_intensity_target(jxl_image_metadata* m) {
-  if (jxl_cms_custom_transfer_function_is_pq(jxl_enc_color_encoding_tf(&m->color_encoding))) {
+  if (jxl_cms_custom_transfer_function_is_pq(jxl_enc_color_encoding_tf(&m->colour_encoding))) {
     // Peak luminance of PQ as defined by SMPTE ST 2084:2014.
     jxl_image_metadata_set_intensity_target(m, 10000);
-  } else if (jxl_cms_custom_transfer_function_is_hlg(jxl_enc_color_encoding_tf(&m->color_encoding))) {
+  } else if (jxl_cms_custom_transfer_function_is_hlg(jxl_enc_color_encoding_tf(&m->colour_encoding))) {
     // Nominal display peak luminance used as a reference by
     // Rec. ITU-R BT.2100-2.
     jxl_image_metadata_set_intensity_target(m, 1000);

@@ -93,11 +93,11 @@ jxl_status jxl_enc_color_encoding_visit_fields(jxl_enc_color_encoding* self, jxl
   // Always send even if self->want_icc_ because self affects decoding.
   // We can skip the white point/primaries because they do not.
   {
-    uint32_t color_space = (uint32_t)(self->storage_.color_space);
+    uint32_t colour_space = (uint32_t)(self->storage_.colour_space);
     JXL_QUIET_RETURN_IF_ERROR(
-        jxl_visitor_enum(visitor, (uint32_t)(kRGB), &color_space,
+        jxl_visitor_enum(visitor, (uint32_t)(kRGB), &colour_space,
                       jxl_enum_bits_color_space(), jxl_enum_name_color_space()));
-    self->storage_.color_space = (jxl_color_space)(color_space);
+    self->storage_.colour_space = (jxl_colour_space)(colour_space);
   }
 
   if (jxl_status_ok(jxl_visitor_conditional(visitor, !jxl_enc_color_encoding_want_icc(self)))) {
@@ -136,7 +136,7 @@ jxl_status jxl_enc_color_encoding_visit_fields(jxl_enc_color_encoding* self, jxl
       }
     }
 
-    self->tf_.nonserialized_color_space = self->storage_.color_space;
+    self->tf_.nonserialized_color_space = self->storage_.colour_space;
     self->tf_.storage_ = self->storage_.tf;
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->tf_.fields));
     self->storage_.tf = self->tf_.storage_;
@@ -152,11 +152,11 @@ jxl_status jxl_enc_color_encoding_visit_fields(jxl_enc_color_encoding* self, jxl
     }
 
     // We didn't have ICC, so all self->fields should be known.
-    if (self->storage_.color_space == kColorSpaceUnknown ||
+    if (self->storage_.colour_space == kColorSpaceUnknown ||
         jxl_cms_custom_transfer_function_is_unknown(&self->storage_.tf)) {
       return JXL_FAILURE(
           "No ICC but cs %u and tf %u%s",
-          (unsigned int)(self->storage_.color_space),
+          (unsigned int)(self->storage_.colour_space),
           self->storage_.tf.have_gamma
               ? 0
               : (unsigned int)(self->storage_.tf.transfer_function),

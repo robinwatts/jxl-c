@@ -1,6 +1,4 @@
-/* Encoder-facing types. Avoid including jxl/decode_types.h here — its
- * colour enums / jxl_colour_encoding collide with include/jxl/color_encoding.h.
- */
+/* Encoder-facing pixel / bit-depth types (shared with CMS interface). */
 #ifndef JXL_TYPES_H_
 #define JXL_TYPES_H_
 

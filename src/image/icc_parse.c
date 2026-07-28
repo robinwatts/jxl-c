@@ -158,64 +158,74 @@ int jxl_icc_maps_to_srgb_display(const uint8_t *icc, size_t len) {
     return 1;
 }
 
-static jxl_rendering_intent_t icc_header_rendering_intent(const uint8_t *icc, size_t len) {
+static jxl_rendering_intent icc_header_rendering_intent(const uint8_t *icc, size_t len) {
     if (icc == NULL || len < 0x44) {
-        return JXL_RENDERING_RELATIVE;
+        return JXL_RENDERING_INTENT_RELATIVE;
     }
     switch (icc[0x43]) {
     case 0:
-        return JXL_RENDERING_PERCEPTUAL;
+        return JXL_RENDERING_INTENT_PERCEPTUAL;
     case 1:
-        return JXL_RENDERING_RELATIVE;
+        return JXL_RENDERING_INTENT_RELATIVE;
     case 2:
-        return JXL_RENDERING_SATURATION;
+        return JXL_RENDERING_INTENT_SATURATION;
     case 3:
-        return JXL_RENDERING_ABSOLUTE;
+        return JXL_RENDERING_INTENT_ABSOLUTE;
     default:
-        return JXL_RENDERING_RELATIVE;
+        return JXL_RENDERING_INTENT_RELATIVE;
     }
 }
 
-static jxl_status_t fill_rgb_encoding(jxl_colour_encoding *out, jxl_transfer_function_t tf,
-                                    jxl_rendering_intent_t ri) {
+static jxl_status_t fill_rgb_encoding(jxl_colour_encoding *out, jxl_transfer_function tf,
+                                    jxl_rendering_intent ri) {
     if (out == NULL) {
         return JXL_ERROR_INVALID_INPUT;
     }
     memset(out, 0, sizeof(*out));
     out->colour_space = JXL_COLOUR_SPACE_RGB;
-    out->white_point = JXL_COLOUR_WHITE_POINT_D65;
-    out->primaries = JXL_COLOUR_PRIMARIES_SRGB;
-    out->transfer = tf;
+    out->white_point = JXL_WHITE_POINT_D65;
+    out->white_point_xy[0] = 0.3127;
+    out->white_point_xy[1] = 0.3290;
+    out->primaries = JXL_PRIMARIES_SRGB;
+    out->primaries_red_xy[0] = 0.639998686;
+    out->primaries_red_xy[1] = 0.330010138;
+    out->primaries_green_xy[0] = 0.300003784;
+    out->primaries_green_xy[1] = 0.600003357;
+    out->primaries_blue_xy[0] = 0.150002046;
+    out->primaries_blue_xy[1] = 0.059997204;
+    out->transfer_function = tf;
     out->rendering_intent = ri;
     return JXL_OK;
 }
 
-static jxl_status_t fill_gray_encoding(jxl_colour_encoding *out, jxl_transfer_function_t tf,
-                                       jxl_rendering_intent_t ri) {
+static jxl_status_t fill_gray_encoding(jxl_colour_encoding *out, jxl_transfer_function tf,
+                                       jxl_rendering_intent ri) {
     if (out == NULL) {
         return JXL_ERROR_INVALID_INPUT;
     }
     memset(out, 0, sizeof(*out));
     out->colour_space = JXL_COLOUR_SPACE_GRAY;
-    out->white_point = JXL_COLOUR_WHITE_POINT_D65;
-    out->primaries = JXL_COLOUR_PRIMARIES_SRGB;
-    out->transfer = tf;
+    out->white_point = JXL_WHITE_POINT_D65;
+    out->white_point_xy[0] = 0.3127;
+    out->white_point_xy[1] = 0.3290;
+    out->primaries = JXL_PRIMARIES_SRGB;
+    out->transfer_function = tf;
     out->rendering_intent = ri;
     return JXL_OK;
 }
 
 jxl_status_t jxl_icc_parse_color_encoding(const uint8_t *icc, size_t len, jxl_colour_encoding *out) {
-    jxl_rendering_intent_t ri;
+    jxl_rendering_intent ri;
     if (icc == NULL || len < 128 || out == NULL) {
         return JXL_ERROR_INVALID_INPUT;
     }
     ri = icc_header_rendering_intent(icc, len);
 
     if (jxl_icc_maps_to_srgb_display(icc, len)) {
-        return fill_rgb_encoding(out, JXL_TRANSFER_SRGB, ri);
+        return fill_rgb_encoding(out, JXL_TRANSFER_FUNCTION_SRGB, ri);
     }
     if (jxl_icc_maps_to_linear_display(icc, len)) {
-        return fill_rgb_encoding(out, JXL_TRANSFER_LINEAR, ri);
+        return fill_rgb_encoding(out, JXL_TRANSFER_FUNCTION_LINEAR, ri);
     }
 
     if (memcmp(icc + 0x10, "GRAY", 4) == 0) {
@@ -225,10 +235,10 @@ jxl_status_t jxl_icc_parse_color_encoding(const uint8_t *icc, size_t len, jxl_co
         if (icc_tag_data(icc, len, "kTRC", &trc, &trc_len) ||
             icc_tag_data(icc, len, "rTRC", &trc, &trc_len)) {
             if (icc_trc_is_srgb(trc, trc_len)) {
-                return fill_gray_encoding(out, JXL_TRANSFER_SRGB, ri);
+                return fill_gray_encoding(out, JXL_TRANSFER_FUNCTION_SRGB, ri);
             }
             if (icc_trc_is_linear(trc, trc_len)) {
-                return fill_gray_encoding(out, JXL_TRANSFER_LINEAR, ri);
+                return fill_gray_encoding(out, JXL_TRANSFER_FUNCTION_LINEAR, ri);
             }
         }
     }

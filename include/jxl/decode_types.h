@@ -3,6 +3,7 @@
 #define JXL_DECODE_TYPES_H_
 
 #include <jxl/allocator.h>
+#include <jxl/colour_encoding.h>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -45,47 +46,6 @@ typedef struct {
     uint32_t left;
     uint32_t top;
 } jxl_crop;
-
-typedef enum {
-    JXL_COLOUR_SPACE_RGB = 0,
-    JXL_COLOUR_SPACE_GRAY = 1,
-    JXL_COLOUR_SPACE_XYB = 2,
-    JXL_COLOUR_SPACE_UNKNOWN = 255,
-} jxl_colour_space_t;
-
-typedef enum {
-    JXL_COLOUR_WHITE_POINT_D65 = 1,
-    JXL_COLOUR_WHITE_POINT_CUSTOM = 2,
-    JXL_COLOUR_WHITE_POINT_UNKNOWN = 255,
-} jxl_white_point_t;
-
-typedef enum {
-    JXL_COLOUR_PRIMARIES_SRGB = 1,
-    JXL_COLOUR_PRIMARIES_CUSTOM = 2,
-    JXL_COLOUR_PRIMARIES_UNKNOWN = 255,
-} jxl_primaries_t;
-
-typedef enum {
-    JXL_TRANSFER_SRGB = 1,
-    JXL_TRANSFER_LINEAR = 2,
-    JXL_TRANSFER_UNKNOWN = 255,
-} jxl_transfer_function_t;
-
-typedef enum {
-    JXL_RENDERING_PERCEPTUAL = 0,
-    JXL_RENDERING_RELATIVE = 1,
-    JXL_RENDERING_SATURATION = 2,
-    JXL_RENDERING_ABSOLUTE = 3,
-    JXL_RENDERING_UNKNOWN = 255,
-} jxl_rendering_intent_t;
-
-typedef struct {
-    jxl_colour_space_t colour_space;
-    jxl_white_point_t white_point;
-    jxl_primaries_t primaries;
-    jxl_transfer_function_t transfer;
-    jxl_rendering_intent_t rendering_intent;
-} jxl_colour_encoding;
 
 typedef struct {
     uint32_t width;

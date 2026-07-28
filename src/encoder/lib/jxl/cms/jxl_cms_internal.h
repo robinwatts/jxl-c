@@ -8,7 +8,7 @@
 
 // ICC profiles and color space conversions.
 
-#include <jxl/color_encoding.h>
+#include <jxl/colour_encoding.h>
 
 #include <math.h>
 #include <stddef.h>
@@ -329,7 +329,7 @@ static jxl_status jxl_write_iccs15_fixed16(float value, size_t pos,
   return jxl_ok_status();
 }
 
-static jxl_status jxl_create_icc_header(const jxl_color_encoding* c,
+static jxl_status jxl_create_icc_header(const jxl_colour_encoding* c,
                               jxl_array_u8* header) {
   // TODO(lode): choose color management engine name, e.g. "skia" if
   // integrated in skia.
@@ -343,7 +343,7 @@ static jxl_status jxl_create_icc_header(const jxl_color_encoding* c,
   jxl_write_icc_tag(kCmm, 4, header);
   jxl_write_icc_uint32(0x04400000u, 8, header);
   jxl_write_icc_tag("mntr", 12, header);
-  jxl_write_icc_tag(c->color_space == JXL_COLOR_SPACE_GRAY ? "GRAY" : "RGB ", 16,
+  jxl_write_icc_tag(c->colour_space == JXL_COLOUR_SPACE_GRAY ? "GRAY" : "RGB ", 16,
               header);
   jxl_write_icc_tag("XYZ ", 20, header);
 
@@ -444,11 +444,11 @@ static jxl_status jxl_create_icc_chad_tag(const jxl_matrix3x3* chad,
   return jxl_ok_status();
 }
 
-static void jxl_maybe_create_icccicp_tag(const jxl_color_encoding* c,
+static void jxl_maybe_create_icccicp_tag(const jxl_colour_encoding* c,
                                   jxl_array_u8* tags, size_t* offset,
                                   size_t* size, jxl_array_u8* tagtable,
                                   jxl_array_size* offsets) {
-  if (c->color_space != JXL_COLOR_SPACE_RGB) {
+  if (c->colour_space != JXL_COLOUR_SPACE_RGB) {
     return;
   }
   uint8_t primaries = 0;
@@ -514,20 +514,20 @@ static jxl_status jxl_create_icc_curv_para_tag(const float* params, size_t num_p
 
 // These strings are baked into Description - do not change.
 
-static const char* jxl_to_string_color_space(jxl_color_space color_space) {
-  switch (color_space) {
-    case JXL_COLOR_SPACE_RGB:
+static const char* jxl_to_string_color_space(jxl_colour_space colour_space) {
+  switch (colour_space) {
+    case JXL_COLOUR_SPACE_RGB:
       return "RGB";
-    case JXL_COLOR_SPACE_GRAY:
+    case JXL_COLOUR_SPACE_GRAY:
       return "Gra";
-    case JXL_COLOR_SPACE_XYB:
+    case JXL_COLOUR_SPACE_XYB:
       return "XYB";
-    case JXL_COLOR_SPACE_UNKNOWN:
+    case JXL_COLOUR_SPACE_UNKNOWN:
       return "CS?";
     default:
       // Should not happen - visitor fails if enum is invalid.
-      JXL_DEBUG_ABORT("Invalid jxl_color_space %u",
-                      (uint32_t)(color_space));
+      JXL_DEBUG_ABORT("Invalid jxl_colour_space %u",
+                      (uint32_t)(colour_space));
       return "Invalid";
   }
 }
@@ -629,14 +629,14 @@ static void jxl_append_number(jxl_array_char* out, double n) {
   jxl_append_c_str(out, data);
 }
 
-static void jxl_color_encoding_description_impl(const jxl_color_encoding* c,
+static void jxl_colour_encoding_description_impl(const jxl_colour_encoding* c,
                                          bool uniquename, jxl_array_char* out) {
 jxl_array_clear(out);
   // Return short names for the most common color spaces.
   // These names are returned regardless of rendering intent, and also there is
   // some tolerance regarding primaries and transfer function, so different
   // ColorEncodings can return the same short name.
-  if (c->color_space == JXL_COLOR_SPACE_RGB && !uniquename) {
+  if (c->colour_space == JXL_COLOUR_SPACE_RGB && !uniquename) {
     if (c->white_point == JXL_WHITE_POINT_D65) {
       if (c->transfer_function == JXL_TRANSFER_FUNCTION_SRGB) {
         if (c->primaries == JXL_PRIMARIES_SRGB) {
@@ -700,9 +700,9 @@ jxl_array_clear(out);
     }
   }
 
-  jxl_append_c_str(out, jxl_to_string_color_space(c->color_space));
+  jxl_append_c_str(out, jxl_to_string_color_space(c->colour_space));
 
-  bool explicit_wp_tf = (c->color_space != JXL_COLOR_SPACE_XYB);
+  bool explicit_wp_tf = (c->colour_space != JXL_COLOUR_SPACE_XYB);
   if (explicit_wp_tf) {
     jxl_append_char(out, '_');
     if (c->white_point == JXL_WHITE_POINT_CUSTOM) {
@@ -714,8 +714,8 @@ jxl_array_clear(out);
     }
   }
 
-  if ((c->color_space != JXL_COLOR_SPACE_GRAY) &&
-      (c->color_space != JXL_COLOR_SPACE_XYB)) {
+  if ((c->colour_space != JXL_COLOUR_SPACE_GRAY) &&
+      (c->colour_space != JXL_COLOUR_SPACE_XYB)) {
     jxl_append_char(out, '_');
     if (c->primaries == JXL_PRIMARIES_CUSTOM) {
       jxl_append_number(out, c->primaries_red_xy[0]);
@@ -749,7 +749,7 @@ jxl_array_clear(out);
   }
 }
 
-static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
+static jxl_status jxl_maybe_create_profile_impl(const jxl_colour_encoding* c,
                                      jxl_array_u8* icc) {
   jxl_status status = jxl_ok_status();
   jxl_context* mm = icc->ctx;
@@ -776,19 +776,19 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
   jxl_array_construct_empty(&icc_sum, mm);
 
   tf = c->transfer_function;
-  if (c->color_space == JXL_COLOR_SPACE_UNKNOWN ||
+  if (c->colour_space == JXL_COLOUR_SPACE_UNKNOWN ||
       tf == JXL_TRANSFER_FUNCTION_UNKNOWN) {
     status = jxl_error_status();  // Not an error
     goto done;
   }
 
-  switch (c->color_space) {
-    case JXL_COLOR_SPACE_RGB:
-    case JXL_COLOR_SPACE_GRAY:
+  switch (c->colour_space) {
+    case JXL_COLOUR_SPACE_RGB:
+    case JXL_COLOUR_SPACE_GRAY:
       break;  // OK
     default:
       status = JXL_FAILURE("Invalid CS %u",
-                           (unsigned int)(c->color_space));
+                           (unsigned int)(c->colour_space));
       goto done;
   }
 
@@ -800,7 +800,7 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
   // tag count, deferred to later
   jxl_write_icc_uint32(0, jxl_array_len(&tagtable), &tagtable);
 
-  jxl_color_encoding_description_impl(c, false, &description);
+  jxl_colour_encoding_description_impl(c, false, &description);
   jxl_create_icc_mluc_tag(jxl_array_data(&description), jxl_array_len(&description), &tags);
   jxl_finalize_icc_tag(&tags, &tag_offset, &tag_size);
   jxl_add_to_icc_tag_table("desc", tag_offset, tag_size, &tagtable, &offsets);
@@ -810,7 +810,7 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
   jxl_add_to_icc_tag_table("cprt", tag_offset, tag_size, &tagtable, &offsets);
 
   // TODO(eustas): isn't it the other way round: gray image has d50 jxl_white_point?
-  if (c->color_space == JXL_COLOR_SPACE_GRAY) {
+  if (c->colour_space == JXL_COLOUR_SPACE_GRAY) {
     jxl_color wtpt;
     status = jxl_ciexyz_from_white_ci_exy(c->white_point_xy[0], c->white_point_xy[1], &wtpt);
     if (!jxl_status_ok(status)) goto done;
@@ -824,7 +824,7 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
   jxl_finalize_icc_tag(&tags, &tag_offset, &tag_size);
   jxl_add_to_icc_tag_table("wtpt", tag_offset, tag_size, &tagtable, &offsets);
 
-  if (c->color_space != JXL_COLOR_SPACE_GRAY) {
+  if (c->colour_space != JXL_COLOUR_SPACE_GRAY) {
     // Chromatic adaptation matrix
     jxl_matrix3x3 chad;
     status = jxl_create_icc_chad_matrix(c->white_point_xy[0], c->white_point_xy[1], &chad);
@@ -836,7 +836,7 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
     jxl_add_to_icc_tag_table("chad", tag_offset, tag_size, &tagtable, &offsets);
   }
 
-  if (c->color_space == JXL_COLOR_SPACE_RGB) {
+  if (c->colour_space == JXL_COLOUR_SPACE_RGB) {
     jxl_matrix3x3 m;
     jxl_color r;
     jxl_color g;
@@ -933,7 +933,7 @@ static jxl_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
     }
   }
   jxl_finalize_icc_tag(&tags, &tag_offset, &tag_size);
-  if (c->color_space == JXL_COLOR_SPACE_GRAY) {
+  if (c->colour_space == JXL_COLOUR_SPACE_GRAY) {
     jxl_add_to_icc_tag_table("kTRC", tag_offset, tag_size, &tagtable, &offsets);
   } else {
     jxl_add_to_icc_tag_table("rTRC", tag_offset, tag_size, &tagtable, &offsets);
@@ -984,7 +984,7 @@ done:
 
 // NOTE: for XYB colorspace, the created profile can be used to transform a
 // *scaled* XYB image (created by ScaleXYB()) to another colorspace.
-static JXL_MAYBE_UNUSED jxl_status jxl_maybe_create_profile(const jxl_color_encoding* c,
+static JXL_MAYBE_UNUSED jxl_status jxl_maybe_create_profile(const jxl_colour_encoding* c,
                                                   jxl_array_u8* icc) {
   return jxl_maybe_create_profile_impl(c, icc);
 }

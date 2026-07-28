@@ -43,8 +43,9 @@ int main(void) {
         free(icc);
         return 1;
     }
-    if (enc.colour_space != JXL_COLOUR_SPACE_RGB || enc.transfer != JXL_TRANSFER_SRGB ||
-        enc.white_point != JXL_COLOUR_WHITE_POINT_D65 || enc.primaries != JXL_COLOUR_PRIMARIES_SRGB) {
+    if (enc.colour_space != JXL_COLOUR_SPACE_RGB ||
+        enc.transfer_function != JXL_TRANSFER_FUNCTION_SRGB ||
+        enc.white_point != JXL_WHITE_POINT_D65 || enc.primaries != JXL_PRIMARIES_SRGB) {
         fprintf(stderr, "unexpected parsed ICC colour encoding\n");
         free(icc);
         return 1;

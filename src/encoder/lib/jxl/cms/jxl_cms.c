@@ -6,7 +6,7 @@
 #include <jxl/cms.h>
 
 #include <jxl/cms_interface.h>
-#include <jxl/color_encoding.h>
+#include <jxl/colour_encoding.h>
 #include <jxl/types.h>
 
 #include <math.h>
@@ -128,11 +128,11 @@ static jxl_status jxl_decode_profile(const cmsContext context, const jxl_bytes* 
 }
 
 static uint32_t jxl_type64(const jxl_cms_color_encoding* c) {
-  if (c->color_space == kGray) return TYPE_GRAY_DBL;
+  if (c->colour_space == kGray) return TYPE_GRAY_DBL;
   return TYPE_RGB_DBL;
 }
 
-static jxl_color_space jxl_color_space_from_profile(const jxl_profile* profile) {
+static jxl_colour_space jxl_colour_space_from_profile(const jxl_profile* profile) {
   switch (cmsGetColorSpace(jxl_cms_owned_get(profile))) {
     case cmsSigRgbData:
     case cmsSigCmykData:
@@ -199,7 +199,7 @@ static jxl_status jxl_profile_equivalent_to_icc(const cmsContext context, const 
   const double init = 1E-3;
   const double step = 0.2;
 
-  if (c->color_space == kGray) {
+  if (c->colour_space == kGray) {
     // Finer sampling and replicate each component.
     for (in[0] = init; in[0] < 1.0; in[0] += step / 8) {
       cmsDoTransform(jxl_cms_owned_get(&xform1), in, out1, 1);
@@ -293,7 +293,7 @@ JXL_MUST_USE_RESULT static cmsCIEXYZ jxl_unadapted_white_point(const cmsContext 
 static jxl_status jxl_identify_primaries(const cmsContext context, const jxl_profile* profile,
                          const cmsCIEXYZ* wp_unadapted, jxl_cms_color_encoding* c) {
   if (!jxl_cms_color_encoding_has_primaries(c)) return jxl_ok_status();
-  if (jxl_color_space_from_profile(profile) == kColorSpaceUnknown) return jxl_ok_status();
+  if (jxl_colour_space_from_profile(profile) == kColorSpaceUnknown) return jxl_ok_status();
 
   // These were adapted to the profile illuminant before storing in the profile->
   const cmsCIEXYZ* adapted_r = (const cmsCIEXYZ*)(
@@ -358,7 +358,7 @@ static jxl_status jxl_identify_primaries(const cmsContext context, const jxl_pro
 
 static jxl_status jxl_detect_transfer_function(const cmsContext context, const jxl_profile* profile,
                               jxl_cms_color_encoding* JXL_RESTRICT c) {
-  JXL_ENSURE(c->color_space != kXYB);
+  JXL_ENSURE(c->colour_space != kXYB);
 
   float gamma = 0;
   {
@@ -399,7 +399,7 @@ static jxl_status jxl_detect_transfer_function(const cmsContext context, const j
   if (gamma != 0 && jxl_status_ok(jxl_cms_custom_transfer_function_set_gamma(&c->tf, gamma))) {
     jxl_icc_bytes icc_test;
     jxl_array_construct_empty(&icc_test, (jxl_context*)cmsGetContextUserData(context));
-    jxl_color_encoding external = jxl_cms_color_encoding_to_external(c);
+    jxl_colour_encoding external = jxl_cms_color_encoding_to_external(c);
     if (jxl_status_ok(jxl_maybe_create_profile(&external, &icc_test)) &&
         jxl_status_ok(jxl_profile_equivalent_to_icc(context, profile, &icc_test, c))) {
       return jxl_ok_status();
@@ -416,7 +416,7 @@ static jxl_status jxl_detect_transfer_function(const cmsContext context, const j
 
     jxl_icc_bytes icc_test;
     jxl_array_construct_empty(&icc_test, (jxl_context*)cmsGetContextUserData(context));
-    jxl_color_encoding external = jxl_cms_color_encoding_to_external(c);
+    jxl_colour_encoding external = jxl_cms_color_encoding_to_external(c);
     if (jxl_status_ok(jxl_maybe_create_profile(&external, &icc_test)) &&
         jxl_status_ok(jxl_profile_equivalent_to_icc(context, profile, &icc_test, c))) {
       return jxl_ok_status();
@@ -457,7 +457,7 @@ static bool jxl_apply_cicp(const uint8_t color_primaries,
   const jxl_transfer_function tf = (jxl_transfer_function)(transfer_characteristics);
   if (!jxl_is_known_transfer_function(tf)) return false;
   if (!jxl_is_known_color_primaries(color_primaries)) return false;
-  c->color_space = kRGB;
+  c->colour_space = kRGB;
   jxl_cms_custom_transfer_function_set_transfer_function(&c->tf, tf);
   if (primaries == kPrimariesP3) {
     c->white_point = kWhitePointDCI;
@@ -473,7 +473,7 @@ static bool jxl_apply_cicp(const uint8_t color_primaries,
 }
 
 static JXL_BOOL jxl_cms_set_fields_from_icc(void* user_data, const uint8_t* icc_data,
-                                size_t icc_size, jxl_color_encoding* c,
+                                size_t icc_size, jxl_colour_encoding* c,
                                 JXL_BOOL* cmyk) {
   if (c == NULL) return JXL_FALSE;
   if (cmyk == NULL) return JXL_FALSE;
@@ -481,7 +481,7 @@ static JXL_BOOL jxl_cms_set_fields_from_icc(void* user_data, const uint8_t* icc_
   *cmyk = JXL_FALSE;
 
   // In case parsing fails, mark the jxl_cms_color_encoding as invalid.
-  c->color_space = JXL_COLOR_SPACE_UNKNOWN;
+  c->colour_space = JXL_COLOUR_SPACE_UNKNOWN;
   c->transfer_function = JXL_TRANSFER_FUNCTION_UNKNOWN;
 
   if (icc_size == 0) {
@@ -532,7 +532,7 @@ static JXL_BOOL jxl_cms_set_fields_from_icc(void* user_data, const uint8_t* icc_
     return JXL_TRUE;
   }
 
-  c_enc.color_space = jxl_color_space_from_profile(&profile);
+  c_enc.colour_space = jxl_colour_space_from_profile(&profile);
   if (cmsGetColorSpace(jxl_cms_owned_get(&profile)) == cmsSigCmykData) {
     *cmyk = JXL_TRUE;
     *c = jxl_cms_color_encoding_to_external(&c_enc);
@@ -549,13 +549,13 @@ static JXL_BOOL jxl_cms_set_fields_from_icc(void* user_data, const uint8_t* icc_
     }
   }
 
-  // Relies on color_space.
+  // Relies on colour_space.
   if (!jxl_status_ok(jxl_identify_primaries(context, &profile, &wp_unadapted, &c_enc))) {
     jxl_cms_owned_destroy(&profile);
     return JXL_FALSE;
   }
 
-  // Relies on color_space/white point/primaries being set already.
+  // Relies on colour_space/white point/primaries being set already.
   if (!jxl_status_ok(jxl_detect_transfer_function(context, &profile, &c_enc))) {
     jxl_cms_owned_destroy(&profile);
     return JXL_FALSE;
