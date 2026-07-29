@@ -619,4 +619,4 @@ Rust uses **`i16` modular storage by default** when `ImageMetadata.modular_16bit
 
 1. **Phase 9 — Hardening (in progress):** libFuzzer (`decode_fuzzer`), ASan/UBSan CI (`c-sanitizers.yml`), `bench_decode` tool
 2. **`jxl_context` plan:** complete — see `include/jxl/context.h` / `src/context.h`
-3. **One-library cohesion:** public headers / status / thin context done; remaining: optional encoder tree flatten, further CMS peel docs
+3. **One-library cohesion:** public headers / status / thin context / install packaging done; encoder sources flattened out of `lib/jxl/` into `src/encoder/`

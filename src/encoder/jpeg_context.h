@@ -4,7 +4,7 @@
 #ifndef JXL_ENCODER_JPEG_CONTEXT_H_
 #define JXL_ENCODER_JPEG_CONTEXT_H_
 
-#include "lib/jxl/color_encoding_internal.h"
+#include "color_encoding_internal.h"
 
 typedef struct jxl_context jxl_context;
 

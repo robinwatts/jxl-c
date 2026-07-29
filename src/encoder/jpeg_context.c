@@ -8,9 +8,9 @@
 
 #include "allocator.h"
 #include "context.h"
-#include "lib/jxl/base/enc_status.h"
+#include "base/enc_status.h"
 #include <jxl/context.h>
-#include "lib/jxl/enc_allocator.h"
+#include "enc_allocator.h"
 
 int jxl_jpeg_encoder_context_init(jxl_context* ctx) {
   jxl_jpeg_encoder_context* je;
