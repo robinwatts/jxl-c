@@ -8,6 +8,7 @@
 #include "coding/ans_read_inline.h"
 #include "coding/integer_read_inline.h"
 #include "coding/internal.h"
+#include "common/lz77_special_distances.h"
 #include "context.h"
 #include "prefix.h"
 #include "util.h"
@@ -139,24 +140,6 @@ jxl_inline fast_rle_hot fast_rle_hot_from(const jxl_coding_prefix_rle_fast *fast
 }
 
 #define FAST_BS_CONSUME_DEFER(bs, n, err_p) fast_bs_consume_defer((bs), (n), (err_p))
-
-static const int8_t JXL_SPECIAL_DISTANCES[120][2] = {
-    {0, 1},   {1, 0},   {1, 1},   {-1, 1},  {0, 2},   {2, 0},   {1, 2},   {-1, 2},
-    {2, 1},   {-2, 1},  {2, 2},   {-2, 2},  {0, 3},   {3, 0},   {1, 3},   {-1, 3},
-    {3, 1},   {-3, 1},  {2, 3},   {-2, 3},  {3, 2},   {-3, 2},  {0, 4},   {4, 0},
-    {1, 4},   {-1, 4},  {4, 1},   {-4, 1},  {3, 3},   {-3, 3},  {2, 4},   {-2, 4},
-    {4, 2},   {-4, 2},  {0, 5},   {3, 4},   {-3, 4},  {4, 3},   {-4, 3},  {5, 0},
-    {1, 5},   {-1, 5},  {5, 1},   {-5, 1},  {2, 5},   {-2, 5},  {5, 2},   {-5, 2},
-    {4, 4},   {-4, 4},  {3, 5},   {-3, 5},  {5, 3},   {-5, 3},  {0, 6},   {6, 0},
-    {1, 6},   {-1, 6},  {6, 1},   {-6, 1},  {2, 6},   {-2, 6},  {6, 2},   {-6, 2},
-    {4, 5},   {-4, 5},  {5, 4},   {-5, 4},  {3, 6},   {-3, 6},  {6, 3},   {-6, 3},
-    {0, 7},   {7, 0},   {1, 7},   {-1, 7},  {5, 5},   {-5, 5},  {7, 1},   {-7, 1},
-    {4, 6},   {-4, 6},  {6, 4},   {-6, 4},  {2, 7},   {-2, 7},  {7, 2},   {-7, 2},
-    {3, 7},   {-3, 7},  {7, 3},   {-7, 3},  {5, 6},   {-5, 6},  {6, 5},   {-6, 5},
-    {8, 0},   {4, 7},   {-4, 7},  {7, 4},   {-7, 4},  {8, 1},   {8, 2},   {6, 6},
-    {-6, 6},  {8, 3},   {5, 7},   {-5, 7},  {7, 5},   {-7, 5},  {8, 4},   {6, 7},
-    {-6, 7},  {7, 6},   {-7, 6},  {8, 5},   {7, 7},   {-7, 7},  {8, 6},   {8, 7},
-};
 
 static void coder_destroy(jxl_context *alloc, jxl_coder *coder) {
     size_t i;
@@ -562,13 +545,13 @@ jxl_coding_status_t jxl_coding_decoder_lz77_from_repeat_token_hoisted(jxl_coding
     }
     distance = read_uint_prefilled(bs, &dec->configs[lz_cluster], token);
     if (dist_multiplier != 0) {
-        if (distance < 120) {
-            const int8_t offset = JXL_SPECIAL_DISTANCES[distance][0];
-            const int8_t dist = JXL_SPECIAL_DISTANCES[distance][1];
+        if (distance < JXL_NUM_SPECIAL_DISTANCES) {
+            const int8_t offset = jxl_special_distances[distance][0];
+            const int8_t dist = jxl_special_distances[distance][1];
             int32_t d = (int32_t)offset + (int32_t)dist_multiplier * (int32_t)dist;
             distance = (uint32_t)((d - 1) > 0 ? (d - 1) : 0);
         } else {
-            distance -= 120;
+            distance -= JXL_NUM_SPECIAL_DISTANCES;
         }
     }
 
@@ -621,13 +604,13 @@ jxl_coding_status_t jxl_coding_decoder_lz77_from_repeat_token(jxl_coding_decoder
     }
     distance = read_uint_prefilled(bs, &dec->configs[lz_cluster], token);
     if (dist_multiplier != 0) {
-        if (distance < 120) {
-            const int8_t offset = JXL_SPECIAL_DISTANCES[distance][0];
-            const int8_t dist = JXL_SPECIAL_DISTANCES[distance][1];
+        if (distance < JXL_NUM_SPECIAL_DISTANCES) {
+            const int8_t offset = jxl_special_distances[distance][0];
+            const int8_t dist = jxl_special_distances[distance][1];
             int32_t d = (int32_t)offset + (int32_t)dist_multiplier * (int32_t)dist;
             distance = (uint32_t)((d - 1) > 0 ? (d - 1) : 0);
         } else {
-            distance -= 120;
+            distance -= JXL_NUM_SPECIAL_DISTANCES;
         }
     }
 

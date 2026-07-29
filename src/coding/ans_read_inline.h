@@ -4,6 +4,7 @@
 
 #include "compiler.h"
 #include "coding/ans.h"
+#include "common/ans_params.h"
 #include "coding/error.h"
 
 #include <string.h>
@@ -65,7 +66,7 @@ JXL_ALWAYS_INLINE jxl_coding_status_t jxl_ans_histogram_read_symbol_inline(const
         symbol = map_to_alias ? alias_symbol : i;
 
         sym_offset = offset + pos;
-        next_state = (*state >> 12) * dist + sym_offset;
+        next_state = (*state >> ANS_LOG_TAB_SIZE) * dist + sym_offset;
 
         jxl_bs_refill(bs);
         peeked = (uint32_t)(bs->buf & 0xffffu);
@@ -111,7 +112,7 @@ JXL_ALWAYS_INLINE jxl_coding_status_t jxl_ans_histogram_read_symbol_inline(const
         symbol = map_to_alias ? (size_t)bucket.alias_symbol : i;
 
         sym_offset = offset + pos;
-        next_state = (*state >> 12) * dist + sym_offset;
+        next_state = (*state >> ANS_LOG_TAB_SIZE) * dist + sym_offset;
 
         JXL_CODING_TRY_BS(jxl_bs_peek_bits(bs, 16, &peeked));
         appended_state = (next_state << 16) | peeked;

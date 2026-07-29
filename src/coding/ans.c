@@ -3,6 +3,7 @@
 
 #include "coding/internal.h"
 #include "coding/util.h"
+#include "common/ans_params.h"
 #include "static_assert.h"
 
 #include <string.h>
@@ -137,7 +138,7 @@ jxl_coding_status_t jxl_ans_histogram_parse(jxl_context *alloc, jxl_bs *bs,
     size_t underfull_len;
     size_t overfull_len;
     const size_t table_size = (size_t)1u << log_alphabet_size;
-    const uint32_t log_bucket_size = 12u - log_alphabet_size;
+    const uint32_t log_bucket_size = ANS_LOG_TAB_SIZE - log_alphabet_size;
     const uint16_t bucket_size = (uint16_t)(1u << log_bucket_size);
     uint16_t *dist;
     jxl_coding_status_t st = JXL_CODING_OK;
@@ -187,9 +188,9 @@ jxl_coding_status_t jxl_ans_histogram_parse(jxl_context *alloc, jxl_bs *bs,
                 goto cleanup;
             }
             prob = 0;
-            JXL_CODING_TRY_BS(jxl_bs_read_bits(bs, 12, &prob));
+            JXL_CODING_TRY_BS(jxl_bs_read_bits(bs, ANS_LOG_TAB_SIZE, &prob));
             dist[v0] = (uint16_t)prob;
-            dist[v1] = (uint16_t)((1u << 12) - prob);
+            dist[v1] = (uint16_t)(ANS_TAB_SIZE - prob);
         } else {
             uint8_t val = 0;
             st = ans_read_u8(bs, &val);
@@ -201,7 +202,7 @@ jxl_coding_status_t jxl_ans_histogram_parse(jxl_context *alloc, jxl_bs *bs,
                 st = JXL_CODING_INVALID_ANS_HISTOGRAM;
                 goto cleanup;
             }
-            dist[val] = 1u << 12;
+            dist[val] = ANS_TAB_SIZE;
         }
     } else {
         int evenly = 0;
@@ -218,8 +219,8 @@ jxl_coding_status_t jxl_ans_histogram_parse(jxl_context *alloc, jxl_bs *bs,
                 st = JXL_CODING_INVALID_ANS_HISTOGRAM;
                 goto cleanup;
             }
-            const size_t base = ((size_t)1u << 12) / alphabet_size;
-            const size_t leftover = ((size_t)1u << 12) % alphabet_size;
+            const size_t base = (size_t)ANS_TAB_SIZE / alphabet_size;
+            const size_t leftover = (size_t)ANS_TAB_SIZE % alphabet_size;
             for (i = 0; i < leftover; ++i) {
                 dist[i] = (uint16_t)(base + 1);
             }
@@ -351,7 +352,7 @@ jxl_coding_status_t jxl_ans_histogram_parse(jxl_context *alloc, jxl_bs *bs,
                     } else {
                         dist[i] = prev_dist;
                         acc += dist[i];
-                        if (acc > (1u << 12)) {
+                        if (acc > ANS_TAB_SIZE) {
                             st = JXL_CODING_INVALID_ANS_HISTOGRAM;
                             goto cleanup_repeat;
                         }
@@ -370,7 +371,7 @@ jxl_coding_status_t jxl_ans_histogram_parse(jxl_context *alloc, jxl_bs *bs,
                 if (dist[i] > 1) {
                     uint32_t extra;
                     const int16_t zeros = (int16_t)(dist[i] - 1);
-                    int16_t bitcount = shift - ((12 - zeros) >> 1);
+                    int16_t bitcount = shift - ((ANS_LOG_TAB_SIZE - zeros) >> 1);
                     if (bitcount < 0) {
                         bitcount = 0;
                     }
@@ -386,12 +387,12 @@ jxl_coding_status_t jxl_ans_histogram_parse(jxl_context *alloc, jxl_bs *bs,
                 }
                 prev_dist = dist[i];
                 acc += dist[i];
-                if (acc > (1u << 12)) {
+                if (acc > ANS_TAB_SIZE) {
                     st = JXL_CODING_INVALID_ANS_HISTOGRAM;
                     goto cleanup_repeat;
                 }
             }
-            dist[omit_pos] = (uint16_t)((1u << 12) - acc);
+            dist[omit_pos] = (uint16_t)(ANS_TAB_SIZE - acc);
 
         cleanup_repeat:
             jxl_free(alloc, repeat_ranges);
@@ -402,7 +403,7 @@ jxl_coding_status_t jxl_ans_histogram_parse(jxl_context *alloc, jxl_bs *bs,
     }
 
     for (i = 0; i < table_size; ++i) {
-        if (dist[i] == (uint16_t)(1u << 12)) {
+        if (dist[i] == (uint16_t)ANS_TAB_SIZE) {
             single_sym_idx = i;
             break;
         }
@@ -424,7 +425,7 @@ jxl_coding_status_t jxl_ans_histogram_parse(jxl_context *alloc, jxl_bs *bs,
             out->buckets[i].alias_symbol = (uint8_t)single_sym_idx;
             out->buckets[i].alias_offset = (uint16_t)(bucket_size * i);
             out->buckets[i].alias_cutoff = 0;
-            out->buckets[i].alias_dist_xor = dist[i] ^ (uint16_t)(1u << 12);
+            out->buckets[i].alias_dist_xor = dist[i] ^ (uint16_t)ANS_TAB_SIZE;
         }
         out->has_single_symbol = 1;
         out->single_symbol = (uint32_t)single_sym_idx;
@@ -574,7 +575,7 @@ jxl_coding_status_t jxl_ans_histogram_read_symbol(const jxl_ans_histogram *hist,
 #endif
 
     sym_offset = offset + pos;
-    next_state = (*state >> 12) * dist + sym_offset;
+    next_state = (*state >> ANS_LOG_TAB_SIZE) * dist + sym_offset;
 
     peeked = 0;
     JXL_CODING_TRY_BS(jxl_bs_peek_bits(bs, 16, &peeked));
