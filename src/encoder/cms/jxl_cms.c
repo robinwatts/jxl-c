@@ -646,7 +646,7 @@ static cmsPluginMemHandler k_jxl_cms_mem_plugin = {
 extern "C" {
 #endif
 
-JXL_EXPORT const jxl_cms_interface* jxl_get_default_cms() {
+JXL_C_EXPORT const jxl_cms_interface* jxl_get_default_cms() {
   // JPEG encoder only uses set_fields_from_icc; pixel transforms are unused.
   // Callers must set set_fields_data to a cmsContext from jxl_cms_create_lcms_context
   // (jxl_encoder_create does this from the jxl_context).
@@ -662,7 +662,7 @@ JXL_EXPORT const jxl_cms_interface* jxl_get_default_cms() {
   return &kInterface;
 }
 
-JXL_EXPORT void* jxl_cms_create_lcms_context(jxl_context* ctx) {
+JXL_C_EXPORT void* jxl_cms_create_lcms_context(jxl_context* ctx) {
   cmsContext lcms;
   if (ctx == NULL) {
     return NULL;
@@ -674,7 +674,7 @@ JXL_EXPORT void* jxl_cms_create_lcms_context(jxl_context* ctx) {
   return lcms;
 }
 
-JXL_EXPORT void jxl_cms_destroy_lcms_context(void* lcms_context) {
+JXL_C_EXPORT void jxl_cms_destroy_lcms_context(void* lcms_context) {
   if (lcms_context != NULL) {
     jxl_destroy_cms_context(lcms_context);
   }

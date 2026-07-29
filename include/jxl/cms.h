@@ -16,12 +16,12 @@
 extern "C" {
 #endif
 
-JXL_EXPORT const jxl_cms_interface* jxl_get_default_cms();
+JXL_C_EXPORT const jxl_cms_interface* jxl_get_default_cms();
 
 /* Opaque LCMS cmsContext for a jxl_context. Allocations go through ctx.
  * Destroy with jxl_cms_destroy_lcms_context. */
-JXL_EXPORT void* jxl_cms_create_lcms_context(jxl_context* ctx);
-JXL_EXPORT void jxl_cms_destroy_lcms_context(void* lcms_context);
+JXL_C_EXPORT void* jxl_cms_create_lcms_context(jxl_context* ctx);
+JXL_C_EXPORT void jxl_cms_destroy_lcms_context(void* lcms_context);
 
 #ifdef __cplusplus
 }

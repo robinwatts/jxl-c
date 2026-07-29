@@ -345,7 +345,7 @@ endif()
 if(JXL_C_ENABLE_JPEG_ENCODER)
     target_compile_definitions(jxl_c_obj
         PUBLIC JXL_C_ENABLE_JPEG_ENCODER=1
-        PRIVATE JXL_STATIC_DEFINE
+        PRIVATE JXL_C_STATIC_DEFINE
     )
 endif()
 target_compile_definitions(jxl_c_obj PRIVATE JXL_C_BUILDING)

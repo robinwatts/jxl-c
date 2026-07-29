@@ -32,7 +32,7 @@ extern "C" {
  * MAJOR_VERSION * 1000000 + MINOR_VERSION * 1000 + PATCH_VERSION. For example,
  * version 1.2.3 would return 1002003.
  */
-JXL_EXPORT uint32_t jxl_encoder_version(void);
+JXL_C_EXPORT uint32_t jxl_encoder_version(void);
 
 typedef struct jxl_encoder jxl_encoder;
 typedef struct jxl_encoder_frame_settings jxl_encoder_frame_settings;
@@ -61,17 +61,17 @@ typedef enum {
   JXL_ENCODER_FRAME_SETTING_FILL_ENUM = 65535,
 } jxl_encoder_frame_setting_id;
 
-JXL_EXPORT jxl_encoder* jxl_encoder_create(jxl_context* ctx);
-JXL_EXPORT void jxl_encoder_destroy(jxl_encoder* enc);
+JXL_C_EXPORT jxl_encoder* jxl_encoder_create(jxl_context* ctx);
+JXL_C_EXPORT void jxl_encoder_destroy(jxl_encoder* enc);
 
 /** Last error set by an encoder call that returned a JXL_ERROR_* status. */
-JXL_EXPORT jxl_status_t jxl_encoder_get_error(jxl_encoder* enc);
+JXL_C_EXPORT jxl_status_t jxl_encoder_get_error(jxl_encoder* enc);
 
 /**
  * Encodes output bytes. Call repeatedly until status is not
  * ::JXL_NEED_MORE_OUTPUT. Requires *avail_out >= 32 on each call.
  */
-JXL_EXPORT jxl_status_t jxl_encoder_process_output(jxl_encoder* enc,
+JXL_C_EXPORT jxl_status_t jxl_encoder_process_output(jxl_encoder* enc,
                                                     uint8_t** next_out,
                                                     size_t* avail_out);
 
@@ -82,23 +82,23 @@ JXL_EXPORT jxl_status_t jxl_encoder_process_output(jxl_encoder* enc,
  * @ref jxl_encoder_close_input before the final @ref jxl_encoder_process_output
  * when this is the last frame.
  */
-JXL_EXPORT jxl_status_t
+JXL_C_EXPORT jxl_status_t
 jxl_encoder_add_jpeg_frame(const jxl_encoder_frame_settings* frame_settings,
                        const uint8_t* buffer, size_t size);
 
-JXL_EXPORT void jxl_encoder_close_input(jxl_encoder* enc);
+JXL_C_EXPORT void jxl_encoder_close_input(jxl_encoder* enc);
 
-JXL_EXPORT jxl_status_t jxl_encoder_use_container(jxl_encoder* enc,
+JXL_C_EXPORT jxl_status_t jxl_encoder_use_container(jxl_encoder* enc,
                                                    JXL_BOOL use_container);
 
-JXL_EXPORT jxl_status_t
+JXL_C_EXPORT jxl_status_t
 jxl_encoder_store_jpeg_metadata(jxl_encoder* enc, JXL_BOOL store_jpeg_metadata);
 
-JXL_EXPORT jxl_status_t jxl_encoder_frame_settings_set_option(
+JXL_C_EXPORT jxl_status_t jxl_encoder_frame_settings_set_option(
     jxl_encoder_frame_settings* frame_settings, jxl_encoder_frame_setting_id option,
     int64_t value);
 
-JXL_EXPORT jxl_encoder_frame_settings* jxl_encoder_frame_settings_create(
+JXL_C_EXPORT jxl_encoder_frame_settings* jxl_encoder_frame_settings_create(
     jxl_encoder* enc, const jxl_encoder_frame_settings* source);
 
 #ifdef __cplusplus
