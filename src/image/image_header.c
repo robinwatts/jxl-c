@@ -38,7 +38,7 @@ jxl_bs_status_t jxl_image_skip_post_header(jxl_context *alloc, jxl_bs *bs,
     if (bs == NULL || parsed == NULL) {
         return JXL_BS_VALIDATION_FAILED;
     }
-    if (parsed->colour.have_icc_profile) {
+    if (parsed->color.have_icc_profile) {
         jxl_bs_status_t st = jxl_icc_skip(alloc, bs);
         if (st != JXL_BS_OK) {
             return st;
@@ -64,7 +64,7 @@ jxl_bs_status_t jxl_image_decode_post_header(jxl_context *alloc, jxl_bs *bs,
     if (bs == NULL || parsed == NULL) {
         return JXL_BS_VALIDATION_FAILED;
     }
-    if (parsed->colour.have_icc_profile) {
+    if (parsed->color.have_icc_profile) {
         jxl_bs_status_t st;
         jxl_parsed_image_header_free_embedded_icc(alloc, parsed);
         st = jxl_icc_decode(alloc, bs, &parsed->embedded_icc, &parsed->embedded_icc_len);

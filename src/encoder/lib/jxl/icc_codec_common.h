@@ -13,7 +13,7 @@
 #include <string.h>
 
 #include "lib/jxl/base/array.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/padded_bytes.h"
 
 enum { kICCHeaderSize = 128 };

@@ -6,18 +6,18 @@
 jxl_status_t jxl_color_transform_xyb_to_encoding(jxl_context *ctx, float *x, float *y, float *b,
                                                  size_t num_pixels,
                                                  const jxl_opsin_inverse_parsed *opsin,
-                                                 const jxl_colour_encoding_parsed *target,
+                                                 const jxl_color_encoding_parsed *target,
                                                  float intensity_target) {
     if (x == NULL || y == NULL || b == NULL || opsin == NULL || target == NULL ||
         num_pixels == 0) {
         return JXL_ERROR_INVALID_INPUT;
     }
-    if (target->colour_space != JXL_COLOUR_SPACE_RGB_I &&
-        target->colour_space != JXL_COLOUR_SPACE_GRAY_I) {
+    if (target->color_space != JXL_COLOR_SPACE_RGB_I &&
+        target->color_space != JXL_COLOR_SPACE_GRAY_I) {
         return JXL_ERROR_UNSUPPORTED;
     }
-    if (target->white_point != JXL_COLOUR_WHITE_POINT_D65_I ||
-        target->primaries != JXL_COLOUR_PRIMARIES_SRGB_I) {
+    if (target->white_point != JXL_COLOR_WHITE_POINT_D65_I ||
+        target->primaries != JXL_COLOR_PRIMARIES_SRGB_I) {
         return JXL_ERROR_UNSUPPORTED;
     }
     if (target->transfer != JXL_TRANSFER_SRGB_I && target->transfer != JXL_TRANSFER_LINEAR_I &&

@@ -10,7 +10,7 @@
 
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/field_encodings.h"
 #include "lib/jxl/fields.h"
 #include "lib/jxl/frame_dimensions.h"
@@ -54,15 +54,15 @@ static uint32_t jxl_find_aspect_ratio(uint32_t xsize, uint32_t ysize) {
   return 0;  // Must send xsize instead
 }
 
-size_t jxl_size_header_x_size(const jxl_size_header* self) {
+size_t jxl_enc_size_header_x_size(const jxl_enc_size_header* self) {
   if (self->ratio_ != 0) {
     return jxl_rational_mul_truncate(jxl_fixed_aspect_ratios(self->ratio_), 
-        (uint32_t)(jxl_size_header_y_size(self)));
+        (uint32_t)(jxl_enc_size_header_y_size(self)));
   }
   return self->small_ ? ((self->xsize_div8_minus_1_ + 1) * 8) : self->xsize_;
 }
 
-jxl_status jxl_size_header_set(jxl_size_header* self, size_t xsize64, size_t ysize64) {
+jxl_status jxl_enc_size_header_set(jxl_enc_size_header* self, size_t xsize64, size_t ysize64) {
   const size_t kDimensionCap = UINT32_MAX;
   if (xsize64 > kDimensionCap || ysize64 > kDimensionCap) {
     return JXL_FAILURE("jxl_image too large");
@@ -87,8 +87,8 @@ jxl_status jxl_size_header_set(jxl_size_header* self, size_t xsize64, size_t ysi
       self->xsize_ = xsize32;
     }
   }
-  JXL_ENSURE(jxl_size_header_x_size(self) == xsize64);
-  JXL_ENSURE(jxl_size_header_y_size(self) == ysize64);
+  JXL_ENSURE(jxl_enc_size_header_x_size(self) == xsize64);
+  JXL_ENSURE(jxl_enc_size_header_y_size(self) == ysize64);
   return jxl_ok_status();
 }
 
@@ -100,7 +100,7 @@ size_t jxl_preview_header_x_size(const jxl_preview_header* self) {
   return self->div8_ ? (self->xsize_div8_ * 8) : self->xsize_;
 }
 
-jxl_status jxl_size_header_visit_fields(jxl_size_header* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_status jxl_enc_size_header_visit_fields(jxl_enc_size_header* self, jxl_visitor* JXL_RESTRICT visitor) {
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->small_));
 
   if (jxl_status_ok(jxl_visitor_conditional(visitor, self->small_))) {
@@ -143,7 +143,7 @@ jxl_status jxl_preview_header_visit_fields(jxl_preview_header* self, jxl_visitor
   return jxl_ok_status();
 }
 
-jxl_status jxl_animation_header_visit_fields(jxl_animation_header* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_status jxl_enc_animation_header_visit_fields(jxl_enc_animation_header* self, jxl_visitor* JXL_RESTRICT visitor) {
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(100), jxl_val(1000), jxl_bits_offset(10, 1), jxl_bits_offset(30, 1)), 1, &self->tps_numerator));
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(1), jxl_val(1001), jxl_bits_offset(8, 1), jxl_bits_offset(10, 1)), 1, &self->tps_denominator));
 

@@ -12,7 +12,7 @@ typedef struct jxl_context jxl_context;
 jxl_status_t jxl_color_transform_xyb_to_encoding(jxl_context *ctx, float *x, float *y, float *b,
                                                  size_t num_pixels,
                                                  const jxl_opsin_inverse_parsed *opsin,
-                                                 const jxl_colour_encoding_parsed *target,
+                                                 const jxl_color_encoding_parsed *target,
                                                  float intensity_target);
 
 #endif /* JXL_RENDER_COLOR_TRANSFORM_APPLY_H_ */

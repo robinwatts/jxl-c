@@ -3,8 +3,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#ifndef LIB_JXL_FRAME_HEADER_H_
-#define LIB_JXL_FRAME_HEADER_H_
+#ifndef LIB_JXL_ENC_FRAME_HEADER_H_
+#define LIB_JXL_ENC_FRAME_HEADER_H_
 
 // Frame header with backward and forward-compatible extension capability and
 // compressed integer fields.
@@ -16,13 +16,13 @@
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/coeff_order_fwd.h"
 #include "lib/jxl/common.h"  // kMaxNumPasses
 #include "lib/jxl/field_encodings.h"
 #include "lib/jxl/fields.h"
 #include "lib/jxl/frame_dimensions.h"
-#include "lib/jxl/image_metadata.h"
+#include "lib/jxl/enc_image_metadata.h"
 #include "lib/jxl/loop_filter.h"
 
 typedef enum jxl_color_transform {
@@ -76,10 +76,10 @@ static inline jxl_status jxl_visit_name_string(jxl_visitor* JXL_RESTRICT visitor
   return jxl_ok_status();
 }
 
-typedef enum jxl_frame_encoding {
+typedef enum jxl_enc_frame_encoding {
   kVarDCT,
   kModular,
-} jxl_frame_encoding;
+} jxl_enc_frame_encoding;
 
 extern const uint8_t kYCbCrChromaHShift[4];
 extern const uint8_t kYCbCrChromaVShift[4];
@@ -179,7 +179,7 @@ static inline bool jxl_y_cb_cr_chroma_subsampling_is444(
 // XYB-encoded frame, in sRGB if blending a frame with kColorSpace == kSRGB, or
 // in the original colorspace otherwise. Blending in XYB or YCbCr is done by
 // using patches.
-typedef enum jxl_blend_mode {
+typedef enum jxl_enc_blend_mode {
   // The new values (in the crop) replace the old ones: sample = new
   kReplace = 0,
   // The new values (in the crop) get added to the old ones: sample = old + new
@@ -208,12 +208,12 @@ typedef enum jxl_blend_mode {
   // If using kMul as a blend mode for color channels, no color transform is
   // performed on the current frame.
   kMul = 4,
-} jxl_blend_mode;
+} jxl_enc_blend_mode;
 
-typedef struct jxl_blending_info {
+typedef struct jxl_enc_blending_info {
   jxl_fields fields;
 
-  jxl_blend_mode mode;
+  jxl_enc_blend_mode mode;
   // Which extra channel to use as alpha channel for blending, only encoded
   // for blend modes that involve alpha and if there are more than 1 extra
   // channels.
@@ -225,29 +225,29 @@ typedef struct jxl_blending_info {
 
   size_t nonserialized_num_extra_channels;
   bool nonserialized_is_partial_frame;
-} jxl_blending_info;
+} jxl_enc_blending_info;
 
-jxl_status jxl_blending_info_visit_fields(jxl_blending_info* self, jxl_visitor* JXL_RESTRICT visitor);
-JXL_FIELDS_NAME(jxl_blending_info)
+jxl_status jxl_enc_blending_info_visit_fields(jxl_enc_blending_info* self, jxl_visitor* JXL_RESTRICT visitor);
+JXL_FIELDS_NAME(jxl_enc_blending_info)
 
-static inline void jxl_blending_info_construct_empty(jxl_blending_info* self) {
+static inline void jxl_enc_blending_info_construct_empty(jxl_enc_blending_info* self) {
   jxl_fields_construct_empty(&self->fields);
   self->nonserialized_num_extra_channels = 0;
   self->nonserialized_is_partial_frame = false;
 }
-static inline void jxl_blending_info_destroy(jxl_blending_info* self) { (void)self; }
-static inline void jxl_blending_info_init(jxl_blending_info* self) {
+static inline void jxl_enc_blending_info_destroy(jxl_enc_blending_info* self) { (void)self; }
+static inline void jxl_enc_blending_info_init(jxl_enc_blending_info* self) {
   /* VisitFields conditionals read these before the parent sets them. */
   self->nonserialized_num_extra_channels = 0;
   self->nonserialized_is_partial_frame = false;
-  JXL_FIELDS_REGISTER_PTR(jxl_blending_info, &self->fields);
+  JXL_FIELDS_REGISTER_PTR(jxl_enc_blending_info, &self->fields);
   jxl_bundle_init(&self->fields);
 }
-static inline void jxl_blending_info_swap(jxl_blending_info* self, jxl_blending_info* other) {
+static inline void jxl_enc_blending_info_swap(jxl_enc_blending_info* self, jxl_enc_blending_info* other) {
   jxl_fields tf = self->fields;
   self->fields = other->fields;
   other->fields = tf;
-  jxl_blend_mode tm = self->mode;
+  jxl_enc_blend_mode tm = self->mode;
   self->mode = other->mode;
   other->mode = tm;
   uint32_t ta = self->alpha_channel;
@@ -268,10 +268,10 @@ static inline void jxl_blending_info_swap(jxl_blending_info* self, jxl_blending_
   other->nonserialized_is_partial_frame = tp;
 }
 
-// Growable list of jxl_blending_info (was MoveArray<jxl_blending_info>).
+// Growable list of jxl_enc_blending_info (was MoveArray<jxl_enc_blending_info>).
 typedef struct jxl_blending_infos {
   jxl_context* ctx;
-  jxl_blending_info* ptr;
+  jxl_enc_blending_info* ptr;
   size_t len;
   size_t capacity;
 } jxl_blending_infos;
@@ -282,17 +282,17 @@ static inline size_t jxl_blending_infos_size(const jxl_blending_infos* self) {
 static inline bool jxl_blending_infos_empty(const jxl_blending_infos* self) {
   return self->len == 0;
 }
-static inline jxl_blending_info* jxl_blending_infos_data(jxl_blending_infos* self) {
+static inline jxl_enc_blending_info* jxl_blending_infos_data(jxl_blending_infos* self) {
   return self->ptr;
 }
-static inline const jxl_blending_info* jxl_blending_infos_data_const(
+static inline const jxl_enc_blending_info* jxl_blending_infos_data_const(
     const jxl_blending_infos* self) {
   return self->ptr;
 }
-static inline jxl_blending_info* jxl_blending_infos_at(jxl_blending_infos* self, size_t i) {
+static inline jxl_enc_blending_info* jxl_blending_infos_at(jxl_blending_infos* self, size_t i) {
   return &self->ptr[i];
 }
-static inline const jxl_blending_info* jxl_blending_infos_at_const(
+static inline const jxl_enc_blending_info* jxl_blending_infos_at_const(
     const jxl_blending_infos* self, size_t i) {
   return &self->ptr[i];
 }
@@ -309,7 +309,7 @@ static inline void jxl_blending_infos_swap(jxl_blending_infos* self,
   jxl_context* tmp_mm = self->ctx;
   self->ctx = other->ctx;
   other->ctx = tmp_mm;
-  jxl_blending_info* tmp_ptr = self->ptr;
+  jxl_enc_blending_info* tmp_ptr = self->ptr;
   self->ptr = other->ptr;
   other->ptr = tmp_ptr;
   jxl_swap(&self->len, &other->len);
@@ -319,7 +319,7 @@ static inline void jxl_blending_infos_swap(jxl_blending_infos* self,
 static inline void jxl_blending_infos_destroy(jxl_blending_infos* self) {
   size_t i;
   for (i = 0; i < self->len; ++i) {
-    jxl_blending_info_destroy(self->ptr + i);
+    jxl_enc_blending_info_destroy(self->ptr + i);
   }
   self->len = 0;
   if (self->ptr != NULL) {
@@ -334,7 +334,7 @@ static inline jxl_status jxl_blending_infos_reserve(jxl_blending_infos* self,
                                           size_t new_capacity) {
   size_t grown;
   size_t bytes;
-  jxl_blending_info* neu;
+  jxl_enc_blending_info* neu;
   size_t i;
   if (new_capacity <= self->capacity) return jxl_ok_status();
 
@@ -350,22 +350,22 @@ static inline jxl_status jxl_blending_infos_reserve(jxl_blending_infos* self,
   }
   if (grown < new_capacity) grown = new_capacity;
 
-  if (!jxl_safe_mul(grown, sizeof(jxl_blending_info), &bytes)) {
+  if (!jxl_safe_mul(grown, sizeof(jxl_enc_blending_info), &bytes)) {
     return JXL_FAILURE("jxl_blending_infos::reserve: size overflow");
   }
   if (self->ctx == NULL) {
     return JXL_FAILURE("jxl_blending_infos::reserve: missing memory manager");
   }
-  neu = (jxl_blending_info*)(
+  neu = (jxl_enc_blending_info*)(
       jxl_alloc(self->ctx, bytes));
   if (neu == NULL) {
     return JXL_FAILURE("jxl_blending_infos::reserve: allocation failed");
   }
   for (i = 0; i < self->len; ++i) {
-    jxl_blending_info_construct_empty(neu + i);
-    jxl_blending_info_init(neu + i);
-    jxl_blending_info_swap(neu + i, &self->ptr[i]);
-    jxl_blending_info_destroy(self->ptr + i);
+    jxl_enc_blending_info_construct_empty(neu + i);
+    jxl_enc_blending_info_init(neu + i);
+    jxl_enc_blending_info_swap(neu + i, &self->ptr[i]);
+    jxl_enc_blending_info_destroy(self->ptr + i);
   }
   if (self->ptr != NULL) {
     jxl_free(self->ctx, self->ptr);
@@ -379,15 +379,15 @@ static inline jxl_status jxl_blending_infos_resize(jxl_blending_infos* self, siz
   size_t i;
   if (n < self->len) {
     for (i = n; i < self->len; ++i) {
-      jxl_blending_info_destroy(self->ptr + i);
+      jxl_enc_blending_info_destroy(self->ptr + i);
     }
     self->len = n;
     return jxl_ok_status();
   }
   JXL_RETURN_IF_ERROR(jxl_blending_infos_reserve(self, n));
   while (self->len < n) {
-    jxl_blending_info_construct_empty(self->ptr + self->len);
-    jxl_blending_info_init(self->ptr + self->len);
+    jxl_enc_blending_info_construct_empty(self->ptr + self->len);
+    jxl_enc_blending_info_init(self->ptr + self->len);
     ++self->len;
   }
   return jxl_ok_status();
@@ -454,7 +454,7 @@ static inline void jxl_passes_init(jxl_passes* self) {
   jxl_bundle_init(&self->fields);
 }
 
-typedef enum jxl_frame_type {
+typedef enum jxl_enc_frame_type {
   // A "regular" frame: might be a crop, and will be blended on a previous
   // frame, if any, and displayed or blended in future frames.
   kRegularFrame = 0,
@@ -469,12 +469,12 @@ typedef enum jxl_frame_type {
   // Same as kRegularFrame, but not used for progressive rendering. This also
   // implies no early display of DC.
   kSkipProgressive = 3,
-} jxl_frame_type;
+} jxl_enc_frame_type;
 
 // jxl_image/frame := one of more of these, where the last has is_last = true.
 // Starts at a byte-aligned address "a"; the next pass starts at "a + size".
 
-typedef enum jxl_frame_header_flags {
+typedef enum jxl_enc_frame_header_flags {
   // Often but not always off => low bit value:
 
   // Inject noise into decoded output.
@@ -495,9 +495,9 @@ typedef enum jxl_frame_header_flags {
   // Almost always on => negated:
 
   kSkipAdaptiveDCSmoothing = 128,
-} jxl_frame_header_flags;
+} jxl_enc_frame_header_flags;
 
-typedef struct jxl_frame_header {
+typedef struct jxl_enc_frame_header {
   jxl_fields fields;
   // Optional postprocessing steps. These flags are the source of truth;
   // Override must set/clear them rather than change their meaning. Values
@@ -507,8 +507,8 @@ typedef struct jxl_frame_header {
 
   // Always present
   // Some builds / emulators complain if those fields are not initialized.
-  jxl_frame_encoding encoding;
-  jxl_frame_type frame_type;
+  jxl_enc_frame_encoding encoding;
+  jxl_enc_frame_type frame_type;
 
   uint64_t flags;
 
@@ -538,7 +538,7 @@ typedef struct jxl_frame_header {
   // Only for kRegular frames.
   jxl_frame_origin frame_origin;
 
-  jxl_blending_info blending_info;
+  jxl_enc_blending_info blending_info;
   jxl_blending_infos extra_channel_blending_info;
 
   // Animation info for this frame.
@@ -573,12 +573,12 @@ typedef struct jxl_frame_header {
   bool nonserialized_is_preview;
 
   uint64_t extensions;
-} jxl_frame_header;
+} jxl_enc_frame_header;
 
-jxl_status jxl_frame_header_visit_fields(jxl_frame_header* self, jxl_visitor* JXL_RESTRICT visitor);
-JXL_FIELDS_NAME(jxl_frame_header)
+jxl_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_visitor* JXL_RESTRICT visitor);
+JXL_FIELDS_NAME(jxl_enc_frame_header)
 
-static inline size_t jxl_frame_header_default_x_size(const jxl_frame_header* self) {
+static inline size_t jxl_enc_frame_header_default_x_size(const jxl_enc_frame_header* self) {
   if (!self->nonserialized_metadata) return 0;
   if (self->nonserialized_is_preview) {
     return jxl_preview_header_x_size(
@@ -586,7 +586,7 @@ static inline size_t jxl_frame_header_default_x_size(const jxl_frame_header* sel
   }
   return jxl_codec_metadata_x_size(self->nonserialized_metadata);
 }
-static inline size_t jxl_frame_header_default_y_size(const jxl_frame_header* self) {
+static inline size_t jxl_enc_frame_header_default_y_size(const jxl_enc_frame_header* self) {
   if (!self->nonserialized_metadata) return 0;
   if (self->nonserialized_is_preview) {
     return jxl_preview_header_y_size(
@@ -595,10 +595,10 @@ static inline size_t jxl_frame_header_default_y_size(const jxl_frame_header* sel
   return jxl_codec_metadata_y_size(self->nonserialized_metadata);
 }
 
-static inline jxl_frame_dimensions jxl_frame_header_to_frame_dimensions(
-    const jxl_frame_header* self) {
-  size_t xsize = jxl_frame_header_default_x_size(self);
-  size_t ysize = jxl_frame_header_default_y_size(self);
+static inline jxl_frame_dimensions jxl_enc_frame_header_to_frame_dimensions(
+    const jxl_enc_frame_header* self) {
+  size_t xsize = jxl_enc_frame_header_default_x_size(self);
+  size_t ysize = jxl_enc_frame_header_default_y_size(self);
 
   xsize = self->frame_size.xsize ? self->frame_size.xsize : xsize;
   ysize = self->frame_size.ysize ? self->frame_size.ysize : ysize;
@@ -619,7 +619,7 @@ static inline jxl_frame_dimensions jxl_frame_header_to_frame_dimensions(
 
 // Returns true if this frame is supposed to be saved for future usage by
 // other frames.
-static inline bool jxl_frame_header_can_be_referenced(const jxl_frame_header* self) {
+static inline bool jxl_enc_frame_header_can_be_referenced(const jxl_enc_frame_header* self) {
   // DC frames cannot be referenced. The last frame cannot be referenced. A
   // duration 0 frame makes little sense if it is not referenced. A
   // non-duration 0 frame may or may not be referenced.
@@ -627,10 +627,10 @@ static inline bool jxl_frame_header_can_be_referenced(const jxl_frame_header* se
          (self->animation_frame.duration == 0 || self->save_as_reference != 0);
 }
 
-static inline void jxl_frame_header_init(jxl_frame_header* self,
+static inline void jxl_enc_frame_header_init(jxl_enc_frame_header* self,
                                    const jxl_codec_metadata* metadata) {
   jxl_context* mm =
-      metadata != NULL ? metadata->m.colour_encoding.storage_.icc.ctx
+      metadata != NULL ? metadata->m.color_encoding.storage_.icc.ctx
                        : NULL;
   self->encoding = kModular;
   self->frame_type = kRegularFrame;
@@ -640,17 +640,17 @@ static inline void jxl_frame_header_init(jxl_frame_header* self,
   jxl_array_construct_empty(&self->extra_channel_upsampling, mm);
   jxl_y_cb_cr_chroma_subsampling_init(&self->chroma_subsampling);
   jxl_passes_init(&self->passes);
-  jxl_blending_info_init(&self->blending_info);
+  jxl_enc_blending_info_init(&self->blending_info);
   jxl_blending_infos_construct_empty(&self->extra_channel_blending_info);
   self->extra_channel_blending_info.ctx = mm;
   jxl_animation_frame_init(&self->animation_frame, metadata);
   jxl_loop_filter_init(&self->loop_filter);
   self->nonserialized_metadata = metadata;
-  JXL_FIELDS_REGISTER_PTR(jxl_frame_header, &self->fields);
+  JXL_FIELDS_REGISTER_PTR(jxl_enc_frame_header, &self->fields);
   jxl_bundle_init(&self->fields);
 }
 
-static inline void jxl_frame_header_destroy(jxl_frame_header* self) {
+static inline void jxl_enc_frame_header_destroy(jxl_enc_frame_header* self) {
   jxl_array_destroy(&self->name);
   jxl_array_destroy(&self->extra_channel_upsampling);
   jxl_blending_infos_destroy(&self->extra_channel_blending_info);
@@ -662,4 +662,4 @@ static inline jxl_u32_enc jxl_order_enc(void) {
   return jxl_u32_enc_make(jxl_val(0x5F), jxl_val(0x13), jxl_val(0), jxl_bits(kNumOrders));
 }
 
-#endif  // LIB_JXL_FRAME_HEADER_H_
+#endif  // LIB_JXL_ENC_FRAME_HEADER_H_

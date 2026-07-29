@@ -586,7 +586,7 @@ static void test_grayalpha_lf_global_skip_and_pass_group(void) {
     }
     assert(frame->header.encoding == JXL_FRAME_ENCODING_MODULAR);
     assert(frame->header.width == 32 && frame->header.height == 32);
-    assert(image.colour.colour_space == JXL_COLOUR_SPACE_GRAY_I);
+    assert(image.color.color_space == JXL_COLOR_SPACE_GRAY_I);
     assert(frame->header.encoded_color_channels == 1u);
 
     jxl_ma_config_init(&global_ma);

@@ -10,7 +10,7 @@
 #include <jxl/cms_interface.h>
 #include <jxl/encode.h>
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -21,9 +21,9 @@
 #include "lib/jxl/base/chunked_array.h"
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/common.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/enc_params.h"
-#include "lib/jxl/image_metadata.h"
+#include "lib/jxl/enc_image_metadata.h"
 #include "lib/jxl/jpeg/jpeg_data.h"
 #include "lib/jxl/memory_manager_internal.h"
 #include "lib/jxl/padded_bytes.h"

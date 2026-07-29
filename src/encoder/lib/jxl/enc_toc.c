@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/layer_type.h"
 #include "lib/jxl/fields.h"
-#include "lib/jxl/toc.h"
+#include "lib/jxl/toc_fields.h"
 
 
 static jxl_status jxl_write_toc_permutation_body(void* opaque) {

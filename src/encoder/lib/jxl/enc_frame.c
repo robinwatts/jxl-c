@@ -6,7 +6,7 @@
 #include "lib/jxl/enc_frame.h"
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <math.h>
 #include <stddef.h>
@@ -15,7 +15,7 @@
 
 #include "lib/jxl/ac_strategy.h"
 #include "lib/jxl/base/bits.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/coeff_order.h"
 #include "lib/jxl/dct_util.h"
 #include "lib/jxl/enc_ans.h"
@@ -32,13 +32,13 @@
 #include "lib/jxl/fields.h"
 #include "lib/jxl/jpeg/enc_jpeg_data.h"
 #include "lib/jxl/jpeg/jpeg_data.h"
-#include "lib/jxl/toc.h"
+#include "lib/jxl/toc_fields.h"
 #include "lib/jxl/base/common.h"
 
 
 jxl_status jxl_make_frame_header(const jxl_frame_info* frame_info,
                        const jxl_jpeg_data* jpeg_data,
-                       jxl_frame_header* JXL_RESTRICT frame_header){
+                       jxl_enc_frame_header* JXL_RESTRICT frame_header){
   frame_header->is_last = frame_info->is_last;
   frame_header->passes.num_passes = 1;
 
@@ -126,7 +126,7 @@ static void jxl_compute_jpeg_transcoding_data_cleanup(jxl_array_quant_encoding* 
 }
 
 static jxl_status jxl_compute_jpeg_transcoding_data(const jxl_jpeg_data* jpeg_data,
-                                  const jxl_frame_header* frame_header,
+                                  const jxl_enc_frame_header* frame_header,
                                   jxl_modular_frame_encoder* enc_modular,
                                   jxl_passes_encoder_state* enc_state){
   jxl_passes_shared_state* shared = &enc_state->shared;
@@ -148,7 +148,7 @@ static jxl_status jxl_compute_jpeg_transcoding_data(const jxl_jpeg_data* jpeg_da
                                       frame_dim->num_groups,
                                       &enc_state->coeffs));
 
-  // convert JPEG quantization table to a jxl_quantizer object
+  // convert JPEG quantization table to a jxl_enc_quantizer object
   float dcquantization[3];
   jxl_array_quant_encoding qe;
   jxl_array_construct_empty(&qe, ctx);
@@ -252,10 +252,10 @@ static jxl_status jxl_compute_jpeg_transcoding_data(const jxl_jpeg_data* jpeg_da
   }
 
   // Ensure that InvGlobalScale() is 1.
-  jxl_quantizer_init_with(&shared->quantizer, &shared->matrices, 1, kGlobalScaleDenom);
+  jxl_enc_quantizer_init_with(&shared->quantizer, &shared->matrices, 1, kGlobalScaleDenom);
 
   // Per-block dequant scaling should be 1.
-  jxl_fill_image_i((int32_t)(jxl_quantizer_inv_global_scale(&shared->quantizer)),
+  jxl_fill_image_i((int32_t)(jxl_enc_quantizer_inv_global_scale(&shared->quantizer)),
              &shared->raw_quant_field);
 
   bool DCzero = (frame_header->color_transform == kColorTransformYCbCr);
@@ -567,7 +567,7 @@ static jxl_status jxl_enc_cache_init_once(jxl_enc_cache* self, jxl_context* ctx)
   return jxl_ok_status();
 }
 
-static jxl_status jxl_tokenize_all_coefficients(const jxl_frame_header* frame_header,
+static jxl_status jxl_tokenize_all_coefficients(const jxl_enc_frame_header* frame_header,
                                jxl_passes_encoder_state* enc_state){
   jxl_passes_shared_state* shared = &enc_state->shared;
   jxl_enc_cache group_cache;
@@ -603,7 +603,7 @@ static jxl_status jxl_tokenize_all_coefficients(const jxl_frame_header* frame_he
 
 static jxl_status jxl_encode_global_dc_info(const jxl_passes_shared_state* shared, jxl_bit_writer* writer){
   // Encode quantizer DC and global scale.
-  jxl_quantizer_params params = jxl_quantizer_get_params(&shared->quantizer);
+  jxl_quantizer_params params = jxl_enc_quantizer_get_params(&shared->quantizer);
   JXL_RETURN_IF_ERROR(
       jxl_write_quantizer_params(&params, writer, kLayerQuant));
   JXL_RETURN_IF_ERROR(jxl_encode_block_ctx_map(&shared->block_ctx_map, writer));
@@ -716,7 +716,7 @@ static jxl_status jxl_encode_global_ac_info(jxl_passes_encoder_state* enc_state,
 
   return jxl_ok_status();
 }
-static jxl_status jxl_encode_groups(const jxl_frame_header* frame_header,
+static jxl_status jxl_encode_groups(const jxl_enc_frame_header* frame_header,
                     jxl_passes_encoder_state* enc_state,
                     jxl_modular_frame_encoder* enc_modular,
                     jxl_bit_writers* group_codes){
@@ -800,14 +800,14 @@ static jxl_status jxl_encode_groups(const jxl_frame_header* frame_header,
 
 static jxl_status jxl_compute_encoding_data(
     const jxl_compress_params* cparams, const jxl_codec_metadata* metadata,
-    const jxl_jpeg_data* jpeg_data, jxl_frame_header* mutable_frame_header,
+    const jxl_jpeg_data* jpeg_data, jxl_enc_frame_header* mutable_frame_header,
     jxl_modular_frame_encoder* enc_modular, jxl_passes_encoder_state* enc_state,
     jxl_bit_writers* group_codes){
   jxl_context* ctx = jxl_passes_encoder_state_ctx(enc_state);
-  const jxl_frame_header* frame_header = mutable_frame_header;
+  const jxl_enc_frame_header* frame_header = mutable_frame_header;
   jxl_passes_shared_state* shared = &enc_state->shared;
   shared->metadata = metadata;
-  shared->frame_dim = jxl_frame_header_to_frame_dimensions(frame_header);
+  shared->frame_dim = jxl_enc_frame_header_to_frame_dimensions(frame_header);
 
   const jxl_frame_dimensions* frame_dim = &shared->frame_dim;
   JXL_RETURN_IF_ERROR(jxl_ac_strategy_image_create(
@@ -844,7 +844,7 @@ static jxl_status jxl_compute_encoding_data(
 }
 
 static jxl_status jxl_encode_frame_one_shot_write_codestream(
-    jxl_context* ctx, jxl_frame_header* frame_header,
+    jxl_context* ctx, jxl_enc_frame_header* frame_header,
     jxl_bit_writers* group_codes,
     jxl_encoder_output_processor_wrapper* output_processor) {
   jxl_bit_writer writer;
@@ -909,7 +909,7 @@ static jxl_status jxl_encode_frame_one_shot_with_header(
     jxl_encoder_jpeg_frame_adapter* frame_data,
     jxl_encoder_output_processor_wrapper* output_processor,
     jxl_bit_writers* group_codes, jxl_passes_encoder_state* enc_state,
-    jxl_modular_frame_encoder* enc_modular, jxl_frame_header* frame_header) {
+    jxl_modular_frame_encoder* enc_modular, jxl_enc_frame_header* frame_header) {
   jxl_jpeg_data jpeg_data;
   jxl_encoder_jpeg_frame_adapter_take_jpeg_data(frame_data, &jpeg_data,
                                                 ctx);
@@ -943,12 +943,12 @@ static jxl_status jxl_encode_frame_one_shot_with_modular(
     jxl_encoder_output_processor_wrapper* output_processor,
     jxl_bit_writers* group_codes, jxl_passes_encoder_state* enc_state,
     jxl_modular_frame_encoder* enc_modular) {
-  jxl_frame_header frame_header;
-  jxl_frame_header_init(&frame_header, metadata);
+  jxl_enc_frame_header frame_header;
+  jxl_enc_frame_header_init(&frame_header, metadata);
   jxl_status status = jxl_encode_frame_one_shot_with_header(
       ctx, cparams, frame_info, metadata, frame_data,
       output_processor, group_codes, enc_state, enc_modular, &frame_header);
-  jxl_frame_header_destroy(&frame_header);
+  jxl_enc_frame_header_destroy(&frame_header);
   return status;
 }
 

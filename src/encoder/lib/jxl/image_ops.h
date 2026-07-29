@@ -15,8 +15,8 @@
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/rect.h"
-#include "lib/jxl/base/status.h"
-#include "lib/jxl/image.h"
+#include "lib/jxl/base/enc_status.h"
+#include "lib/jxl/enc_image.h"
 
 static inline bool jxl_same_size_rect(const jxl_rect* image1, const jxl_rect* image2) {
   return jxl_rect_x_size(image1) == jxl_rect_x_size(image2) && jxl_rect_y_size(image1) == jxl_rect_y_size(image2);

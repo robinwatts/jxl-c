@@ -7,7 +7,7 @@
 #define LIB_JXL_PASSES_STATE_H_
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stddef.h>
 
@@ -17,8 +17,8 @@
 #include "lib/jxl/chroma_from_luma.h"
 #include "lib/jxl/coeff_order_fwd.h"
 #include "lib/jxl/frame_dimensions.h"
-#include "lib/jxl/image.h"
-#include "lib/jxl/image_metadata.h"
+#include "lib/jxl/enc_image.h"
+#include "lib/jxl/enc_image_metadata.h"
 #include "lib/jxl/quant_weights.h"
 #include "lib/jxl/quantizer.h"
 
@@ -39,7 +39,7 @@ typedef struct jxl_passes_shared_state {
 
   // Dequant matrices + quantizer.
   jxl_dequant_matrices matrices;
-  jxl_quantizer quantizer;
+  jxl_enc_quantizer quantizer;
   jxl_image_i raw_quant_field;
 
   // Per-block side information for EPF detail preservation.
@@ -70,7 +70,7 @@ static inline void jxl_passes_shared_state_init(jxl_passes_shared_state* self,
   self->ctx = ctx;
   jxl_ac_strategy_image_construct_empty(&self->ac_strategy);
   jxl_dequant_matrices_init(&self->matrices, ctx);
-  jxl_quantizer_init(&self->quantizer, &self->matrices);
+  jxl_enc_quantizer_init(&self->quantizer, &self->matrices);
   jxl_image_i_construct_empty(&self->raw_quant_field);
   jxl_image_b_construct_empty(&self->epf_sharpness);
   jxl_color_correlation_map_construct_empty(&self->cmap);

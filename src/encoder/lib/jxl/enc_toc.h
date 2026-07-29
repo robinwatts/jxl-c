@@ -8,7 +8,7 @@
 
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/enc_bit_writer.h"
 
 

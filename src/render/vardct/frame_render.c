@@ -405,7 +405,7 @@ jxl_status_t jxl_render_compose_vardct_prereq(const jxl_vardct_render_params *pa
                                           ? fh->encoded_color_channels
                                           : 1u;
         if (parsed->xyb_encoded ||
-            parsed->colour.colour_space == JXL_COLOUR_SPACE_RGB_I) {
+            parsed->color.color_space == JXL_COLOR_SPACE_RGB_I) {
             color_planes = 3u;
         }
 

@@ -73,7 +73,7 @@ static void test_fixture(const char *name) {
     if (jxl_image_header_parse(&bs, &parsed) != JXL_BS_OK) {
         assert(0);
     }
-    if (!parsed.colour.have_icc_profile) {
+    if (!parsed.color.have_icc_profile) {
         fprintf(stderr, "%s: expected embedded ICC\n", name);
         assert(0);
     }

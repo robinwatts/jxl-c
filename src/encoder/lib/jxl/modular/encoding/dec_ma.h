@@ -11,12 +11,12 @@
 #include <stdlib.h>
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/modular/options.h"
 
 
@@ -26,7 +26,7 @@ typedef struct jxl_property_decision_node {
   int16_t property;  // -1: leaf node, lchild points to leaf node
   uint32_t lchild;
   uint32_t rchild;
-  jxl_predictor predictor;
+  jxl_enc_predictor predictor;
   int64_t predictor_offset;
   uint32_t multiplier;
 } jxl_property_decision_node;
@@ -41,7 +41,7 @@ static inline void jxl_property_decision_node_construct_empty(jxl_property_decis
   n->multiplier = 1;
 }
 
-static inline jxl_property_decision_node jxl_property_decision_node_leaf(jxl_predictor predictor,
+static inline jxl_property_decision_node jxl_property_decision_node_leaf(jxl_enc_predictor predictor,
                                                      int64_t offset,
                                                      uint32_t multiplier) {
   jxl_property_decision_node n;

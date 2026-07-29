@@ -9,7 +9,7 @@
 // Metadata for color space conversions.
 
 #include <jxl/cms_interface.h>
-#include <jxl/colour_encoding.h>
+#include <jxl/color_encoding.h>
 #include <jxl/types.h>
 
 #include <stddef.h>
@@ -17,14 +17,14 @@
 #include <string.h>
 
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/cms/color_encoding_cms.h"
 #include "lib/jxl/cms/jxl_cms_internal.h"
 #include "lib/jxl/field_encodings.h"
 #include "lib/jxl/fields.h"
 
 static inline const char* jxl_enum_name_color_space(void) {
-  return "jxl_colour_space";
+  return "jxl_color_space";
 }
 static inline uint64_t jxl_enum_bits_color_space(void) {
   return jxl_make_bit((uint32_t)(kRGB)) |
@@ -94,7 +94,7 @@ typedef struct jxl_custom_transfer_function {
   jxl_fields fields;
 
   // Must be set before calling VisitFields!
-  jxl_colour_space nonserialized_color_space;
+  jxl_color_space nonserialized_color_space;
 
   jxl_cms_custom_transfer_function storage_;
 } jxl_custom_transfer_function;
@@ -183,14 +183,14 @@ static inline void jxl_enc_color_encoding_init(jxl_enc_color_encoding* self) {
   jxl_bundle_init(&self->fields);
 }
 
-static inline jxl_colour_encoding jxl_enc_color_encoding_to_external(
+static inline jxl_color_encoding jxl_enc_color_encoding_to_external(
     const jxl_enc_color_encoding* self) {
   return jxl_cms_color_encoding_to_external(&self->storage_);
 }
 
 static inline jxl_status jxl_enc_color_encoding_create_icc(jxl_enc_color_encoding* self) {
   jxl_array_clear(&self->storage_.icc);
-  const jxl_colour_encoding external = jxl_enc_color_encoding_to_external(self);
+  const jxl_color_encoding external = jxl_enc_color_encoding_to_external(self);
   if (!jxl_status_ok(jxl_maybe_create_profile(&external, &self->storage_.icc))) {
     jxl_array_clear(&self->storage_.icc);
     return JXL_FAILURE("Failed to create ICC profile");
@@ -226,7 +226,7 @@ static inline bool jxl_enc_color_encoding_has_primaries(const jxl_enc_color_enco
 }
 
 static inline bool jxl_enc_color_encoding_implicit_white_point(jxl_enc_color_encoding* self) {
-  if (self->storage_.colour_space == kXYB) {
+  if (self->storage_.color_space == kXYB) {
     self->storage_.white_point = kWhitePointD65;
     return true;
   }
@@ -234,8 +234,8 @@ static inline bool jxl_enc_color_encoding_implicit_white_point(jxl_enc_color_enc
 }
 
 static inline void jxl_enc_color_encoding_set_color_space(jxl_enc_color_encoding* self,
-                                              jxl_colour_space cs) {
-  self->storage_.colour_space = cs;
+                                              jxl_color_space cs) {
+  self->storage_.color_space = cs;
 }
 
 static inline const jxl_cms_custom_transfer_function* jxl_enc_color_encoding_tf(

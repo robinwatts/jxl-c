@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #include "lib/jxl/base/array.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/enc_ans_params.h"
 
 // `in` / `out` are parallel to `in_counts` / `out_counts`.

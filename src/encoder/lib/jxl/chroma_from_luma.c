@@ -6,13 +6,13 @@
 #include "lib/jxl/chroma_from_luma.h"
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stddef.h>
 
 #include "lib/jxl/base/common.h"
-#include "lib/jxl/base/status.h"
-#include "lib/jxl/image.h"
+#include "lib/jxl/base/enc_status.h"
+#include "lib/jxl/enc_image.h"
 #include "lib/jxl/image_ops.h"
 
 jxl_status jxl_color_correlation_map_create(jxl_context* ctx,

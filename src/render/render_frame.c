@@ -953,22 +953,22 @@ jxl_status_t jxl_render_convert_color_for_record(jxl_context *ctx, jxl_context *
         return JXL_OK;
     }
 
-    if (!parsed->xyb_encoded || parsed->colour.colour_space == JXL_COLOUR_SPACE_XYB_I ||
-        parsed->colour.colour_space == JXL_COLOUR_SPACE_UNKNOWN_I) {
+    if (!parsed->xyb_encoded || parsed->color.color_space == JXL_COLOR_SPACE_XYB_I ||
+        parsed->color.color_space == JXL_COLOR_SPACE_UNKNOWN_I) {
         if (encoded_color < 3u) {
             return jxl_render_remove_color_planes(alloc, r, encoded_color);
         }
         return JXL_OK;
     }
 
-    if (parsed->colour.have_icc_profile) {
+    if (parsed->color.have_icc_profile) {
         if (encoded_color < 3u) {
             return jxl_render_remove_color_planes(alloc, r, encoded_color);
         }
         return JXL_OK;
     }
 
-    if (!jxl_colour_encoding_is_d65_srgb_fast_path(&parsed->colour)) {
+    if (!jxl_color_encoding_is_d65_srgb_fast_path(&parsed->color)) {
         if (encoded_color < 3u) {
             return jxl_render_remove_color_planes(alloc, r, encoded_color);
         }
@@ -984,13 +984,13 @@ jxl_status_t jxl_render_convert_color_for_record(jxl_context *ctx, jxl_context *
             }
         }
         st = jxl_color_transform_xyb_to_encoding(ctx, r->planes[0], r->planes[1], r->planes[2], pixels,
-                                                 &parsed->opsin_inverse, &parsed->colour, 255.0f);
+                                                 &parsed->opsin_inverse, &parsed->color, 255.0f);
         if (st != JXL_OK) {
             return st;
         }
     }
     r->ct_done = 1;
-    if (encoded_color < 3u || parsed->colour.colour_space == JXL_COLOUR_SPACE_GRAY_I) {
+    if (encoded_color < 3u || parsed->color.color_space == JXL_COLOR_SPACE_GRAY_I) {
         uint32_t keep_color = encoded_color;
         return jxl_render_remove_color_planes(alloc, r, keep_color);
     }

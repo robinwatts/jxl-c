@@ -8,7 +8,7 @@
 
 #include <brotli/encode.h>
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stddef.h>
 

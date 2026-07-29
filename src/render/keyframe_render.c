@@ -54,7 +54,7 @@ static jxl_status_t ensure_animation_refs(const jxl_keyframe_render_params *para
     }
 
     color_planes = parsed->xyb_encoded ? 3u : 1u;
-    if (parsed->colour.colour_space == JXL_COLOUR_SPACE_RGB_I) {
+    if (parsed->color.color_space == JXL_COLOR_SPACE_RGB_I) {
         color_planes = 3u;
     }
     plane_count = color_planes + (uint32_t)parsed->num_extra_channels;

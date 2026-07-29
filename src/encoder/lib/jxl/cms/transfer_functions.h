@@ -11,7 +11,7 @@
 #include <math.h>
 
 #include "lib/jxl/base/common.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 
 // Definitions for BT.2100-2 transfer functions (used inside/outside SIMD):
 // "display" is linear light (nits) normalized to [0, 1].

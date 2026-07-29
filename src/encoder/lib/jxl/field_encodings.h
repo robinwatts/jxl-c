@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 
 typedef struct jxl_visitor jxl_visitor;
 typedef struct jxl_fields jxl_fields;

@@ -3,17 +3,17 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "lib/jxl/frame_header.h"
+#include "lib/jxl/enc_frame_header.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/field_encodings.h"
-#include "lib/jxl/image_metadata.h"
+#include "lib/jxl/enc_image_metadata.h"
 
 #include "lib/jxl/base/printf_macros.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/common.h"  // kMaxNumPasses
 #include "lib/jxl/fields.h"
 #include "lib/jxl/pack_signed.h"
@@ -22,28 +22,28 @@ const uint8_t kYCbCrChromaHShift[] = {0, 1, 1, 0};
 const uint8_t kYCbCrChromaVShift[] = {0, 1, 0, 1};
 
 static jxl_status jxl_visit_blend_mode(jxl_visitor* JXL_RESTRICT visitor,
-                             jxl_blend_mode default_value, jxl_blend_mode* blend_mode) {
+                             jxl_enc_blend_mode default_value, jxl_enc_blend_mode* blend_mode) {
   uint32_t encoded = (uint32_t)(*blend_mode);
 
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val((uint32_t)(kReplace)), jxl_val((uint32_t)(kAdd)), jxl_val((uint32_t)(kBlend)), jxl_bits_offset(2, 3)), (uint32_t)(default_value), &encoded));
   if (encoded > (uint32_t)(kMul)) {
     return JXL_FAILURE("Invalid blend_mode");
   }
-  *blend_mode = (jxl_blend_mode)(encoded);
+  *blend_mode = (jxl_enc_blend_mode)(encoded);
   return jxl_ok_status();
 }
 
 static jxl_status jxl_visit_frame_type(jxl_visitor* JXL_RESTRICT visitor,
-                             jxl_frame_type default_value, jxl_frame_type* frame_type) {
+                             jxl_enc_frame_type default_value, jxl_enc_frame_type* frame_type) {
   uint32_t encoded = (uint32_t)(*frame_type);
 
   JXL_QUIET_RETURN_IF_ERROR(
       jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val((uint32_t)(kRegularFrame)), jxl_val((uint32_t)(kDCFrame)), jxl_val((uint32_t)(kReferenceOnly)), jxl_val((uint32_t)(kSkipProgressive))), (uint32_t)(default_value), &encoded));
-  *frame_type = (jxl_frame_type)(encoded);
+  *frame_type = (jxl_enc_frame_type)(encoded);
   return jxl_ok_status();
 }
 
-jxl_status jxl_blending_info_visit_fields(jxl_blending_info* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_status jxl_enc_blending_info_visit_fields(jxl_enc_blending_info* self, jxl_visitor* JXL_RESTRICT visitor) {
   JXL_QUIET_RETURN_IF_ERROR(
       jxl_visit_blend_mode(visitor, kReplace, &self->mode));
   if (jxl_status_ok(jxl_visitor_conditional(visitor, self->nonserialized_num_extra_channels > 0 &&
@@ -133,7 +133,7 @@ jxl_status jxl_passes_visit_fields(jxl_passes* self, jxl_visitor* JXL_RESTRICT v
 
 
 
-jxl_status jxl_frame_header_visit_fields(jxl_frame_header* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_visitor* JXL_RESTRICT visitor) {
   if (jxl_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
     // Overwrite all serialized fields, but not any nonserialized_*.
     jxl_visitor_set_default(visitor, &self->fields);
@@ -147,7 +147,7 @@ jxl_status jxl_frame_header_visit_fields(jxl_frame_header* self, jxl_visitor* JX
     return JXL_FAILURE("Only regular frame could be a preview");
   }
 
-  // jxl_frame_encoding.
+  // jxl_enc_frame_encoding.
   bool is_modular = (self->encoding == kModular);
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &is_modular));
   self->encoding = (is_modular ? kModular : kVarDCT);
@@ -262,8 +262,8 @@ jxl_status jxl_frame_header_visit_fields(jxl_frame_header* self, jxl_visitor* JX
         return JXL_FAILURE(
             "Invalid crop dimensions for frame: zero width or height");
       }
-      int32_t image_xsize = jxl_frame_header_default_x_size(self);
-      int32_t image_ysize = jxl_frame_header_default_y_size(self);
+      int32_t image_xsize = jxl_enc_frame_header_default_x_size(self);
+      int32_t image_ysize = jxl_enc_frame_header_default_y_size(self);
       if (self->frame_type == kRegularFrame ||
           self->frame_type == kSkipProgressive) {
         is_partial_frame |= self->frame_origin.x0 > 0;
@@ -287,7 +287,7 @@ jxl_status jxl_frame_header_visit_fields(jxl_frame_header* self, jxl_visitor* JX
       return JXL_FAILURE("Failed to allocate extra_channel_blending_info");
     }
     for (size_t i = 0; i < num_extra_channels; i++) {
-      jxl_blending_info* ec_blending_info =
+      jxl_enc_blending_info* ec_blending_info =
           jxl_blending_infos_at(&self->extra_channel_blending_info, i);
       ec_blending_info->nonserialized_is_partial_frame = is_partial_frame;
       ec_blending_info->nonserialized_num_extra_channels = num_extra_channels;
@@ -324,7 +324,7 @@ jxl_status jxl_frame_header_visit_fields(jxl_frame_header* self, jxl_visitor* JX
   // full frame, as samples outside the partial region are from a
   // post-color-transform frame.
   if (self->frame_type != kDCFrame) {
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, jxl_frame_header_can_be_referenced(self) &&
+    if (jxl_status_ok(jxl_visitor_conditional(visitor, jxl_enc_frame_header_can_be_referenced(self) &&
                              self->blending_info.mode == kReplace &&
                              !is_partial_frame &&
                              (self->frame_type == kRegularFrame ||

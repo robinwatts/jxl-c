@@ -7,13 +7,13 @@
 #define LIB_JXL_ENC_FRAME_H_
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 #include <jxl/types.h>
 
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/enc_params.h"
 #include "lib/jxl/encode_internal.h"
-#include "lib/jxl/image_metadata.h"
+#include "lib/jxl/enc_image_metadata.h"
 
 // Information needed for encoding a frame that is not contained elsewhere and
 // does not belong to `cparams`.

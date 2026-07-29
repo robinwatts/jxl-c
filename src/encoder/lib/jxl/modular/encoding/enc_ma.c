@@ -13,7 +13,7 @@
 #include "lib/jxl/base/bits.h"
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/modular/encoding/dec_ma.h"
 #include "lib/jxl/modular/encoding/ma_common.h"
 #include "lib/jxl/modular/modular_image.h"
@@ -36,7 +36,7 @@ JXL_DEFINE_POD_ARRAY(jxl_array_ma_node_info, jxl_ma_node_info)
 typedef struct jxl_ma_cost_info {
   float cost;
   float extra_cost;
-  jxl_predictor pred;  // may be uninitialized; never used in that case.
+  jxl_enc_predictor pred;  // may be uninitialized; never used in that case.
 } jxl_ma_cost_info;
 static float jxl_ma_cost_info_cost(const jxl_ma_cost_info* self) {
   return self->cost + self->extra_cost;
@@ -49,8 +49,8 @@ typedef struct jxl_split_info {
   size_t pos;
   float lcost;
   float rcost;
-  jxl_predictor lpred;
-  jxl_predictor rpred;
+  jxl_enc_predictor lpred;
+  jxl_enc_predictor rpred;
 } jxl_split_info;
 static float jxl_split_info_cost(const jxl_split_info* self) {
   return self->lcost + self->rcost;
@@ -91,8 +91,8 @@ static float jxl_estimate_bits(const int32_t* counts, size_t num_symbols) {
   return bits;
 }
 
-static void jxl_make_split_node(size_t pos, int property, int splitval, jxl_predictor lpred,
-                   int64_t loff, jxl_predictor rpred, int64_t roff, jxl_tree *tree) {
+static void jxl_make_split_node(size_t pos, int property, int splitval, jxl_enc_predictor lpred,
+                   int64_t loff, jxl_enc_predictor rpred, int64_t roff, jxl_tree *tree) {
   // Note that the tree splits on *strictly greater*.
   jxl_array_at(tree, pos)->lchild = jxl_array_len(tree);
   jxl_array_at(tree, pos)->rchild = jxl_array_len(tree) + 1;
@@ -605,7 +605,7 @@ jxl_status jxl_compute_best_tree(jxl_tree_samples *tree_samples, float threshold
   return jxl_ok_status();
 }
 
-jxl_status jxl_tree_samples_set_predictor(jxl_tree_samples* self, jxl_predictor predictor,
+jxl_status jxl_tree_samples_set_predictor(jxl_tree_samples* self, jxl_enc_predictor predictor,
                                  jxl_modular_tree_mode wp_tree_mode) {
   self->num_samples = 0;
   for (size_t i = 0; i < kNumModularPredictors; ++i) {
@@ -624,7 +624,7 @@ return jxl_ok_status();
 jxl_array_clear(&self->predictors);
   if (predictor == kPredictorVariable) {
     for (size_t i = 0; i < kNumModularPredictors; i++) {
-if (!jxl_status_ok(jxl_array_predictor_push_back(&self->predictors, (jxl_predictor)(i)))) JXL_CRASH();
+if (!jxl_status_ok(jxl_array_predictor_push_back(&self->predictors, (jxl_enc_predictor)(i)))) JXL_CRASH();
 }
     jxl_swap_predictor(jxl_array_at(&self->predictors, 0), jxl_array_at(&self->predictors, (int)(kPredictorWeighted)));
     jxl_swap_predictor(jxl_array_at(&self->predictors, 1), jxl_array_at(&self->predictors, (int)(kPredictorGradient)));
@@ -635,8 +635,8 @@ if (!jxl_status_ok(jxl_array_predictor_push_back(&self->predictors, kPredictorGr
 if (!jxl_status_ok(jxl_array_predictor_push_back(&self->predictors, predictor))) JXL_CRASH();
 }
   if (wp_tree_mode == kNoWP) {
-    jxl_predictor* dest = jxl_array_data(&self->predictors);
-    for (jxl_predictor* p = jxl_array_data(&self->predictors); p != jxl_array_data(&self->predictors) + jxl_array_len(&self->predictors); ++p) {
+    jxl_enc_predictor* dest = jxl_array_data(&self->predictors);
+    for (jxl_enc_predictor* p = jxl_array_data(&self->predictors); p != jxl_array_data(&self->predictors) + jxl_array_len(&self->predictors); ++p) {
       if (*p != kPredictorWeighted) {
         if (dest != p) *dest = *p;
         ++dest;

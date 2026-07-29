@@ -11,7 +11,7 @@
 
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/coeff_order_fwd.h"
 
 // Block context used for scanning order, number of non-zeros, AC coefficients.

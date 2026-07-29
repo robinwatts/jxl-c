@@ -12,11 +12,11 @@
 #include <stdlib.h>
 
 typedef enum {
-    JXL_COLOUR_SPACE_RGB_I = 0,
-    JXL_COLOUR_SPACE_GRAY_I = 1,
-    JXL_COLOUR_SPACE_XYB_I = 2,
-    JXL_COLOUR_SPACE_UNKNOWN_I = 3,
-} jxl_colour_space_i;
+    JXL_COLOR_SPACE_RGB_I = 0,
+    JXL_COLOR_SPACE_GRAY_I = 1,
+    JXL_COLOR_SPACE_XYB_I = 2,
+    JXL_COLOR_SPACE_UNKNOWN_I = 3,
+} jxl_color_space_i;
 
 typedef struct {
     uint32_t width;
@@ -24,17 +24,17 @@ typedef struct {
 } jxl_size_header;
 
 typedef enum {
-    JXL_COLOUR_WHITE_POINT_D65_I = 0,
+    JXL_COLOR_WHITE_POINT_D65_I = 0,
     JXL_WHITE_POINT_DCI_I = 1,
     JXL_WHITE_POINT_E_I = 2,
-    JXL_COLOUR_WHITE_POINT_CUSTOM_I = 3,
+    JXL_COLOR_WHITE_POINT_CUSTOM_I = 3,
 } jxl_white_point_i;
 
 typedef enum {
-    JXL_COLOUR_PRIMARIES_SRGB_I = 0,
+    JXL_COLOR_PRIMARIES_SRGB_I = 0,
     JXL_PRIMARIES_P3_I = 1,
     JXL_PRIMARIES_BT2100_I = 2,
-    JXL_COLOUR_PRIMARIES_CUSTOM_I = 3,
+    JXL_COLOR_PRIMARIES_CUSTOM_I = 3,
 } jxl_primaries_i;
 
 typedef enum {
@@ -55,7 +55,7 @@ typedef enum {
 
 typedef struct {
     int have_icc_profile;
-    jxl_colour_space_i colour_space;
+    jxl_color_space_i color_space;
     jxl_white_point_i white_point;
     int32_t custom_white_x;
     int32_t custom_white_y;
@@ -69,7 +69,7 @@ typedef struct {
     jxl_transfer_function_i transfer;
     uint32_t gamma_1e7;
     jxl_rendering_intent_i rendering_intent;
-} jxl_colour_encoding_parsed;
+} jxl_color_encoding_parsed;
 
 typedef struct {
     float inv_mat[3][3];
@@ -97,7 +97,7 @@ typedef struct {
     int modular_16bit_buffers;
     /* First extra channel when it is Alpha; -1 if unknown or not alpha. */
     int alpha_associated;
-    jxl_colour_encoding_parsed colour;
+    jxl_color_encoding_parsed color;
     jxl_opsin_inverse_parsed opsin_inverse;
     jxl_upsampling_weights upsampling_weights;
     uint8_t *embedded_icc;

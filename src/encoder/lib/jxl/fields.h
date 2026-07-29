@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/enc_bit_writer.h"
 #include "lib/jxl/field_encodings.h"
 
@@ -77,7 +77,7 @@ jxl_status jxl_f16_coder_write(float value, jxl_bit_writer* JXL_RESTRICT writer)
 jxl_status jxl_f16_coder_can_encode(float value, size_t* JXL_RESTRICT encoded_bits);
 
 // A "bundle" is a forward- and backward compatible collection of fields.
-// They are used for jxl_size_header/jxl_frame_header/jxl_group_header. Bundles can be
+// They are used for jxl_enc_size_header/jxl_enc_frame_header/jxl_group_header. Bundles can be
 // extended by appending(!) fields. Optional fields may be omitted from the
 // bitstream by conditionally visiting them. When reading new bitstreams with
 // old code, we skip unknown fields at the end of the bundle. This requires

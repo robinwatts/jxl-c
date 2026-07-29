@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/fields.h"
 #include "lib/jxl/quant_weights.h"
 
@@ -46,7 +46,7 @@ static inline void jxl_quantizer_params_init(jxl_quantizer_params* self) {
   jxl_bundle_init(&self->fields);
 }
 
-typedef struct jxl_quantizer {
+typedef struct jxl_enc_quantizer {
   // These are serialized:
   int global_scale_;
   int quant_dc_;
@@ -57,28 +57,28 @@ typedef struct jxl_quantizer {
   float inv_quant_dc_;
 
   const jxl_dequant_matrices* dequant_;
-} jxl_quantizer;
+} jxl_enc_quantizer;
 
-void jxl_quantizer_init(jxl_quantizer* self, const jxl_dequant_matrices* dequant);
-void jxl_quantizer_init_with(jxl_quantizer* self, const jxl_dequant_matrices* dequant,
+void jxl_enc_quantizer_init(jxl_enc_quantizer* self, const jxl_dequant_matrices* dequant);
+void jxl_enc_quantizer_init_with(jxl_enc_quantizer* self, const jxl_dequant_matrices* dequant,
                        int quant_dc, int global_scale);
-jxl_quantizer_params jxl_quantizer_get_params(const jxl_quantizer* self);
+jxl_quantizer_params jxl_enc_quantizer_get_params(const jxl_enc_quantizer* self);
 
-static inline void jxl_quantizer_recompute_from_global_scale(jxl_quantizer* self) {
+static inline void jxl_enc_quantizer_recompute_from_global_scale(jxl_enc_quantizer* self) {
   self->global_scale_float_ = self->global_scale_ * (1.0 / kGlobalScaleDenom);
   self->inv_global_scale_ = 1.0 * kGlobalScaleDenom / self->global_scale_;
   self->inv_quant_dc_ = self->inv_global_scale_ / self->quant_dc_;
 }
 
-static inline float jxl_quantizer_inv_global_scale(const jxl_quantizer* self) {
+static inline float jxl_enc_quantizer_inv_global_scale(const jxl_enc_quantizer* self) {
   return self->inv_global_scale_;
 }
 
-static inline float jxl_quantizer_get_dc_step(const jxl_quantizer* self, size_t c) {
+static inline float jxl_enc_quantizer_get_dc_step(const jxl_enc_quantizer* self, size_t c) {
   return self->inv_quant_dc_ * jxl_dequant_matrices_dc_quant(self->dequant_, c);
 }
 
-static inline float jxl_quantizer_get_inv_dc_step(const jxl_quantizer* self, size_t c) {
+static inline float jxl_enc_quantizer_get_inv_dc_step(const jxl_enc_quantizer* self, size_t c) {
   return jxl_dequant_matrices_inv_dc_quant(self->dequant_, c) *
          (self->global_scale_float_ * self->quant_dc_);
 }

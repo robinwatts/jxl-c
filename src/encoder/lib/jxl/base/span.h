@@ -14,7 +14,7 @@
 #include <stdint.h>
 
 #include "lib/jxl/base/array.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 
 typedef struct jxl_bytes {
   const uint8_t* ptr_;

@@ -6,7 +6,7 @@
 #include "lib/jxl/enc_modular.h"
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <math.h>
 #include <stddef.h>
@@ -15,7 +15,7 @@
 #include "lib/jxl/ac_strategy.h"
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/printf_macros.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/compressed_dc.h"
 #include "lib/jxl/layer_type.h"
 #include "lib/jxl/fields.h"
@@ -114,7 +114,7 @@ static jxl_status jxl_write_tree_flag_body(void* opaque) {
 }
 
 jxl_status jxl_modular_frame_encoder_create(jxl_context* ctx,
-                                   const jxl_frame_header* frame_header,
+                                   const jxl_enc_frame_header* frame_header,
                                    const jxl_compress_params* cparams_orig,
                                    jxl_modular_frame_encoder* out){
   jxl_modular_frame_encoder self;
@@ -130,9 +130,9 @@ jxl_status jxl_modular_frame_encoder_create(jxl_context* ctx,
   return jxl_ok_status();
 }
 
-jxl_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self, const jxl_frame_header* frame_header,
+jxl_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self, const jxl_enc_frame_header* frame_header,
                                  const jxl_compress_params* cparams_orig){
-  self->frame_dim_ = jxl_frame_header_to_frame_dimensions(frame_header);
+  self->frame_dim_ = jxl_enc_frame_header_to_frame_dimensions(frame_header);
   self->cparams_ = *cparams_orig;
 
   size_t num_streams =
@@ -427,7 +427,7 @@ jxl_status jxl_modular_frame_encoder_encode_stream(jxl_modular_frame_encoder* se
   return jxl_ok_status();
 }
 
-jxl_status jxl_modular_frame_encoder_add_var_dctdc(jxl_modular_frame_encoder* self, const jxl_frame_header* frame_header,
+jxl_status jxl_modular_frame_encoder_add_var_dctdc(jxl_modular_frame_encoder* self, const jxl_enc_frame_header* frame_header,
                                         const jxl_image3_f* dc, const jxl_rect* r,
                                         size_t group_index,
                                         jxl_passes_encoder_state* enc_state){
@@ -459,8 +459,8 @@ jxl_status jxl_modular_frame_encoder_add_var_dctdc(jxl_modular_frame_encoder* se
     static const size_t kChans[] = {1, 0, 2};
     for (size_t c_i = 0; c_i < 3; ++c_i) {
       size_t c = kChans[c_i];
-      float inv_factor = jxl_quantizer_get_inv_dc_step(&enc_state->shared.quantizer, c);
-      float y_factor = jxl_quantizer_get_dc_step(&enc_state->shared.quantizer, 1);
+      float inv_factor = jxl_enc_quantizer_get_inv_dc_step(&enc_state->shared.quantizer, c);
+      float y_factor = jxl_enc_quantizer_get_dc_step(&enc_state->shared.quantizer, 1);
       float cfl_factor = jxl_color_correlation_dc_factors(color_correlation)[c];
       for (size_t y = 0; y < jxl_rect_y_size(r); y++) {
         int32_t* quant_row =
@@ -490,7 +490,7 @@ jxl_status jxl_modular_frame_encoder_add_var_dctdc(jxl_modular_frame_encoder* se
           jxl_rect_y0(r) >> jxl_y_cb_cr_chroma_subsampling_v_shift(&frame_header->chroma_subsampling, c),
           jxl_rect_x_size(r) >> jxl_y_cb_cr_chroma_subsampling_h_shift(&frame_header->chroma_subsampling, c),
           jxl_rect_y_size(r) >> jxl_y_cb_cr_chroma_subsampling_v_shift(&frame_header->chroma_subsampling, c));
-      float inv_factor = jxl_quantizer_get_inv_dc_step(&enc_state->shared.quantizer, c);
+      float inv_factor = jxl_enc_quantizer_get_inv_dc_step(&enc_state->shared.quantizer, c);
       size_t ys = jxl_rect_y_size(&rect);
       size_t xs = jxl_rect_x_size(&rect);
       jxl_channel* ch = jxl_channels_at(&jxl_images_at(&self->stream_images_, stream_id)->channel, c < 2 ? c ^ 1 : c);

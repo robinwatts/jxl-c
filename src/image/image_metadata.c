@@ -131,12 +131,12 @@ jxl_bs_status_t jxl_image_metadata_parse(jxl_bs *bs, jxl_parsed_image_header *ou
             return st;
         }
 
-        st = jxl_colour_encoding_parse(bs, &out->colour);
+        st = jxl_color_encoding_parse(bs, &out->color);
         if (st != JXL_BS_OK) {
             return st;
         }
     } else {
-        out->colour.colour_space = JXL_COLOUR_SPACE_XYB_I;
+        out->color.color_space = JXL_COLOR_SPACE_XYB_I;
     }
 
     if (extra_fields) {

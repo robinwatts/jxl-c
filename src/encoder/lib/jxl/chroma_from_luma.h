@@ -10,17 +10,17 @@
 // model for the X and B channels from the Y channel.
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/cms/opsin_params.h"
 #include "lib/jxl/field_encodings.h"
 #include "lib/jxl/frame_dimensions.h"
-#include "lib/jxl/image.h"
+#include "lib/jxl/enc_image.h"
 #include "lib/jxl/base/compiler_specific.h"
 
 // Tile is the rectangular grid of blocks that share color correlation

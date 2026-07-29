@@ -3,20 +3,20 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#ifndef LIB_JXL_IMAGE_H_
-#define LIB_JXL_IMAGE_H_
+#ifndef LIB_JXL_ENC_IMAGE_H_
+#define LIB_JXL_ENC_IMAGE_H_
 
 // SIMD/multicore-friendly planar image representation with row accessors.
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/rect.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/memory_manager_internal.h"
 
 // jxl_plane_base is image.{h|cc}-local; prefer typed Plane helpers elsewhere.
@@ -449,4 +449,4 @@ static inline const float* jxl_rect_const_plane_row(const jxl_rect* self,
   return jxl_image3_f_const_plane_row(image, c, y + self->y0_) + self->x0_;
 }
 
-#endif  // LIB_JXL_IMAGE_H_
+#endif  // LIB_JXL_ENC_IMAGE_H_

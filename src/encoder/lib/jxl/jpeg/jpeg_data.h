@@ -14,7 +14,7 @@
 
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/chunked_array.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/fields.h"
 #include "lib/jxl/frame_dimensions.h"
 

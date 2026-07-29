@@ -8,14 +8,14 @@
 #include "lib/jxl/enc_context_map.h"
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/bits.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/enc_ans.h"
 #include "lib/jxl/layer_type.h"
 #include "lib/jxl/entropy_coder.h"

@@ -6,7 +6,7 @@
 #ifndef LIB_JXL_ENC_CHROMA_FROM_LUMA_H_
 #define LIB_JXL_ENC_CHROMA_FROM_LUMA_H_
 
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/chroma_from_luma.h"
 #include "lib/jxl/enc_bit_writer.h"
 

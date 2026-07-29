@@ -6,8 +6,8 @@
 // Main codestream header bundles, the metadata that applies to all frames.
 // Enums must align with the C API definitions in codestream_header.h.
 
-#ifndef LIB_JXL_IMAGE_METADATA_H_
-#define LIB_JXL_IMAGE_METADATA_H_
+#ifndef LIB_JXL_ENC_IMAGE_METADATA_H_
+#define LIB_JXL_ENC_IMAGE_METADATA_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -17,7 +17,7 @@
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/matrix_ops.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/color_encoding_internal.h"
 #include "lib/jxl/field_encodings.h"
 #include "lib/jxl/fields.h"
@@ -294,7 +294,7 @@ static inline jxl_status jxl_extra_channel_infos_resize(jxl_extra_channel_infos*
   return jxl_ok_status();
 }
 
-typedef struct jxl_opsin_inverse_matrix {
+typedef struct jxl_enc_opsin_inverse_matrix {
   jxl_fields fields;
 
   bool all_default;
@@ -302,14 +302,14 @@ typedef struct jxl_opsin_inverse_matrix {
   jxl_matrix3x3 inverse_matrix;
   float opsin_biases[3];
   float quant_biases[4];
-} jxl_opsin_inverse_matrix;
+} jxl_enc_opsin_inverse_matrix;
 
-jxl_status jxl_opsin_inverse_matrix_visit_fields(jxl_opsin_inverse_matrix* self,
+jxl_status jxl_enc_opsin_inverse_matrix_visit_fields(jxl_enc_opsin_inverse_matrix* self,
                                      jxl_visitor* JXL_RESTRICT visitor);
-JXL_FIELDS_NAME(jxl_opsin_inverse_matrix)
+JXL_FIELDS_NAME(jxl_enc_opsin_inverse_matrix)
 
-static inline void jxl_opsin_inverse_matrix_init(jxl_opsin_inverse_matrix* self) {
-  JXL_FIELDS_REGISTER_PTR(jxl_opsin_inverse_matrix, &self->fields);
+static inline void jxl_enc_opsin_inverse_matrix_init(jxl_enc_opsin_inverse_matrix* self) {
+  JXL_FIELDS_REGISTER_PTR(jxl_enc_opsin_inverse_matrix, &self->fields);
   jxl_bundle_init(&self->fields);
 }
 
@@ -358,7 +358,7 @@ typedef struct jxl_custom_transform_data {
 
   bool all_default;
 
-  jxl_opsin_inverse_matrix opsin_inverse_matrix;
+  jxl_enc_opsin_inverse_matrix opsin_inverse_matrix;
 
   uint32_t custom_weights_mask;
   float upsampling2_weights[15];
@@ -371,7 +371,7 @@ jxl_status jxl_custom_transform_data_visit_fields(jxl_custom_transform_data* sel
 JXL_FIELDS_NAME(jxl_custom_transform_data)
 
 static inline void jxl_custom_transform_data_init(jxl_custom_transform_data* self) {
-  jxl_opsin_inverse_matrix_init(&self->opsin_inverse_matrix);
+  jxl_enc_opsin_inverse_matrix_init(&self->opsin_inverse_matrix);
   JXL_FIELDS_REGISTER_PTR(jxl_custom_transform_data, &self->fields);
   jxl_bundle_init(&self->fields);
 }
@@ -430,7 +430,7 @@ typedef struct jxl_image_metadata {
   // the decoder can receive the pixels in without needing a CMS.
   bool xyb_encoded;
 
-  jxl_enc_color_encoding colour_encoding;
+  jxl_enc_color_encoding color_encoding;
 
   // These values are initialized to defaults such that the 'extra_fields'
   // condition in VisitFields uses correctly initialized values.
@@ -439,9 +439,9 @@ typedef struct jxl_image_metadata {
   bool have_animation;
   bool have_intrinsic_size;
 
-  // If present, the stored image has the dimensions of the first jxl_size_header,
+  // If present, the stored image has the dimensions of the first jxl_enc_size_header,
   // but decoders are advised to resample or display per `intrinsic_size`.
-  jxl_size_header intrinsic_size;  // only if have_intrinsic_size
+  jxl_enc_size_header intrinsic_size;  // only if have_intrinsic_size
 
   jxl_tone_mapping tone_mapping;
 
@@ -452,7 +452,7 @@ typedef struct jxl_image_metadata {
   // Only present if m.have_preview.
   jxl_preview_header preview_size;
   // Only present if m.have_animation.
-  jxl_animation_header animation;
+  jxl_enc_animation_header animation;
 
   uint64_t extensions;
 } jxl_image_metadata;
@@ -477,7 +477,7 @@ static inline void jxl_image_metadata_construct_empty(jxl_image_metadata* self,
   jxl_fields_construct_empty(&self->intrinsic_size.fields);
   jxl_fields_construct_empty(&self->preview_size.fields);
   jxl_fields_construct_empty(&self->animation.fields);
-  jxl_enc_color_encoding_construct_empty(&self->colour_encoding, mm);
+  jxl_enc_color_encoding_construct_empty(&self->color_encoding, mm);
   self->orientation = 1;
   self->have_preview = false;
   self->have_animation = false;
@@ -486,17 +486,17 @@ static inline void jxl_image_metadata_construct_empty(jxl_image_metadata* self,
   self->extra_channel_info.ctx = mm;
 }
 static inline void jxl_image_metadata_destroy(jxl_image_metadata* self) {
-  jxl_enc_color_encoding_destroy(&self->colour_encoding);
+  jxl_enc_color_encoding_destroy(&self->color_encoding);
   jxl_extra_channel_infos_destroy(&self->extra_channel_info);
 }
 
 static inline void jxl_image_metadata_init(jxl_image_metadata* self) {
   jxl_enc_bit_depth_init(&self->bit_depth);
-  jxl_enc_color_encoding_init(&self->colour_encoding);
+  jxl_enc_color_encoding_init(&self->color_encoding);
   jxl_tone_mapping_init(&self->tone_mapping);
-  jxl_size_header_init(&self->intrinsic_size);
+  jxl_enc_size_header_init(&self->intrinsic_size);
   jxl_preview_header_init(&self->preview_size);
-  jxl_animation_header_init(&self->animation);
+  jxl_enc_animation_header_init(&self->animation);
   JXL_FIELDS_REGISTER_PTR(jxl_image_metadata, &self->fields);
   jxl_bundle_init(&self->fields);
 }
@@ -510,7 +510,7 @@ typedef struct jxl_codec_metadata {
   // The size of the codestream: this is the nominal size applicable to all
   // frames, although some frames can have a different effective size through
   // crop, dc_level or representing a the preview.
-  jxl_size_header size;
+  jxl_enc_size_header size;
   // Often default.
   jxl_custom_transform_data transform_data;
 } jxl_codec_metadata;
@@ -528,15 +528,15 @@ static inline void jxl_codec_metadata_destroy(jxl_codec_metadata* self) {
 }
 static inline void jxl_codec_metadata_init(jxl_codec_metadata* self) {
   jxl_image_metadata_init(&self->m);
-  jxl_size_header_init(&self->size);
+  jxl_enc_size_header_init(&self->size);
   jxl_custom_transform_data_init(&self->transform_data);
 }
 
 static inline size_t jxl_codec_metadata_x_size(const jxl_codec_metadata* self) {
-  return jxl_size_header_x_size(&self->size);
+  return jxl_enc_size_header_x_size(&self->size);
 }
 static inline size_t jxl_codec_metadata_y_size(const jxl_codec_metadata* self) {
-  return jxl_size_header_y_size(&self->size);
+  return jxl_enc_size_header_y_size(&self->size);
 }
 
-#endif  // LIB_JXL_IMAGE_METADATA_H_
+#endif  // LIB_JXL_ENC_IMAGE_METADATA_H_

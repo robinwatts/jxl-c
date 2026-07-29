@@ -9,7 +9,7 @@
 #include <stddef.h>
 
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/fields.h"
 
 jxl_status jxl_loop_filter_visit_fields(jxl_loop_filter* self, jxl_visitor* JXL_RESTRICT visitor) {

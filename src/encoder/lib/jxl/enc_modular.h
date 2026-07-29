@@ -7,23 +7,23 @@
 #define LIB_JXL_ENC_MODULAR_H_
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/rect.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/dec_modular.h"
 #include "lib/jxl/enc_ans.h"
 #include "lib/jxl/enc_bit_writer.h"
 #include "lib/jxl/enc_cache.h"
 #include "lib/jxl/enc_params.h"
 #include "lib/jxl/frame_dimensions.h"
-#include "lib/jxl/frame_header.h"
-#include "lib/jxl/image.h"
-#include "lib/jxl/image_metadata.h"
+#include "lib/jxl/enc_frame_header.h"
+#include "lib/jxl/enc_image.h"
+#include "lib/jxl/enc_image_metadata.h"
 #include "lib/jxl/modular/encoding/dec_ma.h"
 #include "lib/jxl/modular/encoding/encoding.h"
 #include "lib/jxl/modular/modular_image.h"
@@ -54,11 +54,11 @@ typedef struct jxl_modular_frame_encoder {
 } jxl_modular_frame_encoder;
 
 jxl_status jxl_modular_frame_encoder_create(jxl_context* ctx,
-                                 const jxl_frame_header* frame_header,
+                                 const jxl_enc_frame_header* frame_header,
                                  const jxl_compress_params* cparams_orig,
                                  jxl_modular_frame_encoder* out);
 jxl_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self,
-                               const jxl_frame_header* frame_header,
+                               const jxl_enc_frame_header* frame_header,
                                const jxl_compress_params* cparams_orig);
 jxl_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* self);
 jxl_status jxl_modular_frame_encoder_compute_tokens(jxl_modular_frame_encoder* self);
@@ -68,7 +68,7 @@ jxl_status jxl_modular_frame_encoder_encode_stream(jxl_modular_frame_encoder* se
                                        jxl_bit_writer* writer, jxl_layer_type layer,
                                        const jxl_modular_stream_id* stream);
 jxl_status jxl_modular_frame_encoder_add_var_dctdc(jxl_modular_frame_encoder* self,
-                                      const jxl_frame_header* frame_header,
+                                      const jxl_enc_frame_header* frame_header,
                                       const jxl_image3_f* dc, const jxl_rect* r,
                                       size_t group_index,
                                       jxl_passes_encoder_state* enc_state);

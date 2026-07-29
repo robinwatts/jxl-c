@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/enc_bit_writer.h"
-#include "lib/jxl/frame_header.h"
+#include "lib/jxl/enc_frame_header.h"
 #include "lib/jxl/headers.h"
-#include "lib/jxl/image_metadata.h"
+#include "lib/jxl/enc_image_metadata.h"
 #include "lib/jxl/quantizer.h"
 
 #include "lib/jxl/layer_type.h"
@@ -21,13 +21,13 @@
 // fields of the metadata.
 jxl_status jxl_write_codestream_headers(jxl_codec_metadata* metadata, jxl_bit_writer* writer);
 
-jxl_status jxl_write_frame_header(const jxl_frame_header* frame,
+jxl_status jxl_write_frame_header(const jxl_enc_frame_header* frame,
                         jxl_bit_writer* JXL_RESTRICT writer);
 
 jxl_status jxl_write_quantizer_params(const jxl_quantizer_params* params,
                             jxl_bit_writer* JXL_RESTRICT writer, jxl_layer_type layer);
 
-jxl_status jxl_write_size_header(const jxl_size_header* size, jxl_bit_writer* JXL_RESTRICT writer,
+jxl_status jxl_write_size_header(const jxl_enc_size_header* size, jxl_bit_writer* JXL_RESTRICT writer,
                        jxl_layer_type layer);
 
 

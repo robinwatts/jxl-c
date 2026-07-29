@@ -176,13 +176,13 @@ static jxl_rendering_intent icc_header_rendering_intent(const uint8_t *icc, size
     }
 }
 
-static jxl_status_t fill_rgb_encoding(jxl_colour_encoding *out, jxl_transfer_function tf,
+static jxl_status_t fill_rgb_encoding(jxl_color_encoding *out, jxl_transfer_function tf,
                                     jxl_rendering_intent ri) {
     if (out == NULL) {
         return JXL_ERROR_INVALID_INPUT;
     }
     memset(out, 0, sizeof(*out));
-    out->colour_space = JXL_COLOUR_SPACE_RGB;
+    out->color_space = JXL_COLOR_SPACE_RGB;
     out->white_point = JXL_WHITE_POINT_D65;
     out->white_point_xy[0] = 0.3127;
     out->white_point_xy[1] = 0.3290;
@@ -198,13 +198,13 @@ static jxl_status_t fill_rgb_encoding(jxl_colour_encoding *out, jxl_transfer_fun
     return JXL_OK;
 }
 
-static jxl_status_t fill_gray_encoding(jxl_colour_encoding *out, jxl_transfer_function tf,
+static jxl_status_t fill_gray_encoding(jxl_color_encoding *out, jxl_transfer_function tf,
                                        jxl_rendering_intent ri) {
     if (out == NULL) {
         return JXL_ERROR_INVALID_INPUT;
     }
     memset(out, 0, sizeof(*out));
-    out->colour_space = JXL_COLOUR_SPACE_GRAY;
+    out->color_space = JXL_COLOR_SPACE_GRAY;
     out->white_point = JXL_WHITE_POINT_D65;
     out->white_point_xy[0] = 0.3127;
     out->white_point_xy[1] = 0.3290;
@@ -214,7 +214,7 @@ static jxl_status_t fill_gray_encoding(jxl_colour_encoding *out, jxl_transfer_fu
     return JXL_OK;
 }
 
-jxl_status_t jxl_icc_parse_color_encoding(const uint8_t *icc, size_t len, jxl_colour_encoding *out) {
+jxl_status_t jxl_icc_parse_color_encoding(const uint8_t *icc, size_t len, jxl_color_encoding *out) {
     jxl_rendering_intent ri;
     if (icc == NULL || len < 128 || out == NULL) {
         return JXL_ERROR_INVALID_INPUT;

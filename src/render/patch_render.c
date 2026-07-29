@@ -912,7 +912,7 @@ jxl_status_t jxl_decode_prerequisite_frames(jxl_context *library_ctx, jxl_contex
     jxl_frame_init(&frame);
 
     prereq_color_planes = parsed.xyb_encoded ? 3u : 1u;
-    if (parsed.colour.colour_space == JXL_COLOUR_SPACE_RGB_I) {
+    if (parsed.color.color_space == JXL_COLOR_SPACE_RGB_I) {
         prereq_color_planes = 3u;
     }
     prereq_num_planes = prereq_color_planes + (uint32_t)parsed.num_extra_channels;

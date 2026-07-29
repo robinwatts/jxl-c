@@ -9,7 +9,7 @@
 // Specialized instructions for processing register-sized bit arrays.
 
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 
 #if JXL_COMPILER_MSVC
 #include <intrin.h>

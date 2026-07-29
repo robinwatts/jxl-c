@@ -11,7 +11,7 @@
 #include "lib/jxl/ans_params.h"
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 
 // First, all trailing non-occurring symbols are removed from the distribution;
 // if this leaves the distribution empty, a placeholder symbol with max weight

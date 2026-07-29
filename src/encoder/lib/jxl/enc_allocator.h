@@ -9,9 +9,9 @@
 // Use a relative path — quoted "allocator.h" would resolve to this file first
 // (GCC searches the including file's directory).
 
-#ifndef LIB_JXL_ALLOCATOR_H_
-#define LIB_JXL_ALLOCATOR_H_
+#ifndef LIB_JXL_ENC_ALLOCATOR_H_
+#define LIB_JXL_ENC_ALLOCATOR_H_
 
 #include "../../../allocator.h"
 
-#endif  // LIB_JXL_ALLOCATOR_H_
+#endif  // LIB_JXL_ENC_ALLOCATOR_H_

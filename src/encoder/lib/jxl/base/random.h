@@ -15,7 +15,7 @@
 #include <string.h>
 
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 
 // State for geometric distributions (stored value is inv_log_1mp).
 typedef float jxl_rng_geometric_distribution;

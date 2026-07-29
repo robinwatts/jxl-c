@@ -6,14 +6,14 @@
 #include "lib/jxl/ac_strategy.h"
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include "lib/jxl/base/bits.h"
 #include "lib/jxl/base/common.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/coeff_order_fwd.h"
 #include "lib/jxl/frame_dimensions.h"
-#include "lib/jxl/image.h"
+#include "lib/jxl/enc_image.h"
 
 
 // Tries to generalize zig-zag order to non-square blocks. Surprisingly, in

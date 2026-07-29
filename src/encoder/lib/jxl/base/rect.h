@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 
 // Rectangular region in image(s). Factoring this out of jxl_image instead of
 // shifting the pointer by x0/y0 allows this to apply to multiple images with

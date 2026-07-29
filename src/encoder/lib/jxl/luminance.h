@@ -6,7 +6,7 @@
 #ifndef LIB_JXL_LUMINANCE_H_
 #define LIB_JXL_LUMINANCE_H_
 
-#include "lib/jxl/image_metadata.h"
+#include "lib/jxl/enc_image_metadata.h"
 
 // Chooses a default intensity target based on the transfer function of the
 // image, if known. For SDR images or images not known to be HDR, returns

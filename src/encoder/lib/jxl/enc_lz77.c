@@ -11,7 +11,7 @@
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/bits.h"
 #include "lib/jxl/base/fast_math_scalar.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/enc_ans.h"
 #include "lib/jxl/base/common.h"
 

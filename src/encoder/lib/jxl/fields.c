@@ -15,7 +15,7 @@
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/printf_macros.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/field_encodings.h"
 
 jxl_status jxl_visitor_default_bool(jxl_visitor* self, bool default_value,

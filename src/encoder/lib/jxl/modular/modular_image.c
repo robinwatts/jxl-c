@@ -6,13 +6,13 @@
 #include "lib/jxl/modular/modular_image.h"
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stddef.h>
 
-#include "lib/jxl/image.h"
+#include "lib/jxl/enc_image.h"
 
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 
 
 jxl_status jxl_channel_create(jxl_context *ctx, size_t iw, size_t ih,

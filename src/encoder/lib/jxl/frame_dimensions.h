@@ -26,7 +26,7 @@ JXL_STATIC_ASSERT(kGroupDim % kBlockDim == 0,
                   "Group dim should be divisible by block dim");
 
 // Dimensions of a frame, in pixels, and other derived dimensions.
-// Computed from jxl_frame_header.
+// Computed from jxl_enc_frame_header.
 typedef struct jxl_frame_dimensions {
   // jxl_image size without any upsampling, i.e. original_size / upsampling.
   size_t xsize;

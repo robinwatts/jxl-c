@@ -70,7 +70,7 @@ jxl_status_t jxl_decoder_init_from_codestream(jxl_context *alloc,
     jxl_parsed_image_header_to_public(&parsed, header_out);
     if (num_color_channels_out != NULL) {
         *num_color_channels_out =
-            parsed.colour.colour_space == JXL_COLOUR_SPACE_GRAY_I ? 1u : 3u;
+            parsed.color.color_space == JXL_COLOR_SPACE_GRAY_I ? 1u : 3u;
     }
     if (geometry_out != NULL) {
         jxl_parsed_image_header_geometry(&parsed, geometry_out);

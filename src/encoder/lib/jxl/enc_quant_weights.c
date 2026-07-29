@@ -6,9 +6,9 @@
 #include "lib/jxl/enc_quant_weights.h"
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/layer_type.h"
 #include "lib/jxl/enc_modular.h"
 #include "lib/jxl/fields.h"

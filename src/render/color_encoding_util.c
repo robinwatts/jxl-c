@@ -8,7 +8,7 @@ static double jxl_customxy_to_double(int32_t v) {
     return (double)v / 1000000.0;
 }
 
-static void jxl_fill_known_white_xy(jxl_colour_encoding *out) {
+static void jxl_fill_known_white_xy(jxl_color_encoding *out) {
     switch (out->white_point) {
     case JXL_WHITE_POINT_D65:
         out->white_point_xy[0] = 0.3127;
@@ -27,7 +27,7 @@ static void jxl_fill_known_white_xy(jxl_colour_encoding *out) {
     }
 }
 
-static void jxl_fill_known_primaries_xy(jxl_colour_encoding *out) {
+static void jxl_fill_known_primaries_xy(jxl_color_encoding *out) {
     switch (out->primaries) {
     case JXL_PRIMARIES_SRGB:
         out->primaries_red_xy[0] = 0.639998686;
@@ -58,12 +58,12 @@ static void jxl_fill_known_primaries_xy(jxl_colour_encoding *out) {
     }
 }
 
-void jxl_colour_encoding_default_srgb(jxl_colour_encoding *out) {
+void jxl_color_encoding_default_srgb(jxl_color_encoding *out) {
     if (out == NULL) {
         return;
     }
     memset(out, 0, sizeof(*out));
-    out->colour_space = JXL_COLOUR_SPACE_RGB;
+    out->color_space = JXL_COLOR_SPACE_RGB;
     out->white_point = JXL_WHITE_POINT_D65;
     out->primaries = JXL_PRIMARIES_SRGB;
     out->transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
@@ -72,28 +72,28 @@ void jxl_colour_encoding_default_srgb(jxl_colour_encoding *out) {
     jxl_fill_known_primaries_xy(out);
 }
 
-jxl_status_t jxl_colour_encoding_parsed_to_public(const jxl_colour_encoding_parsed *in,
-                                                jxl_colour_encoding *out) {
+jxl_status_t jxl_color_encoding_parsed_to_public(const jxl_color_encoding_parsed *in,
+                                                jxl_color_encoding *out) {
     if (in == NULL || out == NULL) {
         return JXL_ERROR_INVALID_INPUT;
     }
     memset(out, 0, sizeof(*out));
-    switch (in->colour_space) {
-    case JXL_COLOUR_SPACE_RGB_I:
-        out->colour_space = JXL_COLOUR_SPACE_RGB;
+    switch (in->color_space) {
+    case JXL_COLOR_SPACE_RGB_I:
+        out->color_space = JXL_COLOR_SPACE_RGB;
         break;
-    case JXL_COLOUR_SPACE_GRAY_I:
-        out->colour_space = JXL_COLOUR_SPACE_GRAY;
+    case JXL_COLOR_SPACE_GRAY_I:
+        out->color_space = JXL_COLOR_SPACE_GRAY;
         break;
-    case JXL_COLOUR_SPACE_XYB_I:
-        out->colour_space = JXL_COLOUR_SPACE_XYB;
+    case JXL_COLOR_SPACE_XYB_I:
+        out->color_space = JXL_COLOR_SPACE_XYB;
         break;
     default:
-        out->colour_space = JXL_COLOUR_SPACE_UNKNOWN;
+        out->color_space = JXL_COLOR_SPACE_UNKNOWN;
         break;
     }
     switch (in->white_point) {
-    case JXL_COLOUR_WHITE_POINT_D65_I:
+    case JXL_COLOR_WHITE_POINT_D65_I:
         out->white_point = JXL_WHITE_POINT_D65;
         break;
     case JXL_WHITE_POINT_DCI_I:
@@ -102,7 +102,7 @@ jxl_status_t jxl_colour_encoding_parsed_to_public(const jxl_colour_encoding_pars
     case JXL_WHITE_POINT_E_I:
         out->white_point = JXL_WHITE_POINT_E;
         break;
-    case JXL_COLOUR_WHITE_POINT_CUSTOM_I:
+    case JXL_COLOR_WHITE_POINT_CUSTOM_I:
         out->white_point = JXL_WHITE_POINT_CUSTOM;
         out->white_point_xy[0] = jxl_customxy_to_double(in->custom_white_x);
         out->white_point_xy[1] = jxl_customxy_to_double(in->custom_white_y);
@@ -115,7 +115,7 @@ jxl_status_t jxl_colour_encoding_parsed_to_public(const jxl_colour_encoding_pars
         jxl_fill_known_white_xy(out);
     }
     switch (in->primaries) {
-    case JXL_COLOUR_PRIMARIES_SRGB_I:
+    case JXL_COLOR_PRIMARIES_SRGB_I:
         out->primaries = JXL_PRIMARIES_SRGB;
         break;
     case JXL_PRIMARIES_P3_I:
@@ -124,7 +124,7 @@ jxl_status_t jxl_colour_encoding_parsed_to_public(const jxl_colour_encoding_pars
     case JXL_PRIMARIES_BT2100_I:
         out->primaries = JXL_PRIMARIES_2100;
         break;
-    case JXL_COLOUR_PRIMARIES_CUSTOM_I:
+    case JXL_COLOR_PRIMARIES_CUSTOM_I:
         out->primaries = JXL_PRIMARIES_CUSTOM;
         out->primaries_red_xy[0] = jxl_customxy_to_double(in->custom_red_x);
         out->primaries_red_xy[1] = jxl_customxy_to_double(in->custom_red_y);
@@ -184,21 +184,21 @@ jxl_status_t jxl_colour_encoding_parsed_to_public(const jxl_colour_encoding_pars
     return JXL_OK;
 }
 
-int jxl_colour_encoding_is_d65_srgb_fast_path(const jxl_colour_encoding_parsed *enc) {
+int jxl_color_encoding_is_d65_srgb_fast_path(const jxl_color_encoding_parsed *enc) {
     if (enc == NULL) {
         return 0;
     }
     if (enc->have_icc_profile) {
         return 0;
     }
-    if (enc->colour_space != JXL_COLOUR_SPACE_RGB_I &&
-        enc->colour_space != JXL_COLOUR_SPACE_GRAY_I) {
+    if (enc->color_space != JXL_COLOR_SPACE_RGB_I &&
+        enc->color_space != JXL_COLOR_SPACE_GRAY_I) {
         return 0;
     }
-    if (enc->white_point != JXL_COLOUR_WHITE_POINT_D65_I) {
+    if (enc->white_point != JXL_COLOR_WHITE_POINT_D65_I) {
         return 0;
     }
-    if (enc->primaries != JXL_COLOUR_PRIMARIES_SRGB_I) {
+    if (enc->primaries != JXL_COLOR_PRIMARIES_SRGB_I) {
         return 0;
     }
     if (enc->transfer != JXL_TRANSFER_SRGB_I && enc->transfer != JXL_TRANSFER_LINEAR_I &&
@@ -208,8 +208,8 @@ int jxl_colour_encoding_is_d65_srgb_fast_path(const jxl_colour_encoding_parsed *
     return 1;
 }
 
-int jxl_colour_encoding_parsed_equivalent(const jxl_colour_encoding_parsed *a,
-                                          const jxl_colour_encoding_parsed *b) {
+int jxl_color_encoding_parsed_equivalent(const jxl_color_encoding_parsed *a,
+                                          const jxl_color_encoding_parsed *b) {
     if (a == NULL || b == NULL) {
         return 0;
     }
@@ -219,44 +219,44 @@ int jxl_colour_encoding_parsed_equivalent(const jxl_colour_encoding_parsed *a,
     if (a->have_icc_profile) {
         return 0;
     }
-    if (a->colour_space != b->colour_space) {
+    if (a->color_space != b->color_space) {
         return 0;
     }
-    if (a->colour_space == JXL_COLOUR_SPACE_XYB_I) {
+    if (a->color_space == JXL_COLOR_SPACE_XYB_I) {
         return 1;
     }
     if (a->rendering_intent != b->rendering_intent || a->white_point != b->white_point ||
         a->transfer != b->transfer) {
         return 0;
     }
-    if (a->colour_space == JXL_COLOUR_SPACE_GRAY_I) {
+    if (a->color_space == JXL_COLOR_SPACE_GRAY_I) {
         return 1;
     }
     return a->primaries == b->primaries;
 }
 
-jxl_status_t jxl_colour_encoding_to_parsed(const jxl_colour_encoding *in,
-                                          jxl_colour_encoding_parsed *out) {
+jxl_status_t jxl_color_encoding_to_parsed(const jxl_color_encoding *in,
+                                          jxl_color_encoding_parsed *out) {
     if (in == NULL || out == NULL) {
         return JXL_ERROR_INVALID_INPUT;
     }
     memset(out, 0, sizeof(*out));
-    switch (in->colour_space) {
-    case JXL_COLOUR_SPACE_RGB:
-        out->colour_space = JXL_COLOUR_SPACE_RGB_I;
+    switch (in->color_space) {
+    case JXL_COLOR_SPACE_RGB:
+        out->color_space = JXL_COLOR_SPACE_RGB_I;
         break;
-    case JXL_COLOUR_SPACE_GRAY:
-        out->colour_space = JXL_COLOUR_SPACE_GRAY_I;
+    case JXL_COLOR_SPACE_GRAY:
+        out->color_space = JXL_COLOR_SPACE_GRAY_I;
         break;
-    case JXL_COLOUR_SPACE_XYB:
-        out->colour_space = JXL_COLOUR_SPACE_XYB_I;
+    case JXL_COLOR_SPACE_XYB:
+        out->color_space = JXL_COLOR_SPACE_XYB_I;
         break;
     default:
         return JXL_ERROR_UNSUPPORTED;
     }
     switch (in->white_point) {
     case JXL_WHITE_POINT_D65:
-        out->white_point = JXL_COLOUR_WHITE_POINT_D65_I;
+        out->white_point = JXL_COLOR_WHITE_POINT_D65_I;
         break;
     case JXL_WHITE_POINT_DCI:
         out->white_point = JXL_WHITE_POINT_DCI_I;
@@ -265,7 +265,7 @@ jxl_status_t jxl_colour_encoding_to_parsed(const jxl_colour_encoding *in,
         out->white_point = JXL_WHITE_POINT_E_I;
         break;
     case JXL_WHITE_POINT_CUSTOM:
-        out->white_point = JXL_COLOUR_WHITE_POINT_CUSTOM_I;
+        out->white_point = JXL_COLOR_WHITE_POINT_CUSTOM_I;
         out->custom_white_x = (int32_t)(in->white_point_xy[0] * 1000000.0);
         out->custom_white_y = (int32_t)(in->white_point_xy[1] * 1000000.0);
         break;
@@ -274,7 +274,7 @@ jxl_status_t jxl_colour_encoding_to_parsed(const jxl_colour_encoding *in,
     }
     switch (in->primaries) {
     case JXL_PRIMARIES_SRGB:
-        out->primaries = JXL_COLOUR_PRIMARIES_SRGB_I;
+        out->primaries = JXL_COLOR_PRIMARIES_SRGB_I;
         break;
     case JXL_PRIMARIES_P3:
         out->primaries = JXL_PRIMARIES_P3_I;
@@ -283,7 +283,7 @@ jxl_status_t jxl_colour_encoding_to_parsed(const jxl_colour_encoding *in,
         out->primaries = JXL_PRIMARIES_BT2100_I;
         break;
     case JXL_PRIMARIES_CUSTOM:
-        out->primaries = JXL_COLOUR_PRIMARIES_CUSTOM_I;
+        out->primaries = JXL_COLOR_PRIMARIES_CUSTOM_I;
         out->custom_red_x = (int32_t)(in->primaries_red_xy[0] * 1000000.0);
         out->custom_red_y = (int32_t)(in->primaries_red_xy[1] * 1000000.0);
         out->custom_green_x = (int32_t)(in->primaries_green_xy[0] * 1000000.0);

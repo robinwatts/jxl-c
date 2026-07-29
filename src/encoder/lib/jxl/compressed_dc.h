@@ -8,8 +8,8 @@
 
 #include "lib/jxl/ac_context.h"
 #include "lib/jxl/base/rect.h"
-#include "lib/jxl/frame_header.h"
-#include "lib/jxl/image.h"
+#include "lib/jxl/enc_frame_header.h"
+#include "lib/jxl/enc_image.h"
 #include "lib/jxl/modular/modular_image.h"
 
 // Fills per-block DC context indices into quant_dc from quantized modular DC.

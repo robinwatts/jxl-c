@@ -7,7 +7,7 @@
 #define LIB_JXL_ENC_CACHE_H_
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stdint.h>
 

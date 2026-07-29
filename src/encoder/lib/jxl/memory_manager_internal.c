@@ -10,9 +10,9 @@
 #include <stdlib.h>
 #include <string.h>  // memcpy
 
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 #include "lib/jxl/base/common.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/simd_util.h"
 
 jxl_status jxl_bytes_per_row(const size_t xsize, const size_t sizeof_t,

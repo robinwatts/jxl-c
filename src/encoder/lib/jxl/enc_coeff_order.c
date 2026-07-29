@@ -4,7 +4,7 @@
 // license that can be found in the LICENSE file.
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <math.h>
 #include <stddef.h>
@@ -14,7 +14,7 @@
 #include "lib/jxl/ac_strategy.h"
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/common.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/coeff_order.h"
 #include "lib/jxl/enc_ans.h"
 #include "lib/jxl/enc_coeff_order.h"

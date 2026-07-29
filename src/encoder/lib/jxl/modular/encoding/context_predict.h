@@ -12,7 +12,7 @@
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/bits.h"
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/field_encodings.h"
 #include "lib/jxl/fields.h"
 #include "lib/jxl/modular/modular_image.h"
@@ -324,7 +324,7 @@ static inline void jxl_weighted_predictor_mode(int i, jxl_weighted_header *heade
 }
 
 // Returns true if the (meta)predictor makes use of the weighted predictor.
-static inline bool jxl_predictor_has_weighted(jxl_predictor predictor) {
+static inline bool jxl_enc_predictor_has_weighted(jxl_enc_predictor predictor) {
   // Use a non-defaulted switch to generate a warning if a case is missing.
   switch (predictor) {
     case kPredictorZero:
@@ -359,7 +359,7 @@ typedef struct jxl_flat_decision_node {
   int32_t property0;  // -1 if leaf.
   union {
     jxl_property_val splitval0;
-    jxl_predictor predictor;
+    jxl_enc_predictor predictor;
   } top;
   // Property+splitval of the two child nodes.
   union {
@@ -377,13 +377,13 @@ typedef jxl_array_flat_decision_node jxl_flat_tree;
 
 typedef struct jxl_ma_tree_lookup_result {
   uint32_t context;
-  jxl_predictor predictor;
+  jxl_enc_predictor predictor;
   int32_t offset;
   int32_t multiplier;
 } jxl_ma_tree_lookup_result;
 
 static inline jxl_ma_tree_lookup_result jxl_ma_tree_lookup_result_make(uint32_t context,
-                                                 jxl_predictor predictor,
+                                                 jxl_enc_predictor predictor,
                                                  int32_t offset,
                                                  int32_t multiplier) {
   jxl_ma_tree_lookup_result result;
@@ -463,13 +463,13 @@ static inline pixel_type_w jxl_select(pixel_type_w a, pixel_type_w b, pixel_type
   return pa < pb ? a : b;
 }
 
-typedef struct jxl_prediction_result {
+typedef struct jxl_enc_prediction_result {
   int context;
   pixel_type_w guess;
-  jxl_predictor predictor;
+  jxl_enc_predictor predictor;
   int32_t multiplier;
-} jxl_prediction_result;
-static inline void jxl_prediction_result_construct_empty(jxl_prediction_result* self) {
+} jxl_enc_prediction_result;
+static inline void jxl_enc_prediction_result_construct_empty(jxl_enc_prediction_result* self) {
   self->context = 0;
   self->guess = 0;
   self->predictor = kPredictorZero;
@@ -495,7 +495,7 @@ typedef enum jxl_predict_mode_flags {
   kNoEdgeCases = 16
 } jxl_predict_mode_flags;
 
-static JXL_INLINE pixel_type_w jxl_predict_one(jxl_predictor p, pixel_type_w left,
+static JXL_INLINE pixel_type_w jxl_predict_one(jxl_enc_predictor p, pixel_type_w left,
                                    pixel_type_w top, pixel_type_w toptop,
                                    pixel_type_w topleft, pixel_type_w topright,
                                    pixel_type_w leftleft,
@@ -537,9 +537,9 @@ static JXL_INLINE pixel_type_w jxl_predict_one(jxl_predictor p, pixel_type_w lef
   }
 }
 
-static JXL_INLINE jxl_prediction_result jxl_predict_with_mode(
+static JXL_INLINE jxl_enc_prediction_result jxl_predict_with_mode(
     int mode, jxl_properties *p, size_t w, const pixel_type *JXL_RESTRICT pp,
-    const ptrdiff_t onerow, const size_t x, const size_t y, jxl_predictor predictor,
+    const ptrdiff_t onerow, const size_t x, const size_t y, jxl_enc_predictor predictor,
     const jxl_ma_tree_lookup *lookup, const jxl_channel *references,
     jxl_weighted_state *wp_state, pixel_type_w *predictions) {
   // We start in position 3 because of 2 static properties + y.
@@ -596,8 +596,8 @@ static JXL_INLINE jxl_prediction_result jxl_predict_with_mode(
       }
     }
   }
-  jxl_prediction_result result;
-  jxl_prediction_result_construct_empty(&result);
+  jxl_enc_prediction_result result;
+  jxl_enc_prediction_result_construct_empty(&result);
   if (mode & kUseTree) {
     jxl_ma_tree_lookup_result lr = jxl_ma_tree_lookup_lookup(lookup, p);
     result.context = lr.context;
@@ -608,7 +608,7 @@ static JXL_INLINE jxl_prediction_result jxl_predict_with_mode(
   if (mode & kAllPredictions) {
     for (size_t i = 0; i < kNumModularPredictors; i++) {
       predictions[i] =
-          jxl_predict_one((jxl_predictor)(i), left, top, toptop, topleft,
+          jxl_predict_one((jxl_enc_predictor)(i), left, top, toptop, topleft,
                      topright, leftleft, toprightright, wp_pred);
     }
   }
@@ -618,16 +618,16 @@ static JXL_INLINE jxl_prediction_result jxl_predict_with_mode(
 
   return result;
 }
-static inline jxl_prediction_result jxl_predict_no_tree_no_wp(size_t w,
+static inline jxl_enc_prediction_result jxl_predict_no_tree_no_wp(size_t w,
                                           const pixel_type *JXL_RESTRICT pp,
                                           const ptrdiff_t onerow, const int x,
-                                          const int y, jxl_predictor predictor) {
+                                          const int y, jxl_enc_predictor predictor) {
   return jxl_predict_with_mode(0,
       /*p=*/NULL, w, pp, onerow, x, y, predictor, /*lookup=*/NULL,
       /*references=*/NULL, /*wp_state=*/NULL, /*predictions=*/NULL);
 }
 
-static inline jxl_prediction_result jxl_predict_tree_no_wp(jxl_properties *p, size_t w,
+static inline jxl_enc_prediction_result jxl_predict_tree_no_wp(jxl_properties *p, size_t w,
                                         const pixel_type *JXL_RESTRICT pp,
                                         const ptrdiff_t onerow, const int x,
                                         const int y,
@@ -638,7 +638,7 @@ static inline jxl_prediction_result jxl_predict_tree_no_wp(jxl_properties *p, si
       /*wp_state=*/NULL, /*predictions=*/NULL);
 }
 // Only use for y > 1, x > 1, x < w-2, and empty references
-static JXL_INLINE jxl_prediction_result
+static JXL_INLINE jxl_enc_prediction_result
 jxl_predict_tree_no_wpnec(jxl_properties *p, size_t w, const pixel_type *JXL_RESTRICT pp,
                    const ptrdiff_t onerow, const int x, const int y,
                    const jxl_ma_tree_lookup *tree_lookup, const jxl_channel *references) {
@@ -647,7 +647,7 @@ jxl_predict_tree_no_wpnec(jxl_properties *p, size_t w, const pixel_type *JXL_RES
       /*wp_state=*/NULL, /*predictions=*/NULL);
 }
 
-static inline jxl_prediction_result jxl_predict_tree_wp(jxl_properties *p, size_t w,
+static inline jxl_enc_prediction_result jxl_predict_tree_wp(jxl_properties *p, size_t w,
                                       const pixel_type *JXL_RESTRICT pp,
                                       const ptrdiff_t onerow, const int x,
                                       const int y,
@@ -658,7 +658,7 @@ static inline jxl_prediction_result jxl_predict_tree_wp(jxl_properties *p, size_
       p, w, pp, onerow, x, y, kPredictorZero, tree_lookup, references,
       wp_state, /*predictions=*/NULL);
 }
-static JXL_INLINE jxl_prediction_result jxl_predict_tree_wpnec(jxl_properties *p, size_t w,
+static JXL_INLINE jxl_enc_prediction_result jxl_predict_tree_wpnec(jxl_properties *p, size_t w,
                                              const pixel_type *JXL_RESTRICT pp,
                                              const ptrdiff_t onerow, const int x,
                                              const int y,
@@ -671,10 +671,10 @@ static JXL_INLINE jxl_prediction_result jxl_predict_tree_wpnec(jxl_properties *p
       wp_state, /*predictions=*/NULL);
 }
 
-static inline jxl_prediction_result jxl_predict_learn(jxl_properties *p, size_t w,
+static inline jxl_enc_prediction_result jxl_predict_learn(jxl_properties *p, size_t w,
                                      const pixel_type *JXL_RESTRICT pp,
                                      const ptrdiff_t onerow, const int x,
-                                     const int y, jxl_predictor predictor,
+                                     const int y, jxl_enc_predictor predictor,
                                      const jxl_channel *references,
                                      jxl_weighted_state *wp_state) {
   return jxl_predict_with_mode(kForceComputeProperties | kUseWP,
@@ -693,10 +693,10 @@ static inline void jxl_predict_learn_all(jxl_properties *p, size_t w,
       p, w, pp, onerow, x, y, kPredictorZero,
       /*lookup=*/NULL, references, wp_state, predictions);
 }
-static inline jxl_prediction_result jxl_predict_learn_nec(jxl_properties *p, size_t w,
+static inline jxl_enc_prediction_result jxl_predict_learn_nec(jxl_properties *p, size_t w,
                                         const pixel_type *JXL_RESTRICT pp,
                                         const ptrdiff_t onerow, const int x,
-                                        const int y, jxl_predictor predictor,
+                                        const int y, jxl_enc_predictor predictor,
                                         const jxl_channel *references,
                                         jxl_weighted_state *wp_state) {
   return jxl_predict_with_mode(kForceComputeProperties | kUseWP |

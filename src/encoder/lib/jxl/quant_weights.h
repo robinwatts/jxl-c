@@ -7,13 +7,13 @@
 #define LIB_JXL_QUANT_WEIGHTS_H_
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stdint.h>
 
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 
 enum {
   kNumPredefinedTables = 1,

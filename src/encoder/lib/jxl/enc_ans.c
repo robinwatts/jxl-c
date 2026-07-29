@@ -6,7 +6,7 @@
 #include "lib/jxl/enc_ans.h"
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <math.h>
 #include <stddef.h>
@@ -16,7 +16,7 @@
 #include "lib/jxl/base/bits.h"
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/enc_ans_simd.h"
 #include "lib/jxl/layer_type.h"
 #include "lib/jxl/enc_cluster.h"

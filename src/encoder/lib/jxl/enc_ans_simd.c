@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/memory_manager_internal.h"
 
 

@@ -100,11 +100,11 @@ if(JXL_C_ENABLE_JPEG_ENCODER)
         src/encoder/lib/jxl/enc_toc.c
         src/encoder/lib/jxl/encode.c
         src/encoder/lib/jxl/fields.c
-        src/encoder/lib/jxl/frame_header.c
+        src/encoder/lib/jxl/enc_frame_header.c
         src/encoder/lib/jxl/headers.c
         src/encoder/lib/jxl/icc_codec_common.c
-        src/encoder/lib/jxl/image.c
-        src/encoder/lib/jxl/image_metadata.c
+        src/encoder/lib/jxl/enc_image.c
+        src/encoder/lib/jxl/enc_image_metadata.c
         src/encoder/lib/jxl/jpeg/enc_jpeg_data.c
         src/encoder/lib/jxl/jpeg/enc_jpeg_data_reader.c
         src/encoder/lib/jxl/jpeg/enc_jpeg_huffman_decode.c
@@ -119,7 +119,7 @@ if(JXL_C_ENABLE_JPEG_ENCODER)
         src/encoder/lib/jxl/quant_weights.c
         src/encoder/lib/jxl/quantizer.c
         src/encoder/lib/jxl/simd_util.c
-        src/encoder/lib/jxl/toc.c
+        src/encoder/lib/jxl/toc_fields.c
     )
 endif()
 
@@ -155,7 +155,7 @@ endif()
 set(JXL_C_PUBLIC_HEADERS
     include/jxl/allocator.h
     include/jxl/status.h
-    include/jxl/colour_encoding.h
+    include/jxl/color_encoding.h
     include/jxl/decode_types.h
     include/jxl/types.h
     include/jxl/context.h

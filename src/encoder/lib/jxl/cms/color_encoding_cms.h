@@ -7,14 +7,14 @@
 #define LIB_JXL_CMS_COLOR_ENCODING_CMS_H_
 
 #include <jxl/cms_interface.h>
-#include <jxl/colour_encoding.h>
+#include <jxl/color_encoding.h>
 #include <jxl/types.h>
 
 #include <math.h>
 #include <stdint.h>
 
 #include "lib/jxl/base/array.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 
 typedef jxl_array_u8 jxl_icc_bytes;
 
@@ -28,12 +28,12 @@ static inline bool jxl_cms_approx_eq(const double a, const double b,
 
 // (All CIE units are for the standard 1931 2 degree observer)
 //
-// Color enums come from <jxl/colour_encoding.h>. Keep short k* aliases for
+// Color enums come from <jxl/color_encoding.h>. Keep short k* aliases for
 // internal encoder/CMS code (same numeric values as the public JXL_* constants).
-#define kRGB JXL_COLOUR_SPACE_RGB
-#define kGray JXL_COLOUR_SPACE_GRAY
-#define kXYB JXL_COLOUR_SPACE_XYB
-#define kColorSpaceUnknown JXL_COLOUR_SPACE_UNKNOWN
+#define kRGB JXL_COLOR_SPACE_RGB
+#define kGray JXL_COLOR_SPACE_GRAY
+#define kXYB JXL_COLOR_SPACE_XYB
+#define kColorSpaceUnknown JXL_COLOR_SPACE_UNKNOWN
 
 #define kWhitePointD65 JXL_WHITE_POINT_D65
 #define kWhitePointCustom JXL_WHITE_POINT_CUSTOM
@@ -287,16 +287,16 @@ static inline jxl_status jxl_convert_external_to_internal_transfer_function(
   return JXL_FAILURE("Invalid jxl_transfer_function enum value");
 }
 
-static inline void jxl_set_unknown_external_color_encoding(jxl_colour_encoding* external) {
-  external->colour_space = JXL_COLOUR_SPACE_UNKNOWN;
+static inline void jxl_set_unknown_external_color_encoding(jxl_color_encoding* external) {
+  external->color_space = JXL_COLOR_SPACE_UNKNOWN;
   external->primaries = JXL_PRIMARIES_CUSTOM;
   external->rendering_intent = JXL_RENDERING_INTENT_PERCEPTUAL;  //?
   external->transfer_function = JXL_TRANSFER_FUNCTION_UNKNOWN;
   external->white_point = JXL_WHITE_POINT_CUSTOM;
 }
 
-static inline void jxl_colour_encoding_set_empty(jxl_colour_encoding* external) {
-  external->colour_space = (jxl_colour_space)0;
+static inline void jxl_color_encoding_set_empty(jxl_color_encoding* external) {
+  external->color_space = (jxl_color_space)0;
   external->white_point = (jxl_white_point)0;
   external->white_point_xy[0] = 0;
   external->white_point_xy[1] = 0;
@@ -329,7 +329,7 @@ typedef struct jxl_cms_color_encoding {
 
   jxl_icc_bytes icc;  // Valid ICC profile
 
-  jxl_colour_space colour_space;  // Can be kUnknown
+  jxl_color_space color_space;  // Can be kUnknown
   bool cmyk;
 
   // "late sync" fields
@@ -348,7 +348,7 @@ static inline void jxl_cms_color_encoding_construct_empty(
   self->rendering_intent = kRelative;
   self->have_fields = true;
   jxl_array_construct_empty(&self->icc, mm);
-  self->colour_space = kRGB;
+  self->color_space = kRGB;
   self->cmyk = false;
   jxl_cms_custom_transfer_function_construct_empty(&self->tf);
   jxl_cms_customxy_construct_empty(&self->white);
@@ -359,11 +359,11 @@ static inline void jxl_cms_color_encoding_construct_empty(
 
 
 static inline bool jxl_cms_color_encoding_has_primaries(const jxl_cms_color_encoding* self) {
-  return (self->colour_space != kGray) &&
-         (self->colour_space != kXYB);
+  return (self->color_space != kGray) &&
+         (self->color_space != kXYB);
 }
 static inline size_t jxl_cms_color_encoding_channels(const jxl_cms_color_encoding* self) {
-  return (self->colour_space == kGray) ? 1 : 3;
+  return (self->color_space == kGray) ? 1 : 3;
 }
 
 static inline jxl_status jxl_cms_color_encoding_get_primaries(const jxl_cms_color_encoding* self,
@@ -503,8 +503,8 @@ static inline jxl_status jxl_cms_color_encoding_set_white_point(jxl_cms_color_en
 }
 
 static inline jxl_status jxl_cms_color_encoding_from_external(jxl_cms_color_encoding* self,
-                                           const jxl_colour_encoding* external);
-static inline jxl_colour_encoding jxl_cms_color_encoding_to_external(const jxl_cms_color_encoding* self);
+                                           const jxl_color_encoding* external);
+static inline jxl_color_encoding jxl_cms_color_encoding_to_external(const jxl_cms_color_encoding* self);
 
 // Returns true if all fields have been initialized (possibly to kUnknown).
 // Returns false if the ICC profile is invalid or decoding it fails.
@@ -514,12 +514,12 @@ static inline jxl_status jxl_cms_color_encoding_set_fields_from_icc(jxl_cms_colo
   // In case parsing fails, mark the jxl_cms_color_encoding as invalid.
   JXL_ENSURE(new_icc != NULL);
   JXL_ENSURE(!jxl_array_empty(new_icc));
-  self->colour_space = kColorSpaceUnknown;
+  self->color_space = kColorSpaceUnknown;
   self->tf.transfer_function = kTFUnknown;
   jxl_array_clear(&self->icc);
 
-  jxl_colour_encoding external;
-  jxl_colour_encoding_set_empty(&external);
+  jxl_color_encoding external;
+  jxl_color_encoding_set_empty(&external);
   JXL_BOOL new_cmyk;
   JXL_RETURN_IF_ERROR(jxl_status_from_bool(cms->set_fields_from_icc(
       cms->set_fields_data, jxl_array_data(new_icc), jxl_array_len(new_icc), &external,
@@ -530,14 +530,14 @@ static inline jxl_status jxl_cms_color_encoding_set_fields_from_icc(jxl_cms_colo
   return jxl_ok_status();
 }
 
-static inline jxl_colour_encoding jxl_cms_color_encoding_to_external(const jxl_cms_color_encoding* self) {
-  jxl_colour_encoding external;
-  jxl_colour_encoding_set_empty(&external);
+static inline jxl_color_encoding jxl_cms_color_encoding_to_external(const jxl_cms_color_encoding* self) {
+  jxl_color_encoding external;
+  jxl_color_encoding_set_empty(&external);
   if (!self->have_fields) {
     jxl_set_unknown_external_color_encoding(&external);
     return external;
   }
-  external.colour_space = (jxl_colour_space)(self->colour_space);
+  external.color_space = (jxl_color_space)(self->color_space);
 
   external.white_point = (jxl_white_point)(self->white_point);
 
@@ -545,8 +545,8 @@ static inline jxl_colour_encoding jxl_cms_color_encoding_to_external(const jxl_c
   external.white_point_xy[0] = wp.x;
   external.white_point_xy[1] = wp.y;
 
-  if (external.colour_space == JXL_COLOUR_SPACE_RGB ||
-      external.colour_space == JXL_COLOUR_SPACE_UNKNOWN) {
+  if (external.color_space == JXL_COLOR_SPACE_RGB ||
+      external.color_space == JXL_COLOR_SPACE_UNKNOWN) {
     external.primaries = (jxl_primaries)(self->primaries);
     jxl_primaries_ci_exy p;
     if (!jxl_status_ok(jxl_cms_color_encoding_get_primaries(self, &p))) {
@@ -578,9 +578,9 @@ static inline jxl_colour_encoding jxl_cms_color_encoding_to_external(const jxl_c
 
 // NB: does not create ICC.
 static inline jxl_status jxl_cms_color_encoding_from_external(jxl_cms_color_encoding* self,
-                                           const jxl_colour_encoding* external) {
+                                           const jxl_color_encoding* external) {
   // TODO(eustas): update non-serializable on call-site
-  self->colour_space = (jxl_colour_space)(external->colour_space);
+  self->color_space = (jxl_color_space)(external->color_space);
 
   JXL_RETURN_IF_ERROR(
       jxl_white_point_from_external(external->white_point, &self->white_point));
@@ -591,8 +591,8 @@ static inline jxl_status jxl_cms_color_encoding_from_external(jxl_cms_color_enco
     JXL_RETURN_IF_ERROR(jxl_cms_color_encoding_set_white_point(self, &wp));
   }
 
-  if (external->colour_space == JXL_COLOUR_SPACE_RGB ||
-      external->colour_space == JXL_COLOUR_SPACE_UNKNOWN) {
+  if (external->color_space == JXL_COLOR_SPACE_RGB ||
+      external->color_space == JXL_COLOR_SPACE_UNKNOWN) {
     JXL_RETURN_IF_ERROR(
         jxl_primaries_from_external(external->primaries, &self->primaries));
     if (external->primaries == JXL_PRIMARIES_CUSTOM) {

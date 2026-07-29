@@ -10,12 +10,12 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/layer_type.h"
 #include "lib/jxl/fields.h"
-#include "lib/jxl/frame_header.h"
+#include "lib/jxl/enc_frame_header.h"
 #include "lib/jxl/headers.h"
-#include "lib/jxl/image_metadata.h"
+#include "lib/jxl/enc_image_metadata.h"
 #include "lib/jxl/quantizer.h"
 
 typedef struct jxl_write_visitor {
@@ -267,7 +267,7 @@ jxl_status jxl_write_codestream_headers_impl(jxl_codec_metadata* metadata, jxl_b
   return jxl_ok_status();
 }
 
-jxl_status jxl_write_frame_header_impl(const jxl_frame_header* frame,
+jxl_status jxl_write_frame_header_impl(const jxl_enc_frame_header* frame,
                         jxl_bit_writer* JXL_RESTRICT writer){
   // JPEG VisitFields invariants: multi-pass / gab / EPF / DC-frame / animation
   // nests are never entered; their false gates still write bits.
@@ -295,7 +295,7 @@ jxl_status jxl_write_quantizer_params_impl(const jxl_quantizer_params* params,
   return jxl_bundle_write(&params->fields, writer, layer);
 }
 
-jxl_status jxl_write_size_header_impl(const jxl_size_header* size, jxl_bit_writer* JXL_RESTRICT writer,
+jxl_status jxl_write_size_header_impl(const jxl_enc_size_header* size, jxl_bit_writer* JXL_RESTRICT writer,
                        jxl_layer_type layer){
   return jxl_bundle_write(&size->fields, writer, layer);
 }
@@ -305,7 +305,7 @@ jxl_status jxl_write_codestream_headers(jxl_codec_metadata* metadata, jxl_bit_wr
   return jxl_write_codestream_headers_impl(metadata, writer);
 }
 
-jxl_status jxl_write_frame_header(const jxl_frame_header* frame, jxl_bit_writer* JXL_RESTRICT writer) {
+jxl_status jxl_write_frame_header(const jxl_enc_frame_header* frame, jxl_bit_writer* JXL_RESTRICT writer) {
   return jxl_write_frame_header_impl(frame, writer);
 }
 
@@ -313,6 +313,6 @@ jxl_status jxl_write_quantizer_params(const jxl_quantizer_params* params, jxl_bi
   return jxl_write_quantizer_params_impl(params, writer, layer);
 }
 
-jxl_status jxl_write_size_header(const jxl_size_header* size, jxl_bit_writer* JXL_RESTRICT writer, jxl_layer_type layer) {
+jxl_status jxl_write_size_header(const jxl_enc_size_header* size, jxl_bit_writer* JXL_RESTRICT writer, jxl_layer_type layer) {
   return jxl_write_size_header_impl(size, writer, layer);
 }

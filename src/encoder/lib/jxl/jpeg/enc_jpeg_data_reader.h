@@ -11,7 +11,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/jpeg/jpeg_data.h"
 
 // Parses the JPEG stream contained in data[0 ... len) and fills in *jpg with

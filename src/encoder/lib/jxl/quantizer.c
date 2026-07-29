@@ -7,23 +7,23 @@
 
 #include <stdint.h>
 
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/fields.h"
 #include "lib/jxl/quant_weights.h"
 
 static const int32_t kDefaultQuant = 64;
 
-void jxl_quantizer_init_with(jxl_quantizer* self, const jxl_dequant_matrices* dequant,
+void jxl_enc_quantizer_init_with(jxl_enc_quantizer* self, const jxl_dequant_matrices* dequant,
                        int quant_dc, int global_scale) {
   self->global_scale_ = global_scale;
   self->quant_dc_ = quant_dc;
   self->dequant_ = dequant;
-  jxl_quantizer_recompute_from_global_scale(self);
+  jxl_enc_quantizer_recompute_from_global_scale(self);
   self->inv_quant_dc_ = self->inv_global_scale_ / quant_dc;
 }
 
-void jxl_quantizer_init(jxl_quantizer* self, const jxl_dequant_matrices* dequant) {
-  jxl_quantizer_init_with(self, dequant, kDefaultQuant,
+void jxl_enc_quantizer_init(jxl_enc_quantizer* self, const jxl_dequant_matrices* dequant) {
+  jxl_enc_quantizer_init_with(self, dequant, kDefaultQuant,
                     kGlobalScaleDenom / kDefaultQuant);
 }
 
@@ -33,7 +33,7 @@ jxl_status jxl_quantizer_params_visit_fields(jxl_quantizer_params* self, jxl_vis
   return jxl_ok_status();
 }
 
-jxl_quantizer_params jxl_quantizer_get_params(const jxl_quantizer* self) {
+jxl_quantizer_params jxl_enc_quantizer_get_params(const jxl_enc_quantizer* self) {
   jxl_quantizer_params params;
   jxl_quantizer_params_init(&params);
   params.global_scale = self->global_scale_;

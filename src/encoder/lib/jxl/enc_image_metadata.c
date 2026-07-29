@@ -3,18 +3,18 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "lib/jxl/image_metadata.h"
+#include "lib/jxl/enc_image_metadata.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/cms/opsin_params.h"
 #include "lib/jxl/field_encodings.h"
 #include "lib/jxl/fields.h"
-#include "lib/jxl/frame_header.h"
+#include "lib/jxl/enc_frame_header.h"
 #include "lib/jxl/quantizer.h"
 
 jxl_status jxl_enc_bit_depth_visit_fields(jxl_enc_bit_depth* self, jxl_visitor* JXL_RESTRICT visitor) {
@@ -311,7 +311,7 @@ jxl_status jxl_image_metadata_visit_fields(jxl_image_metadata* self, jxl_visitor
   }
 
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, true, &self->xyb_encoded));
-  JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->colour_encoding.fields));
+  JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->color_encoding.fields));
   if (jxl_status_ok(jxl_visitor_conditional(visitor, extra_fields))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->tone_mapping.fields));
   }
@@ -321,7 +321,7 @@ jxl_status jxl_image_metadata_visit_fields(jxl_image_metadata* self, jxl_visitor
   return jxl_visitor_end_extensions(visitor);
 }
 
-jxl_status jxl_opsin_inverse_matrix_visit_fields(jxl_opsin_inverse_matrix* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_status jxl_enc_opsin_inverse_matrix_visit_fields(jxl_enc_opsin_inverse_matrix* self, jxl_visitor* JXL_RESTRICT visitor) {
   if (jxl_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
     // Overwrite all serialized fields, but not any nonserialized_*.
     jxl_visitor_set_default(visitor, &self->fields);

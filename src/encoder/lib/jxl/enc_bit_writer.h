@@ -9,7 +9,7 @@
 // jxl_bit_writer: unbuffered writes using unaligned 64-bit stores.
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -18,7 +18,7 @@
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/span.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/padded_bytes.h"
 
 #include "lib/jxl/layer_type.h"

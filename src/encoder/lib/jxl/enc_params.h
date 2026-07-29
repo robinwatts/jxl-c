@@ -9,7 +9,7 @@
 // Parameters and flags that govern JXL compression.
 
 #include "lib/jxl/common.h"
-#include "lib/jxl/frame_header.h"
+#include "lib/jxl/enc_frame_header.h"
 #include "lib/jxl/modular/options.h"
 
 // NOLINTNEXTLINE(clang-analyzer-optin.performance.Padding)

@@ -9,13 +9,13 @@
 // Aligned allocations backed by jxl_context / jxl_alloc.
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stddef.h>
 
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 
 // To avoid RFOs, match L2 fill size (pairs of lines); 2 x cache line size.
 enum {

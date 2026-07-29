@@ -11,7 +11,7 @@
 
 #include "lib/jxl/ac_context.h"
 #include "lib/jxl/base/array.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/enc_bit_writer.h"
 
 #include "lib/jxl/layer_type.h"

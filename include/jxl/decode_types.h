@@ -3,7 +3,7 @@
 #define JXL_DECODE_TYPES_H_
 
 #include <jxl/allocator.h>
-#include <jxl/colour_encoding.h>
+#include <jxl/color_encoding.h>
 
 #include <stddef.h>
 #include <stdint.h>

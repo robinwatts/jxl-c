@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/field_encodings.h"
 #include "lib/jxl/fields.h"
 
@@ -23,7 +23,7 @@ enum { kCodestreamMarker = 0x0A };
 
 // Compact representation of image dimensions (best case: 9 bits) so decoders
 // can preallocate early.
-typedef struct jxl_size_header {
+typedef struct jxl_enc_size_header {
   jxl_fields fields;
 
   bool small_;  // xsize and ysize <= 256 and divisible by 8.
@@ -34,24 +34,24 @@ typedef struct jxl_size_header {
   uint32_t ratio_;
   uint32_t xsize_div8_minus_1_;
   uint32_t xsize_;
-} jxl_size_header;
+} jxl_enc_size_header;
 
-jxl_status jxl_size_header_visit_fields(jxl_size_header* self, jxl_visitor* JXL_RESTRICT visitor);
-JXL_FIELDS_NAME(jxl_size_header)
+jxl_status jxl_enc_size_header_visit_fields(jxl_enc_size_header* self, jxl_visitor* JXL_RESTRICT visitor);
+JXL_FIELDS_NAME(jxl_enc_size_header)
 
-jxl_status jxl_size_header_set(jxl_size_header* self, size_t xsize, size_t ysize);
-size_t jxl_size_header_x_size(const jxl_size_header* self);
+jxl_status jxl_enc_size_header_set(jxl_enc_size_header* self, size_t xsize, size_t ysize);
+size_t jxl_enc_size_header_x_size(const jxl_enc_size_header* self);
 
-static inline void jxl_size_header_init(jxl_size_header* self) {
-  JXL_FIELDS_REGISTER_PTR(jxl_size_header, &self->fields);
+static inline void jxl_enc_size_header_init(jxl_enc_size_header* self) {
+  JXL_FIELDS_REGISTER_PTR(jxl_enc_size_header, &self->fields);
   jxl_bundle_init(&self->fields);
 }
 
-static inline size_t jxl_size_header_y_size(const jxl_size_header* self) {
+static inline size_t jxl_enc_size_header_y_size(const jxl_enc_size_header* self) {
   return self->small_ ? ((self->ysize_div8_minus_1_ + 1) * 8) : self->ysize_;
 }
 
-// (Similar to jxl_size_header but different encoding because previews are smaller)
+// (Similar to jxl_enc_size_header but different encoding because previews are smaller)
 typedef struct jxl_preview_header {
   jxl_fields fields;
 
@@ -80,7 +80,7 @@ static inline size_t jxl_preview_header_y_size(const jxl_preview_header* self) {
   return self->div8_ ? (self->ysize_div8_ * 8) : self->ysize_;
 }
 
-typedef struct jxl_animation_header {
+typedef struct jxl_enc_animation_header {
   jxl_fields fields;
 
   // Ticks per second (expressed as rational number to support NTSC)
@@ -90,14 +90,14 @@ typedef struct jxl_animation_header {
   uint32_t num_loops;  // 0 means to repeat infinitely.
 
   bool have_timecodes;
-} jxl_animation_header;
+} jxl_enc_animation_header;
 
-jxl_status jxl_animation_header_visit_fields(jxl_animation_header* self,
+jxl_status jxl_enc_animation_header_visit_fields(jxl_enc_animation_header* self,
                                   jxl_visitor* JXL_RESTRICT visitor);
-JXL_FIELDS_NAME(jxl_animation_header)
+JXL_FIELDS_NAME(jxl_enc_animation_header)
 
-static inline void jxl_animation_header_init(jxl_animation_header* self) {
-  JXL_FIELDS_REGISTER_PTR(jxl_animation_header, &self->fields);
+static inline void jxl_enc_animation_header_init(jxl_enc_animation_header* self) {
+  JXL_FIELDS_REGISTER_PTR(jxl_enc_animation_header, &self->fields);
   jxl_bundle_init(&self->fields);
 }
 

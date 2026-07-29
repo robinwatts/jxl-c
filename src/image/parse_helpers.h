@@ -5,7 +5,7 @@
 #include "image_internal.h"
 
 jxl_bs_status_t jxl_image_skip_name(jxl_bs *bs);
-jxl_bs_status_t jxl_colour_encoding_parse(jxl_bs *bs, jxl_colour_encoding_parsed *out);
+jxl_bs_status_t jxl_color_encoding_parse(jxl_bs *bs, jxl_color_encoding_parsed *out);
 jxl_bs_status_t jxl_bit_depth_parse(jxl_bs *bs, uint32_t *bits_per_sample_out);
 jxl_bs_status_t jxl_extensions_parse(jxl_bs *bs);
 jxl_bs_status_t skip_extra_channel(jxl_bs *bs);

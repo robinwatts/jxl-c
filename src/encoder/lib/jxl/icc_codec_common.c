@@ -10,7 +10,7 @@
 #include <string.h>
 
 #include "lib/jxl/base/byte_order.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/padded_bytes.h"
 #include "lib/jxl/base/compiler_specific.h"
 

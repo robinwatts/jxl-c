@@ -12,11 +12,11 @@
 #include "lib/jxl/ac_strategy.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/rect.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/coeff_order_fwd.h"
 #include "lib/jxl/enc_ans.h"
-#include "lib/jxl/frame_header.h"  // jxl_y_cb_cr_chroma_subsampling
-#include "lib/jxl/image.h"
+#include "lib/jxl/enc_frame_header.h"  // jxl_y_cb_cr_chroma_subsampling
+#include "lib/jxl/enc_image.h"
 
 // jxl_entropy coding and context modeling of DC and AC coefficients, as well as AC
 // strategy and quantization field.

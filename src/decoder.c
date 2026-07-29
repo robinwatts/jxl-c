@@ -181,7 +181,7 @@ struct jxl_decoder {
     int has_crop;
     uint8_t *requested_icc;
     size_t requested_icc_len;
-    jxl_colour_encoding requested_color_encoding;
+    jxl_color_encoding requested_color_encoding;
     int has_requested_color_encoding;
     jxl_reference_store animation_refs;
     jxl_progressive_lf_store animation_lf_store;
@@ -325,27 +325,27 @@ static jxl_render *decoder_extract_render_subregion(jxl_context *alloc, jxl_rend
 static int decoder_target_matches_frame_encoding(const jxl_parsed_image_header *parsed,
                                                  const uint8_t *target_icc,
                                                  size_t target_icc_len) {
-    jxl_colour_encoding enc;
-    jxl_colour_encoding_parsed target_parsed;
+    jxl_color_encoding enc;
+    jxl_color_encoding_parsed target_parsed;
     if (parsed == NULL || target_icc == NULL || target_icc_len == 0) {
         return 0;
     }
-    if (parsed->colour.have_icc_profile) {
+    if (parsed->color.have_icc_profile) {
         return parsed->embedded_icc != NULL && parsed->embedded_icc_len == target_icc_len &&
                memcmp(parsed->embedded_icc, target_icc, target_icc_len) == 0;
     }
     if (jxl_icc_parse_color_encoding(target_icc, target_icc_len, &enc) != JXL_OK) {
         return 0;
     }
-    if (jxl_colour_encoding_to_parsed(&enc, &target_parsed) != JXL_OK) {
+    if (jxl_color_encoding_to_parsed(&enc, &target_parsed) != JXL_OK) {
         return 0;
     }
-    return jxl_colour_encoding_parsed_equivalent(&parsed->colour, &target_parsed);
+    return jxl_color_encoding_parsed_equivalent(&parsed->color, &target_parsed);
 }
 
 static uint32_t decoder_postprocess_output_channels(const jxl_parsed_image_header *parsed,
                                                     const jxl_decoder_frame_hint *fh) {
-    if (parsed->colour.colour_space == JXL_COLOUR_SPACE_GRAY_I ||
+    if (parsed->color.color_space == JXL_COLOR_SPACE_GRAY_I ||
         fh->encoded_color_channels < 3u) {
         uint32_t keep = fh->encoded_color_channels;
         return keep != 0u ? keep : 1u;
@@ -373,7 +373,7 @@ static int decoder_postprocess_transform_is_noop(const jxl_parsed_image_header *
     if (decoder_target_matches_frame_encoding(parsed, target_icc, target_icc_len)) {
         return 1;
     }
-    if (!parsed->colour.have_icc_profile && !parsed->xyb_encoded) {
+    if (!parsed->color.have_icc_profile && !parsed->xyb_encoded) {
         return 1;
     }
     return 0;
@@ -437,7 +437,7 @@ static jxl_status_t decoder_postprocess_keyframe(jxl_decoder *dec, jxl_render *r
         return decoder_finish_postprocess_planes(dec_alloc(dec), r, parsed, fh);
     }
 
-    if (parsed->colour.have_icc_profile) {
+    if (parsed->color.have_icc_profile) {
         int icc_same;
 	if (parsed->embedded_icc == NULL || parsed->embedded_icc_len == 0) {
             return JXL_ERROR_UNSUPPORTED;
@@ -467,7 +467,7 @@ static jxl_status_t decoder_postprocess_keyframe(jxl_decoder *dec, jxl_render *r
 static jxl_status_t decoder_apply_output_color_transform(jxl_decoder *dec, jxl_render *r,
                                                        const jxl_parsed_image_header *parsed,
                                                        const jxl_decoder_frame_hint *fh) {
-    jxl_colour_encoding_parsed target_parsed;
+    jxl_color_encoding_parsed target_parsed;
     int use_cms;
     const uint8_t *target_icc;
     size_t target_icc_len;
@@ -499,14 +499,14 @@ static jxl_status_t decoder_apply_output_color_transform(jxl_decoder *dec, jxl_r
 
     if (dec->has_requested_color_encoding) {
         jxl_status_t st =
-            jxl_colour_encoding_to_parsed(&dec->requested_color_encoding, &target_parsed);
+            jxl_color_encoding_to_parsed(&dec->requested_color_encoding, &target_parsed);
         if (st != JXL_OK) {
             use_cms = 1;
         }
     } else {
-        jxl_colour_encoding enc;
+        jxl_color_encoding enc;
         if (jxl_icc_parse_color_encoding(target_icc, target_icc_len, &enc) == JXL_OK) {
-            jxl_status_t st = jxl_colour_encoding_to_parsed(&enc, &target_parsed);
+            jxl_status_t st = jxl_color_encoding_to_parsed(&enc, &target_parsed);
             if (st != JXL_OK) {
                 use_cms = 1;
             }
@@ -522,7 +522,7 @@ static jxl_status_t decoder_apply_output_color_transform(jxl_decoder *dec, jxl_r
                                                     px_count, target_icc, target_icc_len);
     }
 
-    if (!jxl_colour_encoding_is_d65_srgb_fast_path(&target_parsed)) {
+    if (!jxl_color_encoding_is_d65_srgb_fast_path(&target_parsed)) {
         return JXL_ERROR_UNSUPPORTED;
     }
 
@@ -718,7 +718,7 @@ jxl_status_t jxl_decoder_request_icc(jxl_decoder *dec, const uint8_t *icc, size_
     return JXL_OK;
 }
 
-jxl_status_t jxl_decoder_request_colour_encoding(jxl_decoder *dec, jxl_colour_encoding enc) {
+jxl_status_t jxl_decoder_request_color_encoding(jxl_decoder *dec, jxl_color_encoding enc) {
     if (dec == NULL) {
         return JXL_ERROR_INVALID_INPUT;
     }
@@ -1392,7 +1392,7 @@ static jxl_jpeg_reconstruction_status decoder_jbrd_status(const jxl_decoder *dec
         jxl_bs_init(&bs, codestream, cs_len);
         memset(&parsed, 0, sizeof(parsed));
         if (jxl_image_header_parse(&bs, &parsed) == JXL_BS_OK) {
-            if (!parsed.colour.have_icc_profile) {
+            if (!parsed.color.have_icc_profile) {
                 icc_st = JXL_JPEG_RECONSTRUCTION_INVALID;
             } else if (jxl_image_decode_post_header(alloc, &bs, &parsed) == JXL_BS_OK &&
                        parsed.embedded_icc != NULL) {

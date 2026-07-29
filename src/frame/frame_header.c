@@ -75,7 +75,7 @@ static void apply_defaults(jxl_context *alloc, jxl_frame_header *h,
             }
         }
         gray = h->encoding == JXL_FRAME_ENCODING_MODULAR && !h->do_ycbcr &&
-                   !image->xyb_encoded && image->colour.colour_space == JXL_COLOUR_SPACE_GRAY_I;
+                   !image->xyb_encoded && image->color.color_space == JXL_COLOR_SPACE_GRAY_I;
         h->encoded_color_channels = gray ? 1 : 3;
     }
     h->is_last = 1;
@@ -482,7 +482,7 @@ static jxl_frame_status_t parse_non_default(jxl_context *alloc, jxl_bs *bs,
     }
 
     gray = h->encoding == JXL_FRAME_ENCODING_MODULAR && !h->do_ycbcr && image != NULL &&
-               !image->xyb_encoded && image->colour.colour_space == JXL_COLOUR_SPACE_GRAY_I;
+               !image->xyb_encoded && image->color.color_space == JXL_COLOR_SPACE_GRAY_I;
     h->encoded_color_channels = gray ? 1 : 3;
     return JXL_FRAME_OK;
 }

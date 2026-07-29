@@ -10,7 +10,7 @@
 
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/common.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/enc_huffman_tree.h"
 
 

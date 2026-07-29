@@ -11,7 +11,7 @@
 
 #include "lib/jxl/ac_strategy.h"
 #include "lib/jxl/base/bits.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/coeff_order.h"
 #include "lib/jxl/entropy_coder.h"
 #include "lib/jxl/pack_signed.h"

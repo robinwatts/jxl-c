@@ -4,7 +4,7 @@
 // license that can be found in the LICENSE file.
 
 #include <jxl/context.h>
-#include "lib/jxl/allocator.h"
+#include "lib/jxl/enc_allocator.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -14,7 +14,7 @@
 #include "lib/jxl/base/common.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/printf_macros.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/enc_ans.h"
 #include "lib/jxl/layer_type.h"
 #include "lib/jxl/enc_bit_writer.h"
@@ -45,7 +45,7 @@ static inline jxl_fixed_tree_node_info jxl_fixed_tree_node_info_make(size_t begi
 }
 
 // `cutoffs` must be sorted.
-static void jxl_make_fixed_tree(int property, const jxl_array_i32 *cutoffs, jxl_predictor pred,
+static void jxl_make_fixed_tree(int property, const jxl_array_i32 *cutoffs, jxl_enc_predictor pred,
                    size_t num_pixels, int bitdepth, jxl_tree *out) {
   size_t log_px = jxl_ceil_log2_nonzero64(num_pixels);
   size_t min_gap = 0;
@@ -353,7 +353,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
     for (size_t y = 0; y < channel->h; y++) {
       const pixel_type *JXL_RESTRICT r = jxl_channel_row_const(channel, y);
       for (size_t x = 0; x < channel->w; x++) {
-        jxl_prediction_result pred = jxl_predict_no_tree_no_wp(channel->w, r + x, onerow, x,
+        jxl_enc_prediction_result pred = jxl_predict_no_tree_no_wp(channel->w, r + x, onerow, x,
                                                   y, jxl_array_at(&tree, 0)->top.predictor);
         pixel_type_w residual = r[x] - pred.guess;
         JXL_DASSERT((residual >> mul_shift) * jxl_array_at(&tree, 0)->children.multiplier == residual);
@@ -387,7 +387,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
       const pixel_type *JXL_RESTRICT p = jxl_channel_row_const(channel, y);
       jxl_init_props_row(&properties, static_props, y);
       for (size_t x = 0; x < channel->w; x++) {
-        jxl_prediction_result res =
+        jxl_enc_prediction_result res =
             jxl_predict_tree_no_wp(&properties, channel->w, p + x, onerow, x, y,
                             &tree_lookup, &references);
         pixel_type_w residual = p[x] - res.guess;
@@ -426,7 +426,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
       const pixel_type *JXL_RESTRICT p = jxl_channel_row_const(channel, y);
       jxl_init_props_row(&properties, static_props, y);
       for (size_t x = 0; x < channel->w; x++) {
-        jxl_prediction_result res =
+        jxl_enc_prediction_result res =
             jxl_predict_tree_wp(&properties, channel->w, p + x, onerow, x, y,
                           &tree_lookup, &references, &wp_state);
         pixel_type_w residual = p[x] - res.guess;
@@ -595,7 +595,7 @@ jxl_status jxl_learn_tree_impl(const jxl_image *images, const jxl_modular_option
 
     // encode transforms
     jxl_bundle_init(&wp_header.fields);
-    if (jxl_predictor_has_weighted(options[i].predictor)) {
+    if (jxl_enc_predictor_has_weighted(options[i].predictor)) {
       jxl_weighted_predictor_mode(options[i].wp_mode, &wp_header);
     }
 
@@ -660,7 +660,7 @@ jxl_status jxl_modular_compress_impl(const jxl_image *image, const jxl_modular_o
 
   // encode transforms
   jxl_bundle_init(&header->fields);
-  if (jxl_predictor_has_weighted(options->predictor)) {
+  if (jxl_enc_predictor_has_weighted(options->predictor)) {
     jxl_weighted_predictor_mode(options->wp_mode, &header->wp_header);
   }
   header->use_global_tree = true;
@@ -724,7 +724,7 @@ jxl_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_m
   // encode transforms
   jxl_group_header header;
   jxl_group_header_init(&header);
-  if (jxl_predictor_has_weighted(options.predictor)) {
+  if (jxl_enc_predictor_has_weighted(options.predictor)) {
     jxl_weighted_predictor_mode(options.wp_mode, &header.wp_header);
   }
 

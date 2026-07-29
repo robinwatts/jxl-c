@@ -36,12 +36,12 @@ static jxl_bs_status_t read_customxy(jxl_bs *bs, int32_t *x, int32_t *y) {
     return JXL_BS_OK;
 }
 
-static jxl_bs_status_t parse_white_point(jxl_bs *bs, jxl_colour_space_i cs,
+static jxl_bs_status_t parse_white_point(jxl_bs *bs, jxl_color_space_i cs,
                                          jxl_white_point_i *wp, int32_t *cx, int32_t *cy) {
     uint32_t d;
     jxl_bs_status_t st;
-    if (cs == JXL_COLOUR_SPACE_XYB_I) {
-        *wp = JXL_COLOUR_WHITE_POINT_D65_I;
+    if (cs == JXL_COLOR_SPACE_XYB_I) {
+        *wp = JXL_COLOR_WHITE_POINT_D65_I;
         return JXL_BS_OK;
     }
     d = 0;
@@ -51,10 +51,10 @@ static jxl_bs_status_t parse_white_point(jxl_bs *bs, jxl_colour_space_i cs,
     }
     switch (d) {
     case 1:
-        *wp = JXL_COLOUR_WHITE_POINT_D65_I;
+        *wp = JXL_COLOR_WHITE_POINT_D65_I;
         return JXL_BS_OK;
     case 2:
-        *wp = JXL_COLOUR_WHITE_POINT_CUSTOM_I;
+        *wp = JXL_COLOR_WHITE_POINT_CUSTOM_I;
         return read_customxy(bs, cx, cy);
     case 10:
         *wp = JXL_WHITE_POINT_E_I;
@@ -67,13 +67,13 @@ static jxl_bs_status_t parse_white_point(jxl_bs *bs, jxl_colour_space_i cs,
     }
 }
 
-static jxl_bs_status_t parse_primaries(jxl_bs *bs, jxl_colour_space_i cs, jxl_primaries_i *prim,
+static jxl_bs_status_t parse_primaries(jxl_bs *bs, jxl_color_space_i cs, jxl_primaries_i *prim,
                                        int32_t *rx, int32_t *ry, int32_t *gx, int32_t *gy,
                                        int32_t *bx, int32_t *by) {
     uint32_t d;
     jxl_bs_status_t st;
-    if (cs == JXL_COLOUR_SPACE_XYB_I || cs == JXL_COLOUR_SPACE_GRAY_I) {
-        *prim = JXL_COLOUR_PRIMARIES_SRGB_I;
+    if (cs == JXL_COLOR_SPACE_XYB_I || cs == JXL_COLOR_SPACE_GRAY_I) {
+        *prim = JXL_COLOR_PRIMARIES_SRGB_I;
         return JXL_BS_OK;
     }
     d = 0;
@@ -83,10 +83,10 @@ static jxl_bs_status_t parse_primaries(jxl_bs *bs, jxl_colour_space_i cs, jxl_pr
     }
     switch (d) {
     case 1:
-        *prim = JXL_COLOUR_PRIMARIES_SRGB_I;
+        *prim = JXL_COLOR_PRIMARIES_SRGB_I;
         return JXL_BS_OK;
     case 2:
-        *prim = JXL_COLOUR_PRIMARIES_CUSTOM_I;
+        *prim = JXL_COLOR_PRIMARIES_CUSTOM_I;
         st = read_customxy(bs, rx, ry);
         if (st != JXL_BS_OK) {
             return st;
@@ -151,7 +151,7 @@ static jxl_bs_status_t parse_transfer_function(jxl_bs *bs, jxl_transfer_function
     }
 }
 
-jxl_bs_status_t jxl_colour_encoding_parse(jxl_bs *bs, jxl_colour_encoding_parsed *out) {
+jxl_bs_status_t jxl_color_encoding_parse(jxl_bs *bs, jxl_color_encoding_parsed *out) {
     int all_default;
     int want_icc;
     uint32_t cs;
@@ -164,9 +164,9 @@ jxl_bs_status_t jxl_colour_encoding_parse(jxl_bs *bs, jxl_colour_encoding_parsed
         return st;
     }
     if (all_default) {
-        out->colour_space = JXL_COLOUR_SPACE_RGB_I;
-        out->white_point = JXL_COLOUR_WHITE_POINT_D65_I;
-        out->primaries = JXL_COLOUR_PRIMARIES_SRGB_I;
+        out->color_space = JXL_COLOR_SPACE_RGB_I;
+        out->white_point = JXL_COLOR_WHITE_POINT_D65_I;
+        out->primaries = JXL_COLOR_PRIMARIES_SRGB_I;
         out->transfer = JXL_TRANSFER_SRGB_I;
         out->rendering_intent = JXL_RENDERING_RELATIVE_I;
         return JXL_BS_OK;
@@ -186,19 +186,19 @@ jxl_bs_status_t jxl_colour_encoding_parse(jxl_bs *bs, jxl_colour_encoding_parsed
     if (cs > 3) {
         return JXL_BS_VALIDATION_FAILED;
     }
-    out->colour_space = (jxl_colour_space_i)cs;
+    out->color_space = (jxl_color_space_i)cs;
 
     if (want_icc) {
         out->have_icc_profile = 1;
         return JXL_BS_OK;
     }
 
-    st = parse_white_point(bs, out->colour_space, &out->white_point, &out->custom_white_x,
+    st = parse_white_point(bs, out->color_space, &out->white_point, &out->custom_white_x,
                            &out->custom_white_y);
     if (st != JXL_BS_OK) {
         return st;
     }
-    st = parse_primaries(bs, out->colour_space, &out->primaries, &out->custom_red_x,
+    st = parse_primaries(bs, out->color_space, &out->primaries, &out->custom_red_x,
                          &out->custom_red_y, &out->custom_green_x, &out->custom_green_y,
                          &out->custom_blue_x, &out->custom_blue_y);
     if (st != JXL_BS_OK) {

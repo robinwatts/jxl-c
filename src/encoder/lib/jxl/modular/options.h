@@ -15,7 +15,7 @@
 typedef int32_t jxl_property_val;
 typedef jxl_array_i32 jxl_properties;
 
-typedef enum jxl_predictor {
+typedef enum jxl_enc_predictor {
   kPredictorZero = 0,
   kPredictorLeft = 1,
   kPredictorTop = 2,
@@ -34,15 +34,15 @@ typedef enum jxl_predictor {
   kPredictorBest = 14,  // Best of Gradient and Weighted
   kPredictorVariable =
       15,  // Find the best decision tree for predictors/predictor per row
-} jxl_predictor;
+} jxl_enc_predictor;
 
-static JXL_INLINE void jxl_swap_predictor(jxl_predictor* a, jxl_predictor* b) {
-  jxl_predictor tmp = *a;
+static JXL_INLINE void jxl_swap_predictor(jxl_enc_predictor* a, jxl_enc_predictor* b) {
+  jxl_enc_predictor tmp = *a;
   *a = *b;
   *b = tmp;
 }
 
-#define kUndefinedPredictor ((jxl_predictor)(~0u))
+#define kUndefinedPredictor ((jxl_enc_predictor)(~0u))
 
 
 enum { kNumModularPredictors = (int)kPredictorAverage4 + 1 };
@@ -73,7 +73,7 @@ typedef struct jxl_modular_multiplier_info {
 } jxl_modular_multiplier_info;
 
 JXL_DEFINE_POD_ARRAY(jxl_array_modular_multiplier_info, jxl_modular_multiplier_info)
-JXL_DEFINE_POD_ARRAY(jxl_array_predictor, jxl_predictor)
+JXL_DEFINE_POD_ARRAY(jxl_array_predictor, jxl_enc_predictor)
 
 // Max properties in the default / prop-order heuristics lists.
 enum { kMaxSplittingHeuristicsProperties = 16 };
@@ -114,8 +114,8 @@ typedef struct jxl_modular_options {
   float splitting_heuristics_node_threshold;
   size_t max_property_values;
 
-  // jxl_predictor to use for each channel.
-  jxl_predictor predictor;
+  // jxl_enc_predictor to use for each channel.
+  jxl_enc_predictor predictor;
 
   int wp_mode;
 

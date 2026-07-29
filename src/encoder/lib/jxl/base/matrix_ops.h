@@ -12,7 +12,7 @@
 #include <stddef.h>
 
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 
 typedef struct jxl_vector3 {
   float v[3];

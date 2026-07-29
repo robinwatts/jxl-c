@@ -3,8 +3,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#ifndef LIB_JXL_BASE_STATUS_H_
-#define LIB_JXL_BASE_STATUS_H_
+#ifndef LIB_JXL_BASE_ENC_STATUS_H_
+#define LIB_JXL_BASE_ENC_STATUS_H_
 
 // Error handling: jxl_status return type + helper macros.
 
@@ -280,4 +280,4 @@ static inline JXL_FORMAT(2, 3) jxl_status jxl_status_message(jxl_status status,
 }
 
 
-#endif  // LIB_JXL_BASE_STATUS_H_
+#endif  // LIB_JXL_BASE_ENC_STATUS_H_

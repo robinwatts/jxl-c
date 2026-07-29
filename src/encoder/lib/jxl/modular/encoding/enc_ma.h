@@ -11,7 +11,7 @@
 
 #include "lib/jxl/base/array.h"
 #include "lib/jxl/base/common.h"
-#include "lib/jxl/base/status.h"
+#include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/enc_ans.h"
 #include "lib/jxl/modular/encoding/dec_ma.h"
 #include "lib/jxl/modular/modular_image.h"
@@ -66,7 +66,7 @@ typedef struct jxl_tree_samples {
 } jxl_tree_samples;
 
 // Defined in enc_ma.cc
-jxl_status jxl_tree_samples_set_predictor(jxl_tree_samples* self, jxl_predictor predictor,
+jxl_status jxl_tree_samples_set_predictor(jxl_tree_samples* self, jxl_enc_predictor predictor,
                                jxl_modular_tree_mode wp_tree_mode);
 jxl_status jxl_tree_samples_set_properties(jxl_tree_samples* self, const uint32_t* properties,
                                 size_t num_properties,
@@ -156,7 +156,7 @@ static inline size_t jxl_tree_samples_count(const jxl_tree_samples* self, size_t
   return *jxl_array_at_const(&self->sample_counts, i);
 }
 static inline size_t jxl_tree_samples_predictor_index(const jxl_tree_samples* self,
-                                        jxl_predictor predictor) {
+                                        jxl_enc_predictor predictor) {
   for (size_t i = 0; i < jxl_array_len(&self->predictors); ++i) {
     if (*jxl_array_at_const(&self->predictors, i) == predictor) return i;
   }
@@ -186,7 +186,7 @@ static inline int jxl_tree_samples_unquantize_property(const jxl_tree_samples* s
   JXL_DASSERT(quant < jxl_array_len(&self->compact_properties[property_index]));
   return *jxl_array_at_const(&self->compact_properties[property_index], quant);
 }
-static inline jxl_predictor jxl_tree_samples_predictor_from_index(const jxl_tree_samples* self,
+static inline jxl_enc_predictor jxl_tree_samples_predictor_from_index(const jxl_tree_samples* self,
                                                size_t index) {
   JXL_DASSERT(index < jxl_array_len(&self->predictors));
   return *jxl_array_at_const(&self->predictors, index);
