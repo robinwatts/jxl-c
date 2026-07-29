@@ -14,12 +14,15 @@
 
 #include "base/array.h"
 #include "base/enc_status.h"
+#include "common/icc_ans_context.h"
+#include "common/icc_codec_params.h"
+#include "common/icc_header_predict.h"
 #include "padded_bytes.h"
 
-enum { kICCHeaderSize = 128 };
+enum { kICCHeaderSize = JXL_ICC_HEADER_SIZE };
 
 // Four-byte ICC keyword / type code.
-enum { kTagSize = 4 };
+enum { kTagSize = JXL_ICC_TAG_SIZE };
 
 typedef struct jxl_tag {
   uint8_t bytes[kTagSize];
@@ -90,27 +93,27 @@ static const jxl_tag* const kTagStrings[kNumTagStrings] = {
     &kKxyzTag, &kRtrcTag, &kGtrcTag, &kBtrcTag, &kKtrcTag, &kChadTag,
     &kDescTag, &kChrmTag, &kDmndTag, &kDmddTag, &kLumiTag};
 
-enum { kCommandTagUnknown = 1 };
-enum { kCommandTagTRC = 2 };
-enum { kCommandTagXYZ = 3 };
-enum { kCommandTagStringFirst = 4 };
+enum { kCommandTagUnknown = JXL_ICC_TAG_UNKNOWN };
+enum { kCommandTagTRC = JXL_ICC_TAG_TRC };
+enum { kCommandTagXYZ = JXL_ICC_TAG_XYZ };
+enum { kCommandTagStringFirst = JXL_ICC_TAG_STRING_FIRST };
 
 // jxl_tag types focused on RGB and GRAY monitor profiles
-enum { kNumTypeStrings = 8 };
+enum { kNumTypeStrings = JXL_ICC_NUM_TYPE_STRINGS };
 static const jxl_tag* const kTypeStrings[kNumTypeStrings] = {
     &kXyz_Tag, &kDescTag, &kTextTag, &kMlucTag,
     &kParaTag, &kCurvTag, &kSf32Tag, &kGbd_Tag};
 
-enum { kCommandInsert = 1 };
-enum { kCommandShuffle2 = 2 };
-enum { kCommandPredict = 4 };
-enum { kCommandXYZ = 10 };
-enum { kCommandTypeStartFirst = 16 };
+enum { kCommandInsert = JXL_ICC_CMD_INSERT };
+enum { kCommandShuffle2 = JXL_ICC_CMD_SHUFFLE2 };
+enum { kCommandPredict = JXL_ICC_CMD_PREDICT };
+enum { kCommandXYZ = JXL_ICC_CMD_XYZ };
+enum { kCommandTypeStartFirst = JXL_ICC_CMD_TYPE_START_FIRST };
 
-enum { kFlagBitOffset = 64 };
-enum { kFlagBitSize = 128 };
+enum { kFlagBitOffset = JXL_ICC_FLAG_OFFSET };
+enum { kFlagBitSize = JXL_ICC_FLAG_SIZE };
 
-enum { kNumICCContexts = 41 };
+enum { kNumICCContexts = JXL_NUM_ICC_CONTEXTS };
 
 uint32_t jxl_decode_uint32(const uint8_t* data, size_t size, size_t pos);
 jxl_tag jxl_decode_keyword(const uint8_t* data, size_t size, size_t pos);

@@ -3,6 +3,9 @@
 
 #include "coding/decoder.h"
 #include "coding/error.h"
+#include "common/icc_ans_context.h"
+#include "common/icc_codec_params.h"
+#include "common/icc_header_predict.h"
 
 #include <string.h>
 
@@ -17,44 +20,6 @@ static jxl_bs_status_t coding_to_bs(jxl_coding_status_t st) {
     default:
         return JXL_BS_VALIDATION_FAILED;
     }
-}
-
-static uint32_t icc_ctx(size_t idx, uint8_t b1, uint8_t b2) {
-    uint32_t p1;
-    uint32_t p2;
-    if (idx <= 128) {
-        return 0;
-    }
-
-    if ((b1 >= 'a' && b1 <= 'z') || (b1 >= 'A' && b1 <= 'Z')) {
-        p1 = 0;
-    } else if ((b1 >= '0' && b1 <= '9') || b1 == '.' || b1 == ',') {
-        p1 = 1;
-    } else if (b1 <= 1) {
-        p1 = 2 + (uint32_t)b1;
-    } else if (b1 <= 15) {
-        p1 = 4;
-    } else if (b1 >= 241 && b1 <= 254) {
-        p1 = 5;
-    } else if (b1 == 255) {
-        p1 = 6;
-    } else {
-        p1 = 7;
-    }
-
-    if ((b2 >= 'a' && b2 <= 'z') || (b2 >= 'A' && b2 <= 'Z')) {
-        p2 = 0;
-    } else if ((b2 >= '0' && b2 <= '9') || b2 == '.' || b2 == ',') {
-        p2 = 1;
-    } else if (b2 <= 15) {
-        p2 = 2;
-    } else if (b2 >= 241) {
-        p2 = 3;
-    } else {
-        p2 = 4;
-    }
-
-    return 1 + p1 + 8 * p2;
 }
 
 typedef struct {
@@ -81,106 +46,6 @@ static jxl_bs_status_t icc_varint(icc_mem_stream *stream, uint64_t *value_out) {
     }
     *value_out = value;
     return JXL_BS_OK;
-}
-
-static uint8_t predict_header(size_t idx, uint32_t output_size, const uint8_t *header) {
-    switch (idx) {
-    case 0:
-        return (uint8_t)(output_size >> 24);
-    case 1:
-        return (uint8_t)(output_size >> 16);
-    case 2:
-        return (uint8_t)(output_size >> 8);
-    case 3:
-        return (uint8_t)output_size;
-    case 8:
-        return 4;
-    case 12:
-        return 'm';
-    case 13:
-        return 'n';
-    case 14:
-        return 't';
-    case 15:
-        return 'r';
-    case 16:
-        return 'R';
-    case 17:
-        return 'G';
-    case 18:
-        return 'B';
-    case 19:
-        return ' ';
-    case 20:
-        return 'X';
-    case 21:
-        return 'Y';
-    case 22:
-        return 'Z';
-    case 23:
-        return ' ';
-    case 36:
-        return 'a';
-    case 37:
-        return 'c';
-    case 38:
-        return 's';
-    case 39:
-        return 'p';
-    case 41:
-        if (header[40] == 'A') {
-            return 'P';
-        }
-        if (header[40] == 'M') {
-            return 'S';
-        }
-        return 0;
-    case 42:
-        if (header[40] == 'A') {
-            return 'P';
-        }
-        if (header[40] == 'M') {
-            return 'F';
-        }
-        if (header[40] == 'S' && header[41] == 'G') {
-            return 'I';
-        }
-        if (header[40] == 'S' && header[41] == 'U') {
-            return 'N';
-        }
-        return 0;
-    case 43:
-        if (header[40] == 'A') {
-            return 'L';
-        }
-        if (header[40] == 'M') {
-            return 'T';
-        }
-        if (header[40] == 'S' && header[41] == 'G') {
-            return ' ';
-        }
-        if (header[40] == 'S' && header[41] == 'U') {
-            return 'W';
-        }
-        return 0;
-    case 70:
-        return 246;
-    case 71:
-        return 214;
-    case 73:
-        return 1;
-    case 78:
-        return 211;
-    case 79:
-        return 45;
-    case 80:
-    case 81:
-    case 82:
-    case 83:
-        return header[idx - 76];
-    default:
-        return 0;
-    }
 }
 
 static void shuffle2(const uint8_t *bytes, size_t len, uint8_t *out) {
@@ -256,17 +121,6 @@ static jxl_bs_status_t icc_stream_decode(jxl_context *alloc, const uint8_t *stre
     size_t header_size;
     size_t out_pos;
     uint64_t v;
-    static const uint8_t common_tags[19][4] = {
-        {'r', 'T', 'R', 'C'}, {'r', 'X', 'Y', 'Z'}, {'c', 'p', 'r', 't'}, {'w', 't', 'p', 't'},
-        {'b', 'k', 'p', 't'}, {'r', 'X', 'Y', 'Z'}, {'g', 'X', 'Y', 'Z'}, {'b', 'X', 'Y', 'Z'},
-        {'k', 'X', 'Y', 'Z'}, {'r', 'T', 'R', 'C'}, {'g', 'T', 'R', 'C'}, {'b', 'T', 'R', 'C'},
-        {'k', 'T', 'R', 'C'}, {'c', 'h', 'a', 'd'}, {'d', 'e', 's', 'c'}, {'c', 'h', 'r', 'm'},
-        {'d', 'm', 'n', 'd'}, {'d', 'm', 'd', 'd'}, {'l', 'u', 'm', 'i'},
-    };
-    static const uint8_t common_data[8][4] = {
-        {'X', 'Y', 'Z', ' '}, {'d', 'e', 's', 'c'}, {'t', 'e', 'x', 't'}, {'m', 'l', 'u', 'c'},
-        {'p', 'a', 'r', 'a'}, {'c', 'u', 'r', 'v'}, {'s', 'f', '3', '2'}, {'g', 'b', 'd', ' '},
-    };
     icc_mem_stream input;
     jxl_bs_status_t st;
     size_t output_size;
@@ -330,7 +184,7 @@ static jxl_bs_status_t icc_stream_decode(jxl_context *alloc, const uint8_t *stre
     data += header_size;
     data_len -= header_size;
     for (idx = 0; idx < header_size; ++idx) {
-        uint8_t p = predict_header(idx, (uint32_t)output_size_u64, header_data);
+        uint8_t p = jxl_icc_predict_header_byte(idx, (uint32_t)output_size_u64, header_data);
         out[out_pos++] = (uint8_t)(p + header_data[idx]);
     }
     if (output_size <= 128) {
@@ -400,7 +254,7 @@ static jxl_bs_status_t icc_stream_decode(jxl_context *alloc, const uint8_t *stre
                 break;
             default:
                 if (tagcode >= 2 && tagcode <= 20) {
-                    tag = common_tags[tagcode - 2];
+                    tag = jxl_icc_common_tags[tagcode - 2];
                 } else {
                     jxl_free(alloc, out);
                     return JXL_BS_VALIDATION_FAILED;
@@ -702,7 +556,7 @@ static jxl_bs_status_t icc_stream_decode(jxl_context *alloc, const uint8_t *stre
                 jxl_free(alloc, out);
                 return JXL_BS_VALIDATION_FAILED;
             }
-            st = out_append(out, output_size, &out_pos, common_data[command - 16], 4);
+            st = out_append(out, output_size, &out_pos, jxl_icc_type_strings[command - 16], 4);
             if (st != JXL_BS_OK) {
                 jxl_free(alloc, out);
                 return st;
@@ -775,7 +629,7 @@ static jxl_bs_status_t icc_decode_bytes(jxl_context *alloc, jxl_bs *bs, uint8_t 
     for (idx = 0; idx < enc_size; ++idx) {
         uint32_t sym = 0;
         st = coding_to_bs(
-            jxl_coding_decoder_read_varint(dec, bs, icc_ctx((size_t)idx, b1, b2), &sym));
+            jxl_coding_decoder_read_varint(dec, bs, jxl_icc_ans_context((size_t)idx, b1, b2), &sym));
         if (st != JXL_BS_OK) {
             jxl_free(alloc, data);
             jxl_coding_decoder_destroy(alloc, dec);

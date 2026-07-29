@@ -10,32 +10,9 @@
 #include <string.h>
 
 #include "base/byte_order.h"
+#include "base/compiler_specific.h"
 #include "base/enc_status.h"
 #include "padded_bytes.h"
-#include "base/compiler_specific.h"
-
-static uint8_t jxl_byte_kind1(uint8_t b) {
-  if ('a' <= b && b <= 'z') return 0;
-  if ('A' <= b && b <= 'Z') return 0;
-  if ('0' <= b && b <= '9') return 1;
-  if (b == '.' || b == ',') return 1;
-  if (b == 0) return 2;
-  if (b == 1) return 3;
-  if (b < 16) return 4;
-  if (b == 255) return 6;
-  if (b > 240) return 5;
-  return 7;
-}
-
-static uint8_t jxl_byte_kind2(uint8_t b) {
-  if ('a' <= b && b <= 'z') return 0;
-  if ('A' <= b && b <= 'Z') return 0;
-  if ('0' <= b && b <= '9') return 1;
-  if (b == '.' || b == ',') return 1;
-  if (b < 16) return 2;
-  if (b > 240) return 3;
-  return 4;
-}
 
 static uint8_t jxl_predict_value_u8(uint8_t p1, uint8_t p2, uint8_t p3, int order) {
   if (order == 0) return p1;
@@ -72,40 +49,28 @@ jxl_tag jxl_decode_keyword(const uint8_t* data, size_t size, size_t pos) {
   return tag;
 }
 
-jxl_enc_status jxl_append_keyword(const jxl_tag* keyword, jxl_padded_bytes* data){
+jxl_enc_status jxl_append_keyword(const jxl_tag* keyword, jxl_padded_bytes* data) {
   JXL_STATIC_ASSERT(sizeof(jxl_tag) == kTagSize, "jxl_tag should be 4-bytes");
   return jxl_padded_bytes_append(data, jxl_tag_data(keyword),
-                           jxl_tag_data(keyword) + kTagSize);
+                                  jxl_tag_data(keyword) + kTagSize);
 }
 
-// Checks if a + b > size, taking possible integer overflow into account.
 jxl_enc_status jxl_check_out_of_bounds(uint64_t a, uint64_t b, uint64_t size) {
   uint64_t pos = a + b;
   if (pos > size) return JXL_FAILURE("Out of bounds");
-  if (pos < a) return JXL_FAILURE("Out of bounds");  // overflow happened
+  if (pos < a) return JXL_FAILURE("Out of bounds");
   return jxl_enc_ok_status();
 }
 
-static const uint8_t kIccInitialHeaderPredictionBytes[kICCHeaderSize] = {
-    0,   0,   0,   0,   0,   0,   0,   0,   4, 0, 0, 0, 'm', 'n', 't', 'r',
-    'R', 'G', 'B', ' ', 'X', 'Y', 'Z', ' ', 0, 0, 0, 0, 0,   0,   0,   0,
-    0,   0,   0,   0,   'a', 'c', 's', 'p', 0, 0, 0, 0, 0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,   0, 0, 0, 0, 0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   246, 214, 0, 1, 0, 0, 0,   0,   211, 45,
-    0,   0,   0,   0,   0,   0,   0,   0,   0, 0, 0, 0, 0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,   0, 0, 0, 0, 0,   0,   0,   0,
-    0,   0,   0,   0,   0,   0,   0,   0,   0, 0, 0, 0, 0,   0,   0,   0,
-};
-
 jxl_icc_header_bytes jxl_icc_initial_header_prediction(uint32_t size) {
   jxl_icc_header_bytes copy;
-  jxl_icc_header_bytes_copy_from(&copy, kIccInitialHeaderPredictionBytes);
+  jxl_icc_header_bytes_copy_from(&copy, jxl_icc_initial_header_prediction_bytes);
   jxl_store_be32(size, jxl_icc_header_bytes_data(&copy));
   return copy;
 }
 
 void jxl_icc_predict_header(const uint8_t* icc, size_t size, uint8_t* header,
-                      size_t pos) {
+                            size_t pos) {
   if (pos == 8 && size >= 8) {
     header[80] = icc[4];
     header[81] = icc[5];
@@ -136,13 +101,8 @@ void jxl_icc_predict_header(const uint8_t* icc, size_t size, uint8_t* header,
   }
 }
 
-// Predicts a value with linear prediction of given order (0-2), for integers
-// with width bytes and given stride in bytes between values.
-// The start position is at start + i, and the relevant modulus of i describes
-// which byte of the multi-byte integer is being handled.
-// The value start + i must be at least stride * 4.
 uint8_t jxl_linear_predict_icc_value(const uint8_t* data, size_t start, size_t i,
-                              size_t stride, size_t width, int order) {
+                                     size_t stride, size_t width, int order) {
   size_t pos = start + i;
   if (width == 1) {
     uint8_t p1 = data[pos - stride];
@@ -168,7 +128,5 @@ uint8_t jxl_linear_predict_icc_value(const uint8_t* data, size_t start, size_t i
 }
 
 size_t jxl_iccans_context(size_t i, size_t b1, size_t b2) {
-  if (i <= 128) return 0;
-  return 1 + jxl_byte_kind1(b1) + jxl_byte_kind2(b2) * 8;
+  return jxl_icc_ans_context(i, (uint8_t)b1, (uint8_t)b2);
 }
-
