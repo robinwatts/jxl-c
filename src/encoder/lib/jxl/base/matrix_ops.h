@@ -109,7 +109,7 @@ static inline void jxl_mul3x3_vector(const jxl_matrix3x3* a, const jxl_vector3* 
 }
 
 // Inverts a 3x3 matrix in place.
-static inline jxl_status jxl_inv3x3_matrix(jxl_matrix3x3* matrix) {
+static inline jxl_enc_status jxl_inv3x3_matrix(jxl_matrix3x3* matrix) {
   // Intermediate computation is done in double precision.
   double temp[3][3];
   size_t j;
@@ -146,7 +146,7 @@ static inline jxl_status jxl_inv3x3_matrix(jxl_matrix3x3* matrix) {
       jxl_matrix3x3_at(matrix, j)[i] = temp[j][i] * idet;
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 #endif  // LIB_JXL_BASE_MATRIX_OPS_H_

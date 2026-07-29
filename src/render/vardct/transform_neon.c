@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#include "compiler.h"
 #include "render/vardct/transform_neon.h"
 
 #include "render/vardct/dct_2d_neon.h"

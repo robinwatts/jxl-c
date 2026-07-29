@@ -72,7 +72,7 @@ int32_t jxl_num_non_zero8x8_except_dc(const int32_t* JXL_RESTRICT block,
 // context; if this number is above 63, a specific context is used.  If the
 // number of nonzeros of a strategy is above 63, it is written directly using a
 // fixed number of bits (that depends on the size of the strategy).
-jxl_status jxl_tokenize_coefficients(const coeff_order_t* JXL_RESTRICT orders,
+jxl_enc_status jxl_tokenize_coefficients(const coeff_order_t* JXL_RESTRICT orders,
                             const jxl_rect* rect,
                             const int32_t* JXL_RESTRICT* JXL_RESTRICT ac_rows,
                             const jxl_ac_strategy_image* ac_strategy,
@@ -85,7 +85,7 @@ jxl_status jxl_tokenize_coefficients(const coeff_order_t* JXL_RESTRICT orders,
   const size_t ysize_blocks = jxl_rect_y_size(rect);
 jxl_array_clear(output);
   // TODO(user): update the estimate: usually less coefficients are used.
-if (!jxl_status_ok(jxl_array_reserve(output, 3 * xsize_blocks * ysize_blocks * kDCTBlockSize))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_reserve(output, 3 * xsize_blocks * ysize_blocks * kDCTBlockSize))) JXL_CRASH();
   size_t offset[3];
   memset(offset, 0, sizeof(offset));
   const size_t nzeros_stride = jxl_image3_i_pixels_per_row(tmp_num_nzeroes);
@@ -145,7 +145,7 @@ if (!jxl_status_ok(jxl_array_reserve(output, 3 * xsize_blocks * ysize_blocks * k
         const int32_t nzero_ctx =
             jxl_block_ctx_map_non_zero_context(block_ctx_map, predicted_nzeros, block_ctx);
 
-if (!jxl_status_ok(jxl_array_token_push_back(output, jxl_token_make(nzero_ctx, nzeros)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_token_push_back(output, jxl_token_make(nzero_ctx, nzeros)))) JXL_CRASH();
 const size_t histo_offset =
             jxl_block_ctx_map_zero_density_contexts_offset(block_ctx_map, block_ctx);
         // Skip LLF.
@@ -156,7 +156,7 @@ const size_t histo_offset =
               histo_offset + jxl_zero_density_context(nzeros, k, covered_blocks,
                                                 log2_covered_blocks, prev);
           uint32_t u_coeff = jxl_pack_signed(coeff);
-if (!jxl_status_ok(jxl_array_token_push_back(output, jxl_token_make((uint32_t)(ctx), u_coeff)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_token_push_back(output, jxl_token_make((uint32_t)(ctx), u_coeff)))) JXL_CRASH();
 prev = (coeff != 0) ? 1 : 0;
           nzeros -= prev;
         }
@@ -165,5 +165,5 @@ prev = (coeff != 0) ? 1 : 0;
       }
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }

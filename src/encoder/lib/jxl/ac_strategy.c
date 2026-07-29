@@ -80,18 +80,18 @@ void jxl_ac_strategy_compute_natural_coeff_order_lut(jxl_ac_strategy self,
   jxl_coeff_order_and_lut(/*is_lut=*/true, self, lut);
 }
 
-jxl_status jxl_ac_strategy_image_create(jxl_context* ctx, size_t xsize,
+jxl_enc_status jxl_ac_strategy_image_create(jxl_context* ctx, size_t xsize,
                                size_t ysize, jxl_ac_strategy_image* out) {
   jxl_ac_strategy_image img;
   jxl_ac_strategy_image_construct_empty(&img);
-  jxl_status status =
+  jxl_enc_status status =
       jxl_image_b_create(ctx, xsize, ysize, 0, &img.layers_);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_ac_strategy_image_destroy(&img);
     return status;
   }
   jxl_ac_strategy_image_swap(out, &img);
   jxl_ac_strategy_image_destroy(&img);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 

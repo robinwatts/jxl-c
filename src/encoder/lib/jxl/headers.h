@@ -36,10 +36,10 @@ typedef struct jxl_enc_size_header {
   uint32_t xsize_;
 } jxl_enc_size_header;
 
-jxl_status jxl_enc_size_header_visit_fields(jxl_enc_size_header* self, jxl_visitor* JXL_RESTRICT visitor);
+jxl_enc_status jxl_enc_size_header_visit_fields(jxl_enc_size_header* self, jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_enc_size_header)
 
-jxl_status jxl_enc_size_header_set(jxl_enc_size_header* self, size_t xsize, size_t ysize);
+jxl_enc_status jxl_enc_size_header_set(jxl_enc_size_header* self, size_t xsize, size_t ysize);
 size_t jxl_enc_size_header_x_size(const jxl_enc_size_header* self);
 
 static inline void jxl_enc_size_header_init(jxl_enc_size_header* self) {
@@ -65,7 +65,7 @@ typedef struct jxl_preview_header {
   uint32_t xsize_;
 } jxl_preview_header;
 
-jxl_status jxl_preview_header_visit_fields(jxl_preview_header* self,
+jxl_enc_status jxl_preview_header_visit_fields(jxl_preview_header* self,
                                 jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_preview_header)
 
@@ -92,7 +92,7 @@ typedef struct jxl_enc_animation_header {
   bool have_timecodes;
 } jxl_enc_animation_header;
 
-jxl_status jxl_enc_animation_header_visit_fields(jxl_enc_animation_header* self,
+jxl_enc_status jxl_enc_animation_header_visit_fields(jxl_enc_animation_header* self,
                                   jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_enc_animation_header)
 

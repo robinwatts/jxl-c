@@ -19,7 +19,7 @@ void jxl_dequant_matrices_init(jxl_dequant_matrices* self,
   self->inv_dc_quant_[1] = kInvDCQuant[1];
   self->inv_dc_quant_[2] = kInvDCQuant[2];
   jxl_quant_encoding init = jxl_quant_encoding_library(0);
-  if (!jxl_status_ok(jxl_array_quant_encoding_resize_fill(&self->encodings_, kNumQuantTables, init))) {
+  if (!jxl_enc_status_ok(jxl_array_quant_encoding_resize_fill(&self->encodings_, kNumQuantTables, init))) {
     JXL_CRASH();
   }
 }

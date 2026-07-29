@@ -2,6 +2,7 @@
 #ifndef JXL_MODULAR_PREDICTOR_STATE_INLINE_H_
 #define JXL_MODULAR_PREDICTOR_STATE_INLINE_H_
 
+#include "compiler.h"
 #include "predictor_state.h"
 
 #include <string.h>

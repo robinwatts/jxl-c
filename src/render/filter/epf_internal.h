@@ -2,6 +2,7 @@
 #ifndef JXL_RENDER_FILTER_EPF_INTERNAL_H_
 #define JXL_RENDER_FILTER_EPF_INTERNAL_H_
 
+#include "compiler.h"
 #include "frame/filter.h"
 #include "render/subgrid_f32.h"
 

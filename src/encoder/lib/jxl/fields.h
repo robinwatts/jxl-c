@@ -20,11 +20,11 @@
 // Integer coders: jxl_bits_coder (raw), U32Coder (table), U64Coder (varint).
 
 // Writes a given (fixed) number of bits <= 32.
-jxl_status jxl_bits_coder_can_encode(size_t bits, uint32_t value,
+jxl_enc_status jxl_bits_coder_can_encode(size_t bits, uint32_t value,
                           size_t* JXL_RESTRICT encoded_bits);
 
 // Returns false if the value is too large to encode.
-jxl_status jxl_bits_coder_write(size_t bits, uint32_t value,
+jxl_enc_status jxl_bits_coder_write(size_t bits, uint32_t value,
                       jxl_bit_writer* JXL_RESTRICT writer);
 
 // Encodes u32 using a lookup table and/or extra bits, governed by a per-field
@@ -44,14 +44,14 @@ jxl_status jxl_bits_coder_write(size_t bits, uint32_t value,
 //   10xx -> 3..7
 //   11xxxxxxxx -> 8..263
 size_t jxl_u32_coder_max_encoded_bits(jxl_u32_enc enc);
-jxl_status jxl_u32_coder_can_encode(jxl_u32_enc enc, uint32_t value,
+jxl_enc_status jxl_u32_coder_can_encode(jxl_u32_enc enc, uint32_t value,
                          size_t* JXL_RESTRICT encoded_bits);
 
 // Returns false if the value is too large to encode.
-jxl_status jxl_u32_coder_write(jxl_u32_enc enc, uint32_t value,
+jxl_enc_status jxl_u32_coder_write(jxl_u32_enc enc, uint32_t value,
                      jxl_bit_writer* JXL_RESTRICT writer);
 
-jxl_status jxl_u32_coder_choose_selector(jxl_u32_enc enc, uint32_t value,
+jxl_enc_status jxl_u32_coder_choose_selector(jxl_u32_enc enc, uint32_t value,
                               uint32_t* JXL_RESTRICT selector,
                               size_t* JXL_RESTRICT total_bits);
 
@@ -60,21 +60,21 @@ jxl_status jxl_u32_coder_choose_selector(jxl_u32_enc enc, uint32_t value,
 // to encode up to 4095, and on the order of log2(value) * 1.125 bits for
 // larger values.
 // Returns false if the value is too large to encode.
-jxl_status jxl_u64_coder_write(uint64_t value, jxl_bit_writer* JXL_RESTRICT writer);
+jxl_enc_status jxl_u64_coder_write(uint64_t value, jxl_bit_writer* JXL_RESTRICT writer);
 
 // Can always encode, but useful because it also returns bit size.
-jxl_status jxl_u64_coder_can_encode(uint64_t value, size_t* JXL_RESTRICT encoded_bits);
+jxl_enc_status jxl_u64_coder_can_encode(uint64_t value, size_t* JXL_RESTRICT encoded_bits);
 
 // IEEE 754 half-precision (binary16). Refuses to read/write NaN/Inf.
 static inline size_t jxl_f16_coder_max_encoded_bits() { return 16; }
 
 // Bit-exact roundtrip through binary16 without a BitReader/jxl_bit_writer.
 // Equivalent to Write then Read of the same value.
-jxl_status jxl_f16_coder_project(float value, float* JXL_RESTRICT out);
+jxl_enc_status jxl_f16_coder_project(float value, float* JXL_RESTRICT out);
 
 // Returns false if the value is too large to encode.
-jxl_status jxl_f16_coder_write(float value, jxl_bit_writer* JXL_RESTRICT writer);
-jxl_status jxl_f16_coder_can_encode(float value, size_t* JXL_RESTRICT encoded_bits);
+jxl_enc_status jxl_f16_coder_write(float value, jxl_bit_writer* JXL_RESTRICT writer);
+jxl_enc_status jxl_f16_coder_can_encode(float value, size_t* JXL_RESTRICT encoded_bits);
 
 // A "bundle" is a forward- and backward compatible collection of fields.
 // They are used for jxl_enc_size_header/jxl_enc_frame_header/jxl_group_header. Bundles can be
@@ -146,10 +146,10 @@ bool jxl_bundle_all_default(const jxl_fields* fields);
 // Returns whether a header's fields can all be encoded, i.e. they have a
 // valid representation. If so, "*total_bits" is the exact number of bits
 // required. Called by Write.
-jxl_status jxl_bundle_can_encode(const jxl_fields* fields, size_t* JXL_RESTRICT extension_bits,
+jxl_enc_status jxl_bundle_can_encode(const jxl_fields* fields, size_t* JXL_RESTRICT extension_bits,
                        size_t* JXL_RESTRICT total_bits);
 
-jxl_status jxl_bundle_write(const jxl_fields* fields, jxl_bit_writer* JXL_RESTRICT writer,
+jxl_enc_status jxl_bundle_write(const jxl_fields* fields, jxl_bit_writer* JXL_RESTRICT writer,
                    jxl_layer_type layer);
 
 // A bundle can be in one of three states concerning extensions: not-begun,
@@ -186,39 +186,39 @@ static inline void jxl_extension_states_end(jxl_extension_states* self) {
 
 // C-shaped visitor dispatch (function pointers instead of vtables).
 typedef struct jxl_visitor_ops {
-  jxl_status (*bits)(jxl_visitor* self, size_t bits, uint32_t default_value,
+  jxl_enc_status (*bits)(jxl_visitor* self, size_t bits, uint32_t default_value,
                      uint32_t* JXL_RESTRICT value);
-  jxl_status (*u32)(jxl_visitor* self, jxl_u32_enc enc, uint32_t default_value,
+  jxl_enc_status (*u32)(jxl_visitor* self, jxl_u32_enc enc, uint32_t default_value,
                     uint32_t* JXL_RESTRICT value);
-  jxl_status (*u64)(jxl_visitor* self, uint64_t default_value,
+  jxl_enc_status (*u64)(jxl_visitor* self, uint64_t default_value,
                     uint64_t* JXL_RESTRICT value);
-  jxl_status (*f16)(jxl_visitor* self, float default_value,
+  jxl_enc_status (*f16)(jxl_visitor* self, float default_value,
                     float* JXL_RESTRICT value);
-  jxl_status (*boolean)(jxl_visitor* self, bool default_value,
+  jxl_enc_status (*boolean)(jxl_visitor* self, bool default_value,
                         bool* JXL_RESTRICT value);
-  jxl_status (*conditional)(jxl_visitor* self, bool condition);
-  jxl_status (*all_default)(jxl_visitor* self, const jxl_fields* fields,
+  jxl_enc_status (*conditional)(jxl_visitor* self, bool condition);
+  jxl_enc_status (*all_default)(jxl_visitor* self, const jxl_fields* fields,
                             bool* JXL_RESTRICT all_default);
   void (*set_default)(jxl_visitor* self, jxl_fields* fields);
-  jxl_status (*visit_nested)(jxl_visitor* self, jxl_fields* fields);
+  jxl_enc_status (*visit_nested)(jxl_visitor* self, jxl_fields* fields);
   bool (*is_reading)(const jxl_visitor* self);
-  jxl_status (*begin_extensions)(jxl_visitor* self,
+  jxl_enc_status (*begin_extensions)(jxl_visitor* self,
                                  uint64_t* JXL_RESTRICT extensions);
-  jxl_status (*end_extensions)(jxl_visitor* self);
+  jxl_enc_status (*end_extensions)(jxl_visitor* self);
 } jxl_visitor_ops;
 
 // Default ops shared by encode visitors (Bool-via-jxl_bits, extensions, etc.).
-jxl_status jxl_visitor_default_bool(jxl_visitor* self, bool default_value,
+jxl_enc_status jxl_visitor_default_bool(jxl_visitor* self, bool default_value,
                           bool* JXL_RESTRICT value);
-jxl_status jxl_visitor_default_conditional(jxl_visitor* self, bool condition);
-jxl_status jxl_visitor_default_all_default(jxl_visitor* self, const jxl_fields* fields,
+jxl_enc_status jxl_visitor_default_conditional(jxl_visitor* self, bool condition);
+jxl_enc_status jxl_visitor_default_all_default(jxl_visitor* self, const jxl_fields* fields,
                                 bool* JXL_RESTRICT all_default);
 void jxl_visitor_default_set_default(jxl_visitor* self, jxl_fields* fields);
-jxl_status jxl_visitor_default_visit_nested(jxl_visitor* self, jxl_fields* fields);
+jxl_enc_status jxl_visitor_default_visit_nested(jxl_visitor* self, jxl_fields* fields);
 bool jxl_visitor_default_is_reading(const jxl_visitor* self);
-jxl_status jxl_visitor_default_begin_extensions(jxl_visitor* self,
+jxl_enc_status jxl_visitor_default_begin_extensions(jxl_visitor* self,
                                      uint64_t* JXL_RESTRICT extensions);
-jxl_status jxl_visitor_default_end_extensions(jxl_visitor* self);
+jxl_enc_status jxl_visitor_default_end_extensions(jxl_visitor* self);
 
 // Visitors generate Init/AllDefault/Write logic for all fields. Each bundle's
 // TypeVisitFields calls jxl_visitor_u32 etc. Ops tables replace C++ vtables.
@@ -236,12 +236,12 @@ static inline void jxl_visitor_construct_empty(jxl_visitor* self) {
   self->extension_states.ended_ = 0;
 }
 
-static inline jxl_status jxl_visitor_visit(jxl_visitor* self, jxl_fields* fields) {
+static inline jxl_enc_status jxl_visitor_visit(jxl_visitor* self, jxl_fields* fields) {
   JXL_ENSURE(self->depth < kBundleMaxExtensions);
   self->depth += 1;
   jxl_extension_states_push(&self->extension_states);
-  const jxl_status ok = jxl_fields_visit_fields(fields, self);
-  if (jxl_status_ok(ok)) {
+  const jxl_enc_status ok = jxl_fields_visit_fields(fields, self);
+  if (jxl_enc_status_ok(ok)) {
     JXL_DASSERT(!jxl_extension_states_is_begun(&self->extension_states) ||
                 jxl_extension_states_is_ended(&self->extension_states));
   }
@@ -252,59 +252,59 @@ static inline jxl_status jxl_visitor_visit(jxl_visitor* self, jxl_fields* fields
   return ok;
 }
 
-static inline jxl_status jxl_visitor_visit_const(jxl_visitor* self, const jxl_fields* t) {
+static inline jxl_enc_status jxl_visitor_visit_const(jxl_visitor* self, const jxl_fields* t) {
   return jxl_visitor_visit(self, (jxl_fields*)(t));
 }
 
-static inline jxl_status jxl_visitor_bool(jxl_visitor* self, bool default_value,
+static inline jxl_enc_status jxl_visitor_bool(jxl_visitor* self, bool default_value,
                           bool* JXL_RESTRICT value) {
   return self->ops->boolean(self, default_value, value);
 }
-static inline jxl_status jxl_visitor_u32(jxl_visitor* self, jxl_u32_enc enc, uint32_t default_value,
+static inline jxl_enc_status jxl_visitor_u32(jxl_visitor* self, jxl_u32_enc enc, uint32_t default_value,
                          uint32_t* JXL_RESTRICT value) {
   return self->ops->u32(self, enc, default_value, value);
 }
 
-static inline jxl_status jxl_visitor_enum(jxl_visitor* self, uint32_t default_value,
+static inline jxl_enc_status jxl_visitor_enum(jxl_visitor* self, uint32_t default_value,
                           uint32_t* JXL_RESTRICT value, uint64_t allowed_bits,
                           const char* name) {
   JXL_RETURN_IF_ERROR(jxl_visitor_u32(self, jxl_u32_enc_make(jxl_val(0), jxl_val(1), jxl_bits_offset(4, 2), jxl_bits_offset(6, 18)), default_value, value));
   return jxl_enum_valid(*value, allowed_bits, name);
 }
 
-static inline jxl_status jxl_visitor_bits(jxl_visitor* self, size_t bits, uint32_t default_value,
+static inline jxl_enc_status jxl_visitor_bits(jxl_visitor* self, size_t bits, uint32_t default_value,
                           uint32_t* JXL_RESTRICT value) {
   return self->ops->bits(self, bits, default_value, value);
 }
-static inline jxl_status jxl_visitor_u64(jxl_visitor* self, uint64_t default_value,
+static inline jxl_enc_status jxl_visitor_u64(jxl_visitor* self, uint64_t default_value,
                          uint64_t* JXL_RESTRICT value) {
   return self->ops->u64(self, default_value, value);
 }
-static inline jxl_status jxl_visitor_f16(jxl_visitor* self, float default_value,
+static inline jxl_enc_status jxl_visitor_f16(jxl_visitor* self, float default_value,
                          float* JXL_RESTRICT value) {
   return self->ops->f16(self, default_value, value);
 }
-static inline jxl_status jxl_visitor_conditional(jxl_visitor* self, bool condition) {
+static inline jxl_enc_status jxl_visitor_conditional(jxl_visitor* self, bool condition) {
   return self->ops->conditional(self, condition);
 }
-static inline jxl_status jxl_visitor_all_default(jxl_visitor* self, const jxl_fields* fields,
+static inline jxl_enc_status jxl_visitor_all_default(jxl_visitor* self, const jxl_fields* fields,
                                 bool* JXL_RESTRICT all_default) {
   return self->ops->all_default(self, fields, all_default);
 }
 static inline void jxl_visitor_set_default(jxl_visitor* self, jxl_fields* fields) {
   self->ops->set_default(self, fields);
 }
-static inline jxl_status jxl_visitor_visit_nested(jxl_visitor* self, jxl_fields* fields) {
+static inline jxl_enc_status jxl_visitor_visit_nested(jxl_visitor* self, jxl_fields* fields) {
   return self->ops->visit_nested(self, fields);
 }
 static inline bool jxl_visitor_is_reading(const jxl_visitor* self) {
   return self->ops->is_reading(self);
 }
-static inline jxl_status jxl_visitor_begin_extensions(jxl_visitor* self,
+static inline jxl_enc_status jxl_visitor_begin_extensions(jxl_visitor* self,
                                      uint64_t* JXL_RESTRICT extensions) {
   return self->ops->begin_extensions(self, extensions);
 }
-static inline jxl_status jxl_visitor_end_extensions(jxl_visitor* self) {
+static inline jxl_enc_status jxl_visitor_end_extensions(jxl_visitor* self) {
   return self->ops->end_extensions(self);
 }
 

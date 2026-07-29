@@ -15,18 +15,18 @@
 #include "lib/jxl/layer_type.h"
 
 
-jxl_status jxl_bit_writer_allotment_init(jxl_bit_writer_allotment* self,
+jxl_enc_status jxl_bit_writer_allotment_init(jxl_bit_writer_allotment* self,
                               jxl_bit_writer* JXL_RESTRICT writer) {
   self->prev_bits_written_ = jxl_bit_writer_bits_written(writer);
   const size_t prev_bytes = jxl_padded_bytes_size(&writer->storage_);
   const size_t next_bytes = jxl_div_ceil(self->max_bits_, kBitsPerByte);
-  if (!jxl_status_ok(jxl_padded_bytes_resize(&writer->storage_, prev_bytes + next_bytes))) {
+  if (!jxl_enc_status_ok(jxl_padded_bytes_resize(&writer->storage_, prev_bytes + next_bytes))) {
     self->called_ = true;
-    return jxl_error_status();
+    return jxl_enc_error_status();
   }
   self->parent_ = writer->current_allotment_;
   writer->current_allotment_ = self;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 void jxl_bit_writer_allotment_destroy(jxl_bit_writer_allotment* self) {
@@ -37,11 +37,11 @@ void jxl_bit_writer_allotment_destroy(jxl_bit_writer_allotment* self) {
   }
 }
 
-jxl_status jxl_bit_writer_allotment_reclaim(jxl_bit_writer_allotment* self,
+jxl_enc_status jxl_bit_writer_allotment_reclaim(jxl_bit_writer_allotment* self,
                                  jxl_bit_writer* JXL_RESTRICT writer) {
   JXL_DASSERT(!self->called_);  // Do not call twice
   self->called_ = true;
-  if (writer == NULL) return jxl_ok_status();
+  if (writer == NULL) return jxl_enc_ok_status();
 
   JXL_DASSERT(jxl_bit_writer_bits_written(writer) >= self->prev_bits_written_);
   const size_t used_bits =
@@ -61,10 +61,10 @@ jxl_status jxl_bit_writer_allotment_reclaim(jxl_bit_writer_allotment* self,
     parent->prev_bits_written_ += used_bits;
     parent = parent->parent_;
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_bit_writer_append_byte_aligned(jxl_bit_writer* self, const jxl_bit_writer* others,
+jxl_enc_status jxl_bit_writer_append_byte_aligned(jxl_bit_writer* self, const jxl_bit_writer* others,
                                   size_t num) {
   // Total size to add so we can preallocate
   size_t other_bytes = 0;
@@ -76,7 +76,7 @@ jxl_status jxl_bit_writer_append_byte_aligned(jxl_bit_writer* self, const jxl_bi
     // No bytes to append: this happens for example when creating per-group
     // storage for groups, but not writing anything in them for e.g. lossless
     // images with no alpha. Do nothing.
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   JXL_RETURN_IF_ERROR(jxl_padded_bytes_resize(
       &self->storage_,
@@ -94,7 +94,7 @@ jxl_status jxl_bit_writer_append_byte_aligned(jxl_bit_writer* self, const jxl_bi
   JXL_ENSURE(pos < jxl_padded_bytes_size(&self->storage_));
   *jxl_padded_bytes_at(&self->storage_, pos++) = 0;  // for next Write
   self->bits_written_ += other_bytes * kBitsPerByte;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Example: let's assume that 3 bits (Rs below) have been written already:

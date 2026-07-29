@@ -68,19 +68,19 @@ static inline void jxl_ac_image_zero_fill_plane(jxl_ac_image* self, size_t c) {
   jxl_zero_fill_image_i(jxl_image3_i_plane(&self->img_, c));
 }
 
-static inline jxl_status jxl_ac_image_make(jxl_context* ctx, size_t xsize,
+static inline jxl_enc_status jxl_ac_image_make(jxl_context* ctx, size_t xsize,
                                  size_t ysize, jxl_ac_image* out) {
   jxl_ac_image result;
-  jxl_status status;
+  jxl_enc_status status;
   jxl_ac_image_construct_empty(&result);
   status = jxl_image3_i_create(ctx, xsize, ysize, &result.img_);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_ac_image_destroy(&result);
     return status;
   }
   jxl_ac_image_swap(out, &result);
   jxl_ac_image_destroy(&result);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 #endif  // LIB_JXL_DCT_UTIL_H_

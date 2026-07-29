@@ -58,13 +58,13 @@ static inline void jxl_jpeg_order(jxl_color_transform ct, bool is_gray, int orde
 
 // TODO(eustas): move to proper place?
 // Also used by extra channel names.
-static inline jxl_status jxl_visit_name_string(jxl_visitor* JXL_RESTRICT visitor,
+static inline jxl_enc_status jxl_visit_name_string(jxl_visitor* JXL_RESTRICT visitor,
                                      jxl_array_char* name) {
   uint32_t name_length = (uint32_t)(jxl_array_len(name));
   // Allows layer name lengths up to 1071 bytes
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(0), jxl_bits(4), jxl_bits_offset(5, 16), jxl_bits_offset(10, 48)), 0, &name_length));
   if (jxl_visitor_is_reading(visitor)) {
-    if (!jxl_status_ok(jxl_array_resize_zero(name, name_length))) {
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(name, name_length))) {
       return JXL_FAILURE("Failed to allocate name string");
     }
   }
@@ -73,7 +73,7 @@ static inline jxl_status jxl_visit_name_string(jxl_visitor* JXL_RESTRICT visitor
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 8, 0, &c));
     *jxl_array_at(name, i) = (char)(c);
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 typedef enum jxl_enc_frame_encoding {
@@ -103,7 +103,7 @@ static inline void jxl_y_cb_cr_chroma_subsampling_recompute(jxl_y_cb_cr_chroma_s
   }
 }
 
-static inline jxl_status jxl_y_cb_cr_chroma_subsampling_visit_fields(
+static inline jxl_enc_status jxl_y_cb_cr_chroma_subsampling_visit_fields(
     jxl_y_cb_cr_chroma_subsampling* self, jxl_visitor* JXL_RESTRICT visitor) {
   // TODO(veluca): consider allowing 4x downsamples
   size_t ch_i;
@@ -112,7 +112,7 @@ static inline jxl_status jxl_y_cb_cr_chroma_subsampling_visit_fields(
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 2, 0, ch));
   }
   jxl_y_cb_cr_chroma_subsampling_recompute(self);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 JXL_FIELDS_NAME(jxl_y_cb_cr_chroma_subsampling)
 
@@ -138,7 +138,7 @@ static inline uint8_t jxl_y_cb_cr_chroma_subsampling_max_v_shift(
   return self->maxvs_;
 }
 
-static inline jxl_status jxl_y_cb_cr_chroma_subsampling_set(jxl_y_cb_cr_chroma_subsampling* self,
+static inline jxl_enc_status jxl_y_cb_cr_chroma_subsampling_set(jxl_y_cb_cr_chroma_subsampling* self,
                                                const uint8_t* hsample,
                                                const uint8_t* vsample) {
   size_t c;
@@ -157,7 +157,7 @@ static inline jxl_status jxl_y_cb_cr_chroma_subsampling_set(jxl_y_cb_cr_chroma_s
     }
   }
   jxl_y_cb_cr_chroma_subsampling_recompute(self);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 static inline bool jxl_y_cb_cr_chroma_subsampling_is444(
     const jxl_y_cb_cr_chroma_subsampling* self) {
@@ -227,7 +227,7 @@ typedef struct jxl_enc_blending_info {
   bool nonserialized_is_partial_frame;
 } jxl_enc_blending_info;
 
-jxl_status jxl_enc_blending_info_visit_fields(jxl_enc_blending_info* self, jxl_visitor* JXL_RESTRICT visitor);
+jxl_enc_status jxl_enc_blending_info_visit_fields(jxl_enc_blending_info* self, jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_enc_blending_info)
 
 static inline void jxl_enc_blending_info_construct_empty(jxl_enc_blending_info* self) {
@@ -330,13 +330,13 @@ static inline void jxl_blending_infos_destroy(jxl_blending_infos* self) {
   self->ptr = NULL;
   self->capacity = 0;
 }
-static inline jxl_status jxl_blending_infos_reserve(jxl_blending_infos* self,
+static inline jxl_enc_status jxl_blending_infos_reserve(jxl_blending_infos* self,
                                           size_t new_capacity) {
   size_t grown;
   size_t bytes;
   jxl_enc_blending_info* neu;
   size_t i;
-  if (new_capacity <= self->capacity) return jxl_ok_status();
+  if (new_capacity <= self->capacity) return jxl_enc_ok_status();
 
   grown = self->capacity;
   if (grown == 0) grown = 16;
@@ -372,17 +372,17 @@ static inline jxl_status jxl_blending_infos_reserve(jxl_blending_infos* self,
   }
   self->ptr = neu;
   self->capacity = grown;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_blending_infos_resize(jxl_blending_infos* self, size_t n) {
+static inline jxl_enc_status jxl_blending_infos_resize(jxl_blending_infos* self, size_t n) {
   size_t i;
   if (n < self->len) {
     for (i = n; i < self->len; ++i) {
       jxl_enc_blending_info_destroy(self->ptr + i);
     }
     self->len = n;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   JXL_RETURN_IF_ERROR(jxl_blending_infos_reserve(self, n));
   while (self->len < n) {
@@ -390,7 +390,7 @@ static inline jxl_status jxl_blending_infos_resize(jxl_blending_infos* self, siz
     jxl_enc_blending_info_init(self->ptr + self->len);
     ++self->len;
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Origin of the current frame. Not present for frames of type
@@ -419,7 +419,7 @@ typedef struct jxl_animation_frame {
   const jxl_codec_metadata* nonserialized_metadata;
 } jxl_animation_frame;
 
-jxl_status jxl_animation_frame_visit_fields(jxl_animation_frame* self,
+jxl_enc_status jxl_animation_frame_visit_fields(jxl_animation_frame* self,
                                  jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_animation_frame)
 
@@ -446,7 +446,7 @@ typedef struct jxl_passes {
   uint32_t shift[kMaxNumPasses];
 } jxl_passes;
 
-jxl_status jxl_passes_visit_fields(jxl_passes* self, jxl_visitor* JXL_RESTRICT visitor);
+jxl_enc_status jxl_passes_visit_fields(jxl_passes* self, jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_passes)
 
 static inline void jxl_passes_init(jxl_passes* self) {
@@ -575,7 +575,7 @@ typedef struct jxl_enc_frame_header {
   uint64_t extensions;
 } jxl_enc_frame_header;
 
-jxl_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_visitor* JXL_RESTRICT visitor);
+jxl_enc_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_enc_frame_header)
 
 static inline size_t jxl_enc_frame_header_default_x_size(const jxl_enc_frame_header* self) {

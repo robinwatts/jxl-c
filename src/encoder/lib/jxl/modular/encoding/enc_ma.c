@@ -98,8 +98,8 @@ static void jxl_make_split_node(size_t pos, int property, int splitval, jxl_enc_
   jxl_array_at(tree, pos)->rchild = jxl_array_len(tree) + 1;
   jxl_array_at(tree, pos)->splitval = splitval;
   jxl_array_at(tree, pos)->property = property;
-  if (!jxl_status_ok(jxl_array_property_decision_node_push_back(tree, jxl_property_decision_node_leaf(rpred, roff, 1)))) JXL_CRASH();
-  if (!jxl_status_ok(jxl_array_property_decision_node_push_back(tree, jxl_property_decision_node_leaf(lpred, loff, 1)))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_property_decision_node_push_back(tree, jxl_property_decision_node_leaf(rpred, roff, 1)))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_property_decision_node_push_back(tree, jxl_property_decision_node_leaf(lpred, loff, 1)))) JXL_CRASH();
 }
 
 typedef enum jxl_intersection_type {
@@ -222,7 +222,7 @@ static void jxl_find_best_split(jxl_tree_samples *tree_samples, float threshold,
     root.begin = 0;
     root.end = jxl_tree_samples_num_distinct_samples(tree_samples);
     root.static_prop_range = initial_static_prop_range;
-    if (!jxl_status_ok(jxl_array_ma_node_info_push_back(&nodes, root))) {
+    if (!jxl_enc_status_ok(jxl_array_ma_node_info_push_back(&nodes, root))) {
       JXL_CRASH();
     }
   }
@@ -265,8 +265,8 @@ static void jxl_find_best_split(jxl_tree_samples *tree_samples, float threshold,
     jxl_array_construct_empty(&counts, mm);
     jxl_array_u32 tot_extra_bits;
     jxl_array_construct_empty(&tot_extra_bits, mm);
-    if (!jxl_status_ok(jxl_array_resize_zero(&counts, max_symbols * num_predictors)) ||
-        !jxl_status_ok(jxl_array_resize_zero(&tot_extra_bits, num_predictors))) {
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(&counts, max_symbols * num_predictors)) ||
+        !jxl_enc_status_ok(jxl_array_resize_zero(&tot_extra_bits, num_predictors))) {
       JXL_CRASH();
     }
     for (size_t pred = 0; pred < num_predictors; pred++) {
@@ -355,8 +355,8 @@ static void jxl_find_best_split(jxl_tree_samples *tree_samples, float threshold,
       jxl_array_construct_empty(&counts_above, mm);
       jxl_array_i32 counts_below;
       jxl_array_construct_empty(&counts_below, mm);
-      if (!jxl_status_ok(jxl_array_resize_zero(&counts_above, max_symbols)) ||
-          !jxl_status_ok(jxl_array_resize_zero(&counts_below, max_symbols))) {
+      if (!jxl_enc_status_ok(jxl_array_resize_zero(&counts_above, max_symbols)) ||
+          !jxl_enc_status_ok(jxl_array_resize_zero(&counts_below, max_symbols))) {
         JXL_CRASH();
       }
 
@@ -369,14 +369,14 @@ jxl_array_clear(&costs_l);
 jxl_array_clear(&costs_r);
         size_t prop_size = jxl_tree_samples_num_property_values(tree_samples, prop);
         if (jxl_array_len(&extra_bits_increase) < prop_size) {
-          if (!jxl_status_ok(jxl_array_resize_zero(&count_increase, prop_size * max_symbols)) ||
-              !jxl_status_ok(jxl_array_resize_zero(&extra_bits_increase, prop_size))) {
+          if (!jxl_enc_status_ok(jxl_array_resize_zero(&count_increase, prop_size * max_symbols)) ||
+              !jxl_enc_status_ok(jxl_array_resize_zero(&extra_bits_increase, prop_size))) {
             JXL_CRASH();
           }
         }
         // Clear prop_value_used_count (which cannot be cleared "on the go")
 jxl_array_clear(&prop_value_used_count);
-        if (!jxl_status_ok(jxl_array_resize_zero(&prop_value_used_count, prop_size))) JXL_CRASH();
+        if (!jxl_enc_status_ok(jxl_array_resize_zero(&prop_value_used_count, prop_size))) JXL_CRASH();
 
         size_t first_used = prop_size;
         size_t last_used = 0;
@@ -402,8 +402,8 @@ jxl_array_clear(&prop_value_used_count);
         {
           jxl_ma_cost_info init;
           jxl_ma_cost_info_construct_empty(&init);
-          if (!jxl_status_ok(jxl_array_ma_cost_info_resize_fill(&costs_l, last_used - first_used, init)) ||
-              !jxl_status_ok(jxl_array_ma_cost_info_resize_fill(&costs_r, last_used - first_used, init))) {
+          if (!jxl_enc_status_ok(jxl_array_ma_cost_info_resize_fill(&costs_l, last_used - first_used, init)) ||
+              !jxl_enc_status_ok(jxl_array_ma_cost_info_resize_fill(&costs_r, last_used - first_used, init))) {
             JXL_CRASH();
           }
         }
@@ -559,7 +559,7 @@ jxl_array_clear(&prop_value_used_count);
         child.begin = begin;
         child.end = best->pos;
         child.static_prop_range = new_sp_range;
-        if (!jxl_status_ok(jxl_array_ma_node_info_push_back(&nodes, child))) {
+        if (!jxl_enc_status_ok(jxl_array_ma_node_info_push_back(&nodes, child))) {
           JXL_CRASH();
         }
       }
@@ -575,7 +575,7 @@ jxl_array_clear(&prop_value_used_count);
         child.begin = best->pos;
         child.end = end;
         child.static_prop_range = new_sp_range;
-        if (!jxl_status_ok(jxl_array_ma_node_info_push_back(&nodes, child))) {
+        if (!jxl_enc_status_ok(jxl_array_ma_node_info_push_back(&nodes, child))) {
           JXL_CRASH();
         }
       }
@@ -586,7 +586,7 @@ jxl_array_clear(&prop_value_used_count);
   jxl_array_destroy(&nodes);
 }
 
-jxl_status jxl_compute_best_tree(jxl_tree_samples *tree_samples, float threshold,
+jxl_enc_status jxl_compute_best_tree(jxl_tree_samples *tree_samples, float threshold,
                        const jxl_array_modular_multiplier_info *mul_info,
                        jxl_static_prop_range static_prop_range,
                        float fast_decode_multiplier, jxl_tree *tree){
@@ -594,7 +594,7 @@ jxl_status jxl_compute_best_tree(jxl_tree_samples *tree_samples, float threshold
   // uint configs.
   //
   // Initialize tree.
-  if (!jxl_status_ok(jxl_array_property_decision_node_push_back(tree, jxl_property_decision_node_leaf(
+  if (!jxl_enc_status_ok(jxl_array_property_decision_node_push_back(tree, jxl_property_decision_node_leaf(
           jxl_tree_samples_predictor_from_index(tree_samples, 0), 0, 1)))) JXL_CRASH();
   JXL_ENSURE(jxl_tree_samples_num_properties(tree_samples) < 64);
 
@@ -602,10 +602,10 @@ jxl_status jxl_compute_best_tree(jxl_tree_samples *tree_samples, float threshold
              UINT32_MAX);
   jxl_find_best_split(tree_samples, threshold, mul_info, static_prop_range,
                 fast_decode_multiplier, tree);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_tree_samples_set_predictor(jxl_tree_samples* self, jxl_enc_predictor predictor,
+jxl_enc_status jxl_tree_samples_set_predictor(jxl_tree_samples* self, jxl_enc_predictor predictor,
                                  jxl_modular_tree_mode wp_tree_mode) {
   self->num_samples = 0;
   for (size_t i = 0; i < kNumModularPredictors; ++i) {
@@ -614,8 +614,8 @@ jxl_status jxl_tree_samples_set_predictor(jxl_tree_samples* self, jxl_enc_predic
   }
   if (wp_tree_mode == kWPOnly) {
 jxl_array_clear(&self->predictors);
-if (!jxl_status_ok(jxl_array_predictor_push_back(&self->predictors, kPredictorWeighted))) JXL_CRASH();
-return jxl_ok_status();
+if (!jxl_enc_status_ok(jxl_array_predictor_push_back(&self->predictors, kPredictorWeighted))) JXL_CRASH();
+return jxl_enc_ok_status();
   }
   if (wp_tree_mode == kNoWP &&
       predictor == kPredictorWeighted) {
@@ -624,15 +624,15 @@ return jxl_ok_status();
 jxl_array_clear(&self->predictors);
   if (predictor == kPredictorVariable) {
     for (size_t i = 0; i < kNumModularPredictors; i++) {
-if (!jxl_status_ok(jxl_array_predictor_push_back(&self->predictors, (jxl_enc_predictor)(i)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_predictor_push_back(&self->predictors, (jxl_enc_predictor)(i)))) JXL_CRASH();
 }
     jxl_swap_predictor(jxl_array_at(&self->predictors, 0), jxl_array_at(&self->predictors, (int)(kPredictorWeighted)));
     jxl_swap_predictor(jxl_array_at(&self->predictors, 1), jxl_array_at(&self->predictors, (int)(kPredictorGradient)));
   } else if (predictor == kPredictorBest) {
-if (!jxl_status_ok(jxl_array_predictor_push_back(&self->predictors, kPredictorWeighted))) JXL_CRASH();
-if (!jxl_status_ok(jxl_array_predictor_push_back(&self->predictors, kPredictorGradient))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_predictor_push_back(&self->predictors, kPredictorWeighted))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_predictor_push_back(&self->predictors, kPredictorGradient))) JXL_CRASH();
 } else {
-if (!jxl_status_ok(jxl_array_predictor_push_back(&self->predictors, predictor))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_predictor_push_back(&self->predictors, predictor))) JXL_CRASH();
 }
   if (wp_tree_mode == kNoWP) {
     jxl_enc_predictor* dest = jxl_array_data(&self->predictors);
@@ -645,10 +645,10 @@ if (!jxl_status_ok(jxl_array_predictor_push_back(&self->predictors, predictor)))
     jxl_array_erase(&self->predictors, dest, jxl_array_data(&self->predictors) + jxl_array_len(&self->predictors));
   }
   JXL_ENSURE(jxl_array_len(&self->predictors) <= kNumModularPredictors);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_tree_samples_set_properties(jxl_tree_samples* self, const uint32_t* properties,
+jxl_enc_status jxl_tree_samples_set_properties(jxl_tree_samples* self, const uint32_t* properties,
                                   size_t num_properties,
                                   jxl_modular_tree_mode wp_tree_mode) {
   for (size_t i = 0; i < kMaxSplittingHeuristicsProperties; ++i) {
@@ -659,12 +659,12 @@ jxl_status jxl_tree_samples_set_properties(jxl_tree_samples* self, const uint32_
     jxl_array_destroy(&self->property_mapping[i]);
     jxl_array_construct_empty(&self->property_mapping[i], self->sample_counts.ctx);
   }
-  if (!jxl_status_ok(jxl_array_assign(&self->props_to_use, properties, num_properties))) {
+  if (!jxl_enc_status_ok(jxl_array_assign(&self->props_to_use, properties, num_properties))) {
     return JXL_FAILURE("OOM");
   }
   if (wp_tree_mode == kWPOnly) {
 jxl_array_clear(&self->props_to_use);
-if (!jxl_status_ok(jxl_array_u32_push_back(&self->props_to_use, (uint32_t)(kWPProp)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_u32_push_back(&self->props_to_use, (uint32_t)(kWPProp)))) JXL_CRASH();
 }
   if (wp_tree_mode == kNoWP) {
     jxl_array_erase(&self->props_to_use,
@@ -686,13 +686,13 @@ if (!jxl_status_ok(jxl_array_u32_push_back(&self->props_to_use, (uint32_t)(kWPPr
       self->num_static_props++;
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 void jxl_tree_samples_init_table(jxl_tree_samples* self, size_t log_size) {
   size_t size = 1ULL << log_size;
   if (jxl_array_len(&self->dedup_table_) == size) return;
-  if (!jxl_status_ok(jxl_array_u32_resize_fill(&self->dedup_table_, size, kTreeSamplesDedupEntryUnused))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_u32_resize_fill(&self->dedup_table_, size, kTreeSamplesDedupEntryUnused))) JXL_CRASH();
   for (size_t i = 0; i < jxl_tree_samples_num_distinct_samples(self); i++) {
     if (*jxl_array_at(&self->sample_counts, i) != UINT16_MAX) {
       jxl_tree_samples_add_to_table(self, i);
@@ -741,18 +741,18 @@ void jxl_tree_samples_add_to_table(jxl_tree_samples* self, size_t a) {
 
 void jxl_tree_samples_prepare_for_samples(jxl_tree_samples* self, size_t extra_num_samples) {
   for (size_t i = 0; i < jxl_array_len(&self->predictors); ++i) {
-    if (!jxl_status_ok(jxl_array_reserve(&self->residuals[i], jxl_array_len(&self->residuals[i]) + extra_num_samples))) {
+    if (!jxl_enc_status_ok(jxl_array_reserve(&self->residuals[i], jxl_array_len(&self->residuals[i]) + extra_num_samples))) {
       JXL_CRASH();
     }
   }
   for (size_t i = 0; i < self->num_static_props; ++i) {
-    if (!jxl_status_ok(jxl_array_reserve(&self->static_props[i],
+    if (!jxl_enc_status_ok(jxl_array_reserve(&self->static_props[i],
                       jxl_array_len(&self->static_props[i]) + extra_num_samples))) {
       JXL_CRASH();
     }
   }
   for (size_t i = 0; i < jxl_tree_samples_num_sample_props(self); ++i) {
-    if (!jxl_status_ok(jxl_array_reserve(&self->props[i], jxl_array_len(&self->props[i]) + extra_num_samples))) {
+    if (!jxl_enc_status_ok(jxl_array_reserve(&self->props[i], jxl_array_len(&self->props[i]) + extra_num_samples))) {
       JXL_CRASH();
     }
   }
@@ -825,15 +825,15 @@ void jxl_tree_samples_add_sample(jxl_tree_samples* self, pixel_type_w pixel, con
     JXL_DASSERT(nbits < 256);
     jxl_residual_token token = {(uint8_t)(tok),
                            (uint8_t)(nbits)};
-if (!jxl_status_ok(jxl_array_residual_token_push_back(&self->residuals[i], token))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_residual_token_push_back(&self->residuals[i], token))) JXL_CRASH();
 }
   for (size_t i = 0; i < self->num_static_props; ++i) {
-if (!jxl_status_ok(jxl_array_u32_push_back(&self->static_props[i], jxl_tree_samples_quantize_static_property(self, i, *jxl_array_at_const(properties, i))))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_u32_push_back(&self->static_props[i], jxl_tree_samples_quantize_static_property(self, i, *jxl_array_at_const(properties, i))))) JXL_CRASH();
 }
   for (size_t i = self->num_static_props; i < jxl_array_len(&self->props_to_use); i++) {
-if (!jxl_status_ok(jxl_array_u8_push_back(&self->props[i - self->num_static_props], jxl_tree_samples_quantize_property(self, i, *jxl_array_at_const(properties, *jxl_array_at(&self->props_to_use, i)))))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_u8_push_back(&self->props[i - self->num_static_props], jxl_tree_samples_quantize_property(self, i, *jxl_array_at_const(properties, *jxl_array_at(&self->props_to_use, i)))))) JXL_CRASH();
 }
-if (!jxl_status_ok(jxl_array_u16_push_back(&self->sample_counts, 1))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_u16_push_back(&self->sample_counts, 1))) JXL_CRASH();
 self->num_samples++;
   if (jxl_tree_samples_add_to_table_and_merge(self, jxl_array_len(&self->sample_counts) - 1)) {
     for (size_t i = 0; i < jxl_array_len(&self->predictors); ++i) jxl_array_pop_back(&self->residuals[i]);
@@ -871,7 +871,7 @@ static void jxl_quantize_histogram(const jxl_array_u32 *histogram, size_t num_ch
   for (size_t i = 0; i < jxl_array_len(histogram); i++) {
     cumsum += *jxl_array_at_const(histogram, i);
     if (cumsum * num_chunks >= threshold * sum) {
-if (!jxl_status_ok(jxl_array_i32_push_back(thresholds, (int32_t)(i)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_i32_push_back(thresholds, (int32_t)(i)))) JXL_CRASH();
 while (cumsum * num_chunks >= threshold * sum) threshold++;
     }
   }
@@ -889,7 +889,7 @@ static void jxl_quantize_samples(const jxl_array_i32 *samples, size_t num_chunks
   min = jxl_clamp1_i(min, -kRange, kRange);
   jxl_array_u32 counts;
   jxl_array_construct_empty(&counts, samples->ctx);
-  if (!jxl_status_ok(jxl_array_resize_zero(&counts, 2 * kRange + 1))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(&counts, 2 * kRange + 1))) JXL_CRASH();
   for (size_t s_i = 0; s_i < jxl_array_len(samples); ++s_i) {
     int s = *jxl_array_at_const(samples, s_i);
     uint32_t sample_offset = jxl_clamp1_i(s, -kRange, kRange) - min;
@@ -908,7 +908,7 @@ static void jxl_quantize_samples(const jxl_array_i32 *samples, size_t num_chunks
 // together.
 static void jxl_quant_map_u16(const jxl_array_i32 *from, jxl_array_u16 *to,
                  size_t num_pegs, int bias) {
-  if (!jxl_status_ok(jxl_array_resize_zero(to, num_pegs))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(to, num_pegs))) JXL_CRASH();
   size_t mapped = 0;
   for (size_t i = 0; i < num_pegs; i++) {
     while (mapped < jxl_array_len(from) && (int)(i) - bias > *jxl_array_at_const(from, mapped)) {
@@ -921,7 +921,7 @@ static void jxl_quant_map_u16(const jxl_array_i32 *from, jxl_array_u16 *to,
 
 static void jxl_quant_map_u8(const jxl_array_i32 *from, jxl_array_u8 *to, size_t num_pegs,
                 int bias) {
-  if (!jxl_status_ok(jxl_array_resize_zero(to, num_pegs))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(to, num_pegs))) JXL_CRASH();
   size_t mapped = 0;
   for (size_t i = 0; i < num_pegs; i++) {
     while (mapped < jxl_array_len(from) && (int)(i) - bias > *jxl_array_at_const(from, mapped)) {
@@ -936,7 +936,7 @@ static void jxl_quantize_channel_thresholds(const jxl_array_i32 *multiplier_thre
                                const jxl_array_u32 *pixel_count,
                                size_t max_property_values, jxl_array_i32 *out) {
   if (!jxl_array_empty(multiplier_thresholds)) {
-    if (!jxl_status_ok(jxl_array_copy_from(out, multiplier_thresholds))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_copy_from(out, multiplier_thresholds))) JXL_CRASH();
     return;
   }
   jxl_quantize_histogram(pixel_count, max_property_values, out);
@@ -944,9 +944,9 @@ static void jxl_quantize_channel_thresholds(const jxl_array_i32 *multiplier_thre
 
 static void jxl_quantize_coordinate_thresholds(size_t max_property_values, jxl_array_i32 *out) {
   jxl_array_clear(out);
-  if (!jxl_status_ok(jxl_array_reserve(out, max_property_values - 1))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_reserve(out, max_property_values - 1))) JXL_CRASH();
   for (size_t i = 0; i + 1 < max_property_values; i++) {
-    if (!jxl_status_ok(jxl_array_i32_push_back(out,
+    if (!jxl_enc_status_ok(jxl_array_i32_push_back(out,
                        (int32_t)((i + 1) * 256 / max_property_values - 1)))) {
       JXL_CRASH();
     }
@@ -957,7 +957,7 @@ static void jxl_quantize_wp_thresholds(size_t max_property_values, jxl_array_i32
   if (max_property_values < 32) {
     static const int32_t kVals[] = {-127, -63, -31, -15, -7, -3, -1, 0,
                                     1,    3,   7,   15,  31, 63, 127};
-    if (!jxl_status_ok(jxl_array_assign(out, kVals, sizeof(kVals) / sizeof(kVals[0])))) {
+    if (!jxl_enc_status_ok(jxl_array_assign(out, kVals, sizeof(kVals) / sizeof(kVals[0])))) {
       JXL_CRASH();
     }
     return;
@@ -967,7 +967,7 @@ static void jxl_quantize_wp_thresholds(size_t max_property_values, jxl_array_i32
         -255, -191, -127, -95, -63, -47, -31, -23, -15, -11, -7,
         -5,   -3,   -1,   0,   1,   3,   5,   7,   11,  15,  23,
         31,   47,   63,   95,  127, 191, 255};
-    if (!jxl_status_ok(jxl_array_assign(out, kVals, sizeof(kVals) / sizeof(kVals[0])))) {
+    if (!jxl_enc_status_ok(jxl_array_assign(out, kVals, sizeof(kVals) / sizeof(kVals[0])))) {
       JXL_CRASH();
     }
     return;
@@ -978,7 +978,7 @@ static void jxl_quantize_wp_thresholds(size_t max_property_values, jxl_array_i32
       -5,   -4,   -3,   -2,   -1,   0,    1,   2,   3,   4,   5,
       6,    7,    9,    11,   13,   15,   19,  23,  27,  31,  39,
       47,   55,   63,   79,   95,   111,  127, 159, 191, 223, 255};
-  if (!jxl_status_ok(jxl_array_assign(out, kVals, sizeof(kVals) / sizeof(kVals[0])))) {
+  if (!jxl_enc_status_ok(jxl_array_assign(out, kVals, sizeof(kVals) / sizeof(kVals[0])))) {
     JXL_CRASH();
   }
 }
@@ -1006,7 +1006,7 @@ static void jxl_cached_sample_thresholds(jxl_sample_threshold_cache *cache, jxl_
   if (jxl_array_empty(&cache->thresholds)) {
     jxl_quantize_samples(samples, max_property_values, &cache->thresholds);
   }
-  if (!jxl_status_ok(jxl_array_copy_from(out, &cache->thresholds))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_copy_from(out, &cache->thresholds))) JXL_CRASH();
 }
 
 static void jxl_cached_abs_sample_thresholds(jxl_sample_threshold_cache *cache, jxl_array_i32 *samples,
@@ -1021,7 +1021,7 @@ static void jxl_cached_abs_sample_thresholds(jxl_sample_threshold_cache *cache, 
     }
     jxl_quantize_samples(samples, max_property_values, &cache->abs_thresholds);
   }
-  if (!jxl_status_ok(jxl_array_copy_from(out, &cache->abs_thresholds))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_copy_from(out, &cache->abs_thresholds))) JXL_CRASH();
 }
 
 static void jxl_advance_sample_pos(const jxl_image *image, const jxl_array_size *channel_ids,
@@ -1059,25 +1059,25 @@ void jxl_tree_samples_pre_quantize_properties(jxl_tree_samples* self,
   for (size_t v_i = 0; v_i < jxl_array_len(multiplier_info); ++v_i) {
     const jxl_modular_multiplier_info* v = jxl_array_at_const(multiplier_info, v_i);
     if (jxl_static_prop_range_row_const(&v->range, 0)[0] != jxl_static_prop_range_row_const(range, 0)[0]) {
-if (!jxl_status_ok(jxl_array_i32_push_back(&channel_multiplier_thresholds, jxl_static_prop_range_row_const(&v->range, 0)[0] - 1))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_i32_push_back(&channel_multiplier_thresholds, jxl_static_prop_range_row_const(&v->range, 0)[0] - 1))) JXL_CRASH();
 }
     if (jxl_static_prop_range_row_const(&v->range, 0)[1] != jxl_static_prop_range_row_const(range, 0)[1]) {
-if (!jxl_status_ok(jxl_array_i32_push_back(&channel_multiplier_thresholds, jxl_static_prop_range_row_const(&v->range, 0)[1] - 1))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_i32_push_back(&channel_multiplier_thresholds, jxl_static_prop_range_row_const(&v->range, 0)[1] - 1))) JXL_CRASH();
 }
     if (jxl_static_prop_range_row_const(&v->range, 1)[0] != jxl_static_prop_range_row_const(range, 1)[0]) {
-if (!jxl_status_ok(jxl_array_i32_push_back(&group_multiplier_thresholds, jxl_static_prop_range_row_const(&v->range, 1)[0] - 1))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_i32_push_back(&group_multiplier_thresholds, jxl_static_prop_range_row_const(&v->range, 1)[0] - 1))) JXL_CRASH();
 }
     if (jxl_static_prop_range_row_const(&v->range, 1)[1] != jxl_static_prop_range_row_const(range, 1)[1]) {
-if (!jxl_status_ok(jxl_array_i32_push_back(&group_multiplier_thresholds, jxl_static_prop_range_row_const(&v->range, 1)[1] - 1))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_i32_push_back(&group_multiplier_thresholds, jxl_static_prop_range_row_const(&v->range, 1)[1] - 1))) JXL_CRASH();
 }
   }
   jxl_i32_sort(&channel_multiplier_thresholds);
-  if (!jxl_status_ok(jxl_array_resize_zero(&channel_multiplier_thresholds,
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(&channel_multiplier_thresholds,
                        jxl_i32_unique_in_array(&channel_multiplier_thresholds)))) {
     JXL_CRASH();
   }
   jxl_i32_sort(&group_multiplier_thresholds);
-  if (!jxl_status_ok(jxl_array_resize_zero(&group_multiplier_thresholds,
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(&group_multiplier_thresholds,
                        jxl_i32_unique_in_array(&group_multiplier_thresholds)))) {
     JXL_CRASH();
   }
@@ -1149,10 +1149,10 @@ void jxl_collect_pixel_samples(const jxl_image *image, const jxl_modular_options
                          jxl_array_i32 *pixel_samples, jxl_array_i32 *diff_samples){
   if (options->nb_repeats == 0) return;
   if (jxl_array_len(group_pixel_count) <= group_id) {
-    if (!jxl_status_ok(jxl_array_resize_zero(group_pixel_count, group_id + 1))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(group_pixel_count, group_id + 1))) JXL_CRASH();
   }
   if (jxl_array_len(channel_pixel_count) < jxl_channels_size(&image->channel)) {
-    if (!jxl_status_ok(jxl_array_resize_zero(channel_pixel_count, jxl_channels_size(&image->channel)))) {
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(channel_pixel_count, jxl_channels_size(&image->channel)))) {
       JXL_CRASH();
     }
   }
@@ -1172,7 +1172,7 @@ void jxl_collect_pixel_samples(const jxl_image *image, const jxl_modular_options
     if (jxl_channels_at_const(&image->channel, i)->w <= 1 || jxl_channels_at_const(&image->channel, i)->h == 0) {
       continue;  // skip empty or width-1 channels.
     }
-    if (!jxl_status_ok(jxl_array_size_push_back(&channel_ids, i))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_size_push_back(&channel_ids, i))) JXL_CRASH();
     *jxl_array_at(group_pixel_count, group_id) +=
         jxl_channels_at_const(&image->channel, i)->w *
         jxl_channels_at_const(&image->channel, i)->h;
@@ -1186,10 +1186,10 @@ void jxl_collect_pixel_samples(const jxl_image *image, const jxl_modular_options
     jxl_array_destroy(&channel_ids);
     return;
   }
-  if (!jxl_status_ok(jxl_array_reserve(pixel_samples, jxl_array_len(pixel_samples) + fraction * total_pixels))) {
+  if (!jxl_enc_status_ok(jxl_array_reserve(pixel_samples, jxl_array_len(pixel_samples) + fraction * total_pixels))) {
     JXL_CRASH();
   }
-  if (!jxl_status_ok(jxl_array_reserve(diff_samples, jxl_array_len(diff_samples) + fraction * total_pixels))) {
+  if (!jxl_enc_status_ok(jxl_array_reserve(diff_samples, jxl_array_len(diff_samples) + fraction * total_pixels))) {
     JXL_CRASH();
   }
   size_t i = 0;
@@ -1200,66 +1200,66 @@ void jxl_collect_pixel_samples(const jxl_image *image, const jxl_modular_options
        jxl_advance_sample_pos(image, &channel_ids, &i, &y, &x,
                         jxl_rng_geometric(&rng, dist) + 1)) {
     const pixel_type *row = jxl_channel_row_const(jxl_channels_at_const(&image->channel, *jxl_array_at(&channel_ids, i)), y);
-if (!jxl_status_ok(jxl_array_i32_push_back(pixel_samples, row[x]))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_i32_push_back(pixel_samples, row[x]))) JXL_CRASH();
 size_t xp = x == 0 ? 1 : x - 1;
-if (!jxl_status_ok(jxl_array_i32_push_back(diff_samples, (int64_t)(row[x]) - row[xp]))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_i32_push_back(diff_samples, (int64_t)(row[x]) - row[xp]))) JXL_CRASH();
 }
   jxl_array_destroy(&channel_ids);
 }
 
 // TODO(veluca): very simple encoding scheme. This should be improved.
-jxl_status jxl_tokenize_tree(const jxl_tree *tree, jxl_token_stream *tokens,
+jxl_enc_status jxl_tokenize_tree(const jxl_tree *tree, jxl_token_stream *tokens,
                     jxl_tree *decoder_tree){
   JXL_ENSURE(jxl_array_len(tree) <= kMaxTreeSize);
   jxl_array_int q;
   jxl_array_construct_empty(&q, tree->ctx);
   size_t q_head = 0;
-if (!jxl_status_ok(jxl_array_int_push_back(&q, 0))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_int_push_back(&q, 0))) JXL_CRASH();
 size_t leaf_id = 0;
 jxl_array_clear(decoder_tree);
   while (q_head < jxl_array_len(&q)) {
     int cur = *jxl_array_at(&q, q_head++);
     JXL_ENSURE(jxl_array_at_const(tree, cur)->property >= -1);
-    if (!jxl_status_ok(jxl_array_token_push_back(tokens, jxl_token_make(kPropertyContext, jxl_array_at_const(tree, cur)->property + 1)))) {
+    if (!jxl_enc_status_ok(jxl_array_token_push_back(tokens, jxl_token_make(kPropertyContext, jxl_array_at_const(tree, cur)->property + 1)))) {
       JXL_CRASH();
     }
     if (jxl_array_at_const(tree, cur)->property == -1) {
-      if (!jxl_status_ok(jxl_array_token_push_back(tokens,
+      if (!jxl_enc_status_ok(jxl_array_token_push_back(tokens,
                          jxl_token_make(kPredictorContext, (int)(jxl_array_at_const(tree, cur)->predictor))))) {
         JXL_CRASH();
       }
-      if (!jxl_status_ok(jxl_array_token_push_back(
+      if (!jxl_enc_status_ok(jxl_array_token_push_back(
               tokens, jxl_token_make(kOffsetContext,
                             jxl_pack_signed(jxl_array_at_const(tree, cur)->predictor_offset))))) {
         JXL_CRASH();
       }
       uint32_t mul_log = Num0BitsBelowLS1Bit_Nonzero32(jxl_array_at_const(tree, cur)->multiplier);
       uint32_t mul_bits = (jxl_array_at_const(tree, cur)->multiplier >> mul_log) - 1;
-if (!jxl_status_ok(jxl_array_token_push_back(tokens, jxl_token_make(kMultiplierLogContext, mul_log)))) JXL_CRASH();
-if (!jxl_status_ok(jxl_array_token_push_back(tokens, jxl_token_make(kMultiplierBitsContext, mul_bits)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_token_push_back(tokens, jxl_token_make(kMultiplierLogContext, mul_log)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_token_push_back(tokens, jxl_token_make(kMultiplierBitsContext, mul_bits)))) JXL_CRASH();
 JXL_ENSURE(jxl_array_at_const(tree, cur)->predictor < kPredictorBest);
       {
         jxl_property_decision_node leaf = jxl_property_decision_node_leaf(
             jxl_array_at_const(tree, cur)->predictor, jxl_array_at_const(tree, cur)->predictor_offset,
             jxl_array_at_const(tree, cur)->multiplier);
         leaf.lchild = (uint32_t)(leaf_id);
-if (!jxl_status_ok(jxl_array_property_decision_node_push_back(decoder_tree, leaf))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_property_decision_node_push_back(decoder_tree, leaf))) JXL_CRASH();
 }
       leaf_id++;
       continue;
     }
-    if (!jxl_status_ok(jxl_array_property_decision_node_push_back(decoder_tree,
+    if (!jxl_enc_status_ok(jxl_array_property_decision_node_push_back(decoder_tree,
                        jxl_property_decision_node_split(
                            jxl_array_at_const(tree, cur)->property, jxl_array_at_const(tree, cur)->splitval,
                            (int)(jxl_array_len(decoder_tree) + (jxl_array_len(&q) - q_head) + 1),
                            (int)(jxl_array_len(decoder_tree) + (jxl_array_len(&q) - q_head) + 2))))) {
       JXL_CRASH();
     }
-if (!jxl_status_ok(jxl_array_int_push_back(&q, jxl_array_at_const(tree, cur)->lchild))) JXL_CRASH();
-if (!jxl_status_ok(jxl_array_int_push_back(&q, jxl_array_at_const(tree, cur)->rchild))) JXL_CRASH();
-if (!jxl_status_ok(jxl_array_token_push_back(tokens, jxl_token_make(kSplitValContext, jxl_pack_signed(jxl_array_at_const(tree, cur)->splitval))))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_int_push_back(&q, jxl_array_at_const(tree, cur)->lchild))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_int_push_back(&q, jxl_array_at_const(tree, cur)->rchild))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_token_push_back(tokens, jxl_token_make(kSplitValContext, jxl_pack_signed(jxl_array_at_const(tree, cur)->splitval))))) JXL_CRASH();
 }
   jxl_array_destroy(&q);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 

@@ -151,7 +151,7 @@ static inline void jxl_dequant_matrices_set_encodings(
     jxl_dequant_matrices* self, const jxl_array_quant_encoding* encodings,
     jxl_array_int* raw_qtables) {
   size_t i;
-  if (!jxl_status_ok(jxl_array_copy_from(&self->encodings_, encodings))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_copy_from(&self->encodings_, encodings))) JXL_CRASH();
   for (i = 0; i < kNumQuantTables; ++i) {
     jxl_array_swap(&self->raw_qtables_[i], &raw_qtables[i]);
   }

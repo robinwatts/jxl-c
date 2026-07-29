@@ -82,7 +82,7 @@ typedef struct jxl_customxy {
   jxl_cms_customxy storage_;
 } jxl_customxy;
 
-jxl_status jxl_customxy_visit_fields(jxl_customxy* self, jxl_visitor* JXL_RESTRICT visitor);
+jxl_enc_status jxl_customxy_visit_fields(jxl_customxy* self, jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_customxy)
 
 static inline void jxl_customxy_init(jxl_customxy* self) {
@@ -99,7 +99,7 @@ typedef struct jxl_custom_transfer_function {
   jxl_cms_custom_transfer_function storage_;
 } jxl_custom_transfer_function;
 
-jxl_status jxl_custom_transfer_function_visit_fields(jxl_custom_transfer_function* self,
+jxl_enc_status jxl_custom_transfer_function_visit_fields(jxl_custom_transfer_function* self,
                                          jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_custom_transfer_function)
 
@@ -111,7 +111,7 @@ static inline void jxl_custom_transfer_function_init(jxl_custom_transfer_functio
 static inline bool jxl_custom_transfer_function_set_implicit(
     jxl_custom_transfer_function* self) {
   if (self->nonserialized_color_space == kXYB) {
-    if (!jxl_status_ok(
+    if (!jxl_enc_status_ok(
             jxl_cms_custom_transfer_function_set_gamma(&self->storage_, 1.0 / 3))) {
       return false;
     }
@@ -143,7 +143,7 @@ typedef struct jxl_enc_color_encoding {
   jxl_customxy blue_;
 } jxl_enc_color_encoding;
 
-jxl_status jxl_enc_color_encoding_visit_fields(jxl_enc_color_encoding* self,
+jxl_enc_status jxl_enc_color_encoding_visit_fields(jxl_enc_color_encoding* self,
                                 jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_enc_color_encoding)
 
@@ -165,9 +165,9 @@ static inline void jxl_enc_color_encoding_construct_empty(
 static inline void jxl_enc_color_encoding_destroy(jxl_enc_color_encoding* self) {
   jxl_array_destroy(&self->storage_.icc);
 }
-static inline jxl_status jxl_enc_color_encoding_copy_from(jxl_enc_color_encoding* self,
+static inline jxl_enc_status jxl_enc_color_encoding_copy_from(jxl_enc_color_encoding* self,
                                            const jxl_enc_color_encoding* other) {
-  if (self == other) return jxl_ok_status();
+  if (self == other) return jxl_enc_ok_status();
   jxl_array_destroy(&self->storage_.icc);
   memcpy(self, other, sizeof(*self));
   jxl_array_construct_empty(&self->storage_.icc, other->storage_.icc.ctx);
@@ -188,29 +188,29 @@ static inline jxl_color_encoding jxl_enc_color_encoding_to_external(
   return jxl_cms_color_encoding_to_external(&self->storage_);
 }
 
-static inline jxl_status jxl_enc_color_encoding_create_icc(jxl_enc_color_encoding* self) {
+static inline jxl_enc_status jxl_enc_color_encoding_create_icc(jxl_enc_color_encoding* self) {
   jxl_array_clear(&self->storage_.icc);
   const jxl_color_encoding external = jxl_enc_color_encoding_to_external(self);
-  if (!jxl_status_ok(jxl_maybe_create_profile(&external, &self->storage_.icc))) {
+  if (!jxl_enc_status_ok(jxl_maybe_create_profile(&external, &self->storage_.icc))) {
     jxl_array_clear(&self->storage_.icc);
     return JXL_FAILURE("Failed to create ICC profile");
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static inline const jxl_icc_bytes* jxl_enc_color_encoding_icc(const jxl_enc_color_encoding* self) {
   return &self->storage_.icc;
 }
 
-static inline jxl_status jxl_enc_color_encoding_set_icc(jxl_enc_color_encoding* self, jxl_icc_bytes* icc,
+static inline jxl_enc_status jxl_enc_color_encoding_set_icc(jxl_enc_color_encoding* self, jxl_icc_bytes* icc,
                                          const jxl_cms_interface* cms) {
   JXL_ENSURE(cms != NULL);
   JXL_ENSURE(icc != NULL);
   JXL_ENSURE(!jxl_array_empty(icc));
   self->storage_.have_fields = true;
   self->want_icc_ =
-      jxl_status_ok(jxl_cms_color_encoding_set_fields_from_icc(&self->storage_, icc, cms));
-  return jxl_status_from_bool(self->want_icc_);
+      jxl_enc_status_ok(jxl_cms_color_encoding_set_fields_from_icc(&self->storage_, icc, cms));
+  return jxl_enc_status_from_bool(self->want_icc_);
 }
 
 static inline bool jxl_enc_color_encoding_want_icc(const jxl_enc_color_encoding* self) {

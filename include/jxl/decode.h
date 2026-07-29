@@ -3,8 +3,8 @@
 #define JXL_DECODE_H_
 
 #include <jxl/context.h>
-#include <jxl/decode_types.h>
 #include <jxl/status.h>
+#include <jxl/types.h>
 
 #include <stddef.h>
 

@@ -61,7 +61,7 @@ static void jxl_store_huffman_tree_of_huffman_tree_to_bit_mask(const int num_cod
   }
 }
 
-static jxl_status jxl_store_huffman_tree_to_bit_mask(const size_t huffman_tree_size,
+static jxl_enc_status jxl_store_huffman_tree_to_bit_mask(const size_t huffman_tree_size,
                                  const uint8_t* huffman_tree,
                                  const uint8_t* huffman_tree_extra_bits,
                                  const uint8_t* code_length_bitdepth,
@@ -84,7 +84,7 @@ static jxl_status jxl_store_huffman_tree_to_bit_mask(const size_t huffman_tree_s
         break;
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static void jxl_store_simple_huffman_tree(const uint8_t* depths, size_t symbols[4],
@@ -122,7 +122,7 @@ static void jxl_store_simple_huffman_tree(const uint8_t* depths, size_t symbols[
 
 // num = alphabet size
 // depths = symbol depths
-static jxl_status jxl_store_huffman_tree_body(const uint8_t* depths, size_t num, jxl_bit_writer* writer,
+static jxl_enc_status jxl_store_huffman_tree_body(const uint8_t* depths, size_t num, jxl_bit_writer* writer,
                             jxl_array_u8* arena) {
   // Write the Huffman tree into the compact representation.
   JXL_RETURN_IF_ERROR(jxl_array_init(arena, jxl_bit_writer_ctx(writer)));
@@ -175,18 +175,18 @@ static jxl_status jxl_store_huffman_tree_body(const uint8_t* depths, size_t num,
   JXL_RETURN_IF_ERROR(jxl_store_huffman_tree_to_bit_mask(
       huffman_tree_size, huffman_tree, huffman_tree_extra_bits,
       &code_length_bitdepth[0], code_length_bitdepth_symbols, writer));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_store_huffman_tree(const uint8_t* depths, size_t num, jxl_bit_writer* writer) {
+static jxl_enc_status jxl_store_huffman_tree(const uint8_t* depths, size_t num, jxl_bit_writer* writer) {
   jxl_array_u8 arena;
   jxl_array_construct_empty(&arena, jxl_bit_writer_ctx(writer));
-  jxl_status status = jxl_store_huffman_tree_body(depths, num, writer, &arena);
+  jxl_enc_status status = jxl_store_huffman_tree_body(depths, num, writer, &arena);
   jxl_array_destroy(&arena);
   return status;
 }
 
-jxl_status jxl_build_and_store_huffman_tree(const uint32_t* histogram, const size_t length,
+jxl_enc_status jxl_build_and_store_huffman_tree(const uint32_t* histogram, const size_t length,
                                 uint8_t* depth, uint16_t* bits,
                                 jxl_bit_writer* writer) {
   size_t count = 0;
@@ -213,7 +213,7 @@ jxl_status jxl_build_and_store_huffman_tree(const uint32_t* histogram, const siz
     // Output symbol bits and depths are initialized with 0, nothing to do.
     jxl_bit_writer_write(writer, 4, 1);
     jxl_bit_writer_write(writer, max_bits, s4[0]);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   jxl_create_huffman_tree(jxl_bit_writer_ctx(writer), histogram,
@@ -225,5 +225,5 @@ jxl_status jxl_build_and_store_huffman_tree(const uint32_t* histogram, const siz
   } else {
     JXL_RETURN_IF_ERROR(jxl_store_huffman_tree(depth, length, writer));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }

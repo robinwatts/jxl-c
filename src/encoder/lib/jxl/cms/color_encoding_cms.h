@@ -109,7 +109,7 @@ static inline jxl_ci_exy jxl_cms_customxy_get_value(const jxl_cms_customxy* self
   return xy;
 }
 
-static inline jxl_status jxl_cms_customxy_set_value(jxl_cms_customxy* self, const jxl_ci_exy* xy) {
+static inline jxl_enc_status jxl_cms_customxy_set_value(jxl_cms_customxy* self, const jxl_ci_exy* xy) {
   bool ok = (fabs(xy->x) < kCmsCustomxyRoughLimit) &&
             (fabs(xy->y) < kCmsCustomxyRoughLimit);
   if (!ok) return JXL_FAILURE("X or Y is out of bounds");
@@ -121,63 +121,63 @@ static inline jxl_status jxl_cms_customxy_set_value(jxl_cms_customxy* self, cons
   if (self->y < kCmsCustomxyMin || self->y > kCmsCustomxyMax) {
     return JXL_FAILURE("Y is out of bounds");
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_white_point_from_external(const jxl_white_point external,
+static inline jxl_enc_status jxl_white_point_from_external(const jxl_white_point external,
                                             jxl_white_point* out) {
   switch (external) {
     case JXL_WHITE_POINT_D65:
       *out = kWhitePointD65;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_WHITE_POINT_CUSTOM:
       *out = kWhitePointCustom;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_WHITE_POINT_E:
       *out = kWhitePointE;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_WHITE_POINT_DCI:
       *out = kWhitePointDCI;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
   }
   return JXL_FAILURE("Invalid jxl_white_point enum value %d",
                      (int)(external));
 }
 
-static inline jxl_status jxl_primaries_from_external(const jxl_primaries external,
+static inline jxl_enc_status jxl_primaries_from_external(const jxl_primaries external,
                                            jxl_primaries* out) {
   switch (external) {
     case JXL_PRIMARIES_SRGB:
       *out = kPrimariesSRGB;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_PRIMARIES_CUSTOM:
       *out = kPrimariesCustom;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_PRIMARIES_2100:
       *out = kPrimaries2100;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_PRIMARIES_P3:
       *out = kPrimariesP3;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
   }
   return JXL_FAILURE("Invalid jxl_primaries enum value");
 }
 
-static inline jxl_status jxl_rendering_intent_from_external(
+static inline jxl_enc_status jxl_rendering_intent_from_external(
     const jxl_rendering_intent external, jxl_rendering_intent* out) {
   switch (external) {
     case JXL_RENDERING_INTENT_PERCEPTUAL:
       *out = kPerceptual;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_RENDERING_INTENT_RELATIVE:
       *out = kRelative;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_RENDERING_INTENT_SATURATION:
       *out = kSaturation;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_RENDERING_INTENT_ABSOLUTE:
       *out = kAbsolute;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
   }
   return JXL_FAILURE("Invalid jxl_rendering_intent enum value");
 }
@@ -232,7 +232,7 @@ static inline double jxl_cms_custom_transfer_function_get_gamma(const jxl_cms_cu
   if (!self->have_gamma) return 0.0;
   return self->gamma * (1.0 / kCmsCustomTransferFunctionGammaMul);  // (0, 1)
 }
-static inline jxl_status jxl_cms_custom_transfer_function_set_gamma(jxl_cms_custom_transfer_function* self,
+static inline jxl_enc_status jxl_cms_custom_transfer_function_set_gamma(jxl_cms_custom_transfer_function* self,
                                              double new_gamma) {
   if (new_gamma < (1.0 / kCmsCustomTransferFunctionMaxGamma) ||
       new_gamma > 1.0) {
@@ -242,11 +242,11 @@ static inline jxl_status jxl_cms_custom_transfer_function_set_gamma(jxl_cms_cust
   self->have_gamma = false;
   if (jxl_cms_approx_eq(new_gamma, 1.0, 1E-3)) {
     self->transfer_function = kTFLinear;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   if (jxl_cms_approx_eq(new_gamma, 1.0 / 2.6, 1E-3)) {
     self->transfer_function = kTFDCI;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   // Don't translate 0.45.. to kSRGB nor k709 - that might change pixel
   // values because those curves also have a linear part.
@@ -254,33 +254,33 @@ static inline jxl_status jxl_cms_custom_transfer_function_set_gamma(jxl_cms_cust
   self->have_gamma = true;
   self->gamma = roundf(new_gamma * kCmsCustomTransferFunctionGammaMul);
   self->transfer_function = kTFUnknown;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_convert_external_to_internal_transfer_function(
+static inline jxl_enc_status jxl_convert_external_to_internal_transfer_function(
     const jxl_transfer_function external, jxl_transfer_function* internal) {
   switch (external) {
     case JXL_TRANSFER_FUNCTION_709:
       *internal = kTF709;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_TRANSFER_FUNCTION_UNKNOWN:
       *internal = kTFUnknown;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_TRANSFER_FUNCTION_LINEAR:
       *internal = kTFLinear;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_TRANSFER_FUNCTION_SRGB:
       *internal = kTFSRGB;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_TRANSFER_FUNCTION_PQ:
       *internal = kTFPQ;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_TRANSFER_FUNCTION_DCI:
       *internal = kTFDCI;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_TRANSFER_FUNCTION_HLG:
       *internal = kTFHLG;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_TRANSFER_FUNCTION_GAMMA:
       return JXL_FAILURE("Gamma should be handled separately");
   }
@@ -366,7 +366,7 @@ static inline size_t jxl_cms_color_encoding_channels(const jxl_cms_color_encodin
   return (self->color_space == kGray) ? 1 : 3;
 }
 
-static inline jxl_status jxl_cms_color_encoding_get_primaries(const jxl_cms_color_encoding* self,
+static inline jxl_enc_status jxl_cms_color_encoding_get_primaries(const jxl_cms_color_encoding* self,
                                            jxl_primaries_ci_exy* xy) {
   JXL_ENSURE(self->have_fields);
   JXL_ENSURE(jxl_cms_color_encoding_has_primaries(self));
@@ -409,10 +409,10 @@ static inline jxl_status jxl_cms_color_encoding_get_primaries(const jxl_cms_colo
       JXL_DEBUG_ABORT("internal: unexpected jxl_primaries: %d",
                       (int)(self->primaries));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_cms_color_encoding_set_primaries(jxl_cms_color_encoding* self,
+static inline jxl_enc_status jxl_cms_color_encoding_set_primaries(jxl_cms_color_encoding* self,
                                            const jxl_primaries_ci_exy* xy) {
   JXL_ENSURE(self->have_fields);
   JXL_ENSURE(jxl_cms_color_encoding_has_primaries(self));
@@ -426,27 +426,27 @@ static inline jxl_status jxl_cms_color_encoding_set_primaries(jxl_cms_color_enco
       jxl_cms_approx_eq(xy->g.x, 0.30, 1E-3) && jxl_cms_approx_eq(xy->g.y, 0.60, 1E-3) &&
       jxl_cms_approx_eq(xy->b.x, 0.15, 1E-3) && jxl_cms_approx_eq(xy->b.y, 0.06, 1E-3)) {
     self->primaries = kPrimariesSRGB;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   if (jxl_cms_approx_eq(xy->r.x, 0.708, 1E-3) && jxl_cms_approx_eq(xy->r.y, 0.292, 1E-3) &&
       jxl_cms_approx_eq(xy->g.x, 0.170, 1E-3) && jxl_cms_approx_eq(xy->g.y, 0.797, 1E-3) &&
       jxl_cms_approx_eq(xy->b.x, 0.131, 1E-3) && jxl_cms_approx_eq(xy->b.y, 0.046, 1E-3)) {
     self->primaries = kPrimaries2100;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   if (jxl_cms_approx_eq(xy->r.x, 0.680, 1E-3) && jxl_cms_approx_eq(xy->r.y, 0.320, 1E-3) &&
       jxl_cms_approx_eq(xy->g.x, 0.265, 1E-3) && jxl_cms_approx_eq(xy->g.y, 0.690, 1E-3) &&
       jxl_cms_approx_eq(xy->b.x, 0.150, 1E-3) && jxl_cms_approx_eq(xy->b.y, 0.060, 1E-3)) {
     self->primaries = kPrimariesP3;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   self->primaries = kPrimariesCustom;
   JXL_RETURN_IF_ERROR(jxl_cms_customxy_set_value(&self->red, &xy->r));
   JXL_RETURN_IF_ERROR(jxl_cms_customxy_set_value(&self->green, &xy->g));
   JXL_RETURN_IF_ERROR(jxl_cms_customxy_set_value(&self->blue, &xy->b));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static inline jxl_ci_exy jxl_cms_color_encoding_get_white_point(const jxl_cms_color_encoding* self) {
@@ -480,7 +480,7 @@ static inline jxl_ci_exy jxl_cms_color_encoding_get_white_point(const jxl_cms_co
   return xy;
 }
 
-static inline jxl_status jxl_cms_color_encoding_set_white_point(jxl_cms_color_encoding* self,
+static inline jxl_enc_status jxl_cms_color_encoding_set_white_point(jxl_cms_color_encoding* self,
                                             const jxl_ci_exy* xy) {
   JXL_ENSURE(self->have_fields);
   if (xy->x == 0.0 || xy->y == 0.0) {
@@ -488,27 +488,27 @@ static inline jxl_status jxl_cms_color_encoding_set_white_point(jxl_cms_color_en
   }
   if (jxl_cms_approx_eq(xy->x, 0.3127, 1E-3) && jxl_cms_approx_eq(xy->y, 0.3290, 1E-3)) {
     self->white_point = kWhitePointD65;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   if (jxl_cms_approx_eq(xy->x, 1.0 / 3, 1E-3) && jxl_cms_approx_eq(xy->y, 1.0 / 3, 1E-3)) {
     self->white_point = kWhitePointE;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   if (jxl_cms_approx_eq(xy->x, 0.314, 1E-3) && jxl_cms_approx_eq(xy->y, 0.351, 1E-3)) {
     self->white_point = kWhitePointDCI;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   self->white_point = kWhitePointCustom;
   return jxl_cms_customxy_set_value(&self->white, xy);
 }
 
-static inline jxl_status jxl_cms_color_encoding_from_external(jxl_cms_color_encoding* self,
+static inline jxl_enc_status jxl_cms_color_encoding_from_external(jxl_cms_color_encoding* self,
                                            const jxl_color_encoding* external);
 static inline jxl_color_encoding jxl_cms_color_encoding_to_external(const jxl_cms_color_encoding* self);
 
 // Returns true if all fields have been initialized (possibly to kUnknown).
 // Returns false if the ICC profile is invalid or decoding it fails.
-static inline jxl_status jxl_cms_color_encoding_set_fields_from_icc(jxl_cms_color_encoding* self,
+static inline jxl_enc_status jxl_cms_color_encoding_set_fields_from_icc(jxl_cms_color_encoding* self,
                                                jxl_icc_bytes* new_icc,
                                                const jxl_cms_interface* cms) {
   // In case parsing fails, mark the jxl_cms_color_encoding as invalid.
@@ -521,13 +521,13 @@ static inline jxl_status jxl_cms_color_encoding_set_fields_from_icc(jxl_cms_colo
   jxl_color_encoding external;
   jxl_color_encoding_set_empty(&external);
   JXL_BOOL new_cmyk;
-  JXL_RETURN_IF_ERROR(jxl_status_from_bool(cms->set_fields_from_icc(
+  JXL_RETURN_IF_ERROR(jxl_enc_status_from_bool(cms->set_fields_from_icc(
       cms->set_fields_data, jxl_array_data(new_icc), jxl_array_len(new_icc), &external,
       &new_cmyk)));
   self->cmyk = (bool)(new_cmyk);
   JXL_RETURN_IF_ERROR(jxl_cms_color_encoding_from_external(self, &external));
   jxl_array_swap(&self->icc, new_icc);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static inline jxl_color_encoding jxl_cms_color_encoding_to_external(const jxl_cms_color_encoding* self) {
@@ -549,7 +549,7 @@ static inline jxl_color_encoding jxl_cms_color_encoding_to_external(const jxl_cm
       external.color_space == JXL_COLOR_SPACE_UNKNOWN) {
     external.primaries = (jxl_primaries)(self->primaries);
     jxl_primaries_ci_exy p;
-    if (!jxl_status_ok(jxl_cms_color_encoding_get_primaries(self, &p))) {
+    if (!jxl_enc_status_ok(jxl_cms_color_encoding_get_primaries(self, &p))) {
       jxl_set_unknown_external_color_encoding(&external);
       return external;
     }
@@ -577,7 +577,7 @@ static inline jxl_color_encoding jxl_cms_color_encoding_to_external(const jxl_cm
 }
 
 // NB: does not create ICC.
-static inline jxl_status jxl_cms_color_encoding_from_external(jxl_cms_color_encoding* self,
+static inline jxl_enc_status jxl_cms_color_encoding_from_external(jxl_cms_color_encoding* self,
                                            const jxl_color_encoding* external) {
   // TODO(eustas): update non-serializable on call-site
   self->color_space = (jxl_color_space)(external->color_space);
@@ -625,7 +625,7 @@ static inline jxl_status jxl_cms_color_encoding_from_external(jxl_cms_color_enco
 
   jxl_array_clear(&self->icc);
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 

@@ -4,7 +4,7 @@
 // BSD-style license in LICENSE-BSD and the additional patent grant in PATENTS.
 
 #include "allocator.h"
-#include "context.h"
+#include <jxl/context.h>
 #include "encoder/simple_lossless_internal.h"
 
 #include <jxl/simple_lossless.h>

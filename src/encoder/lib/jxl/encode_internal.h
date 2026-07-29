@@ -175,7 +175,7 @@ static inline bool jxl_encoder_metadata_boxes_empty(const jxl_encoder_metadata_b
   return jxl_array_empty(&self->boxes);
 }
 
-static inline jxl_status jxl_encoder_metadata_boxes_push_back(jxl_encoder_metadata_boxes* self,
+static inline jxl_enc_status jxl_encoder_metadata_boxes_push_back(jxl_encoder_metadata_boxes* self,
                                               jxl_enc_box_type type, const jxl_array_u8* data,
                                               bool compress_box) {
   jxl_encoder_metadata_box box;
@@ -314,8 +314,8 @@ static inline void jxl_owned_queued_frames_clear(jxl_owned_queued_frames* self) 
     self->len = 0;
   }
 
-static inline jxl_status jxl_owned_queued_frames_reserve(jxl_owned_queued_frames* self, size_t new_capacity) {
-    if (new_capacity <= self->capacity) return jxl_ok_status();
+static inline jxl_enc_status jxl_owned_queued_frames_reserve(jxl_owned_queued_frames* self, size_t new_capacity) {
+    if (new_capacity <= self->capacity) return jxl_enc_ok_status();
 
     size_t grown = self->capacity;
     if (grown == 0) grown = 16;
@@ -352,7 +352,7 @@ static inline jxl_status jxl_owned_queued_frames_reserve(jxl_owned_queued_frames
     }
     self->ptr = neu;
     self->capacity = grown;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
 static inline void jxl_owned_queued_frames_destroy(jxl_owned_queued_frames* self) {
@@ -380,7 +380,7 @@ static inline void jxl_owned_queued_frames_erase(jxl_owned_queued_frames* self, 
     --self->len;
   }
 
-static inline jxl_status jxl_owned_queued_frames_emplace_back(jxl_owned_queued_frames* self, jxl_owned_queued_frame* value) {
+static inline jxl_enc_status jxl_owned_queued_frames_emplace_back(jxl_owned_queued_frames* self, jxl_owned_queued_frame* value) {
     if (self->len == self->capacity) {
       size_t need;
       if (!jxl_safe_add(self->capacity, (size_t)(1), &need)) {
@@ -391,7 +391,7 @@ static inline jxl_status jxl_owned_queued_frames_emplace_back(jxl_owned_queued_f
     jxl_owned_queued_frame_construct_empty(self->ptr + self->len);
     jxl_owned_queued_frame_swap(self->ptr + self->len, value);
     ++self->len;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
 
@@ -418,7 +418,7 @@ static inline void jxl_make_owned_queued_frame(
 
 // Appends a JXL container box header with given type, size, and unbounded
 // properties to output.
-static inline jxl_status jxl_append_box_header(const jxl_enc_box_type* type, size_t size,
+static inline jxl_enc_status jxl_append_box_header(const jxl_enc_box_type* type, size_t size,
                               bool unbounded, jxl_array_u8* output) {
   size_t current_size = jxl_array_len(output);
   JXL_RETURN_IF_ERROR(jxl_array_resize_zero(output, current_size + kLargeBoxHeaderSize));
@@ -426,13 +426,13 @@ static inline jxl_status jxl_append_box_header(const jxl_enc_box_type* type, siz
       jxl_write_box_header(type, size, unbounded, /*force_large_box=*/false,
                      jxl_array_data(output) + current_size);
   JXL_RETURN_IF_ERROR(jxl_array_resize_zero(output, current_size + header_size));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 
 // Returns the JXL container signature box and ftyp box.
 // ftyp_version: 0 = standard delivery order, 1 = out-of-order jxlp boxes.
-static inline jxl_status jxl_make_container_header(jxl_context* mm,
+static inline jxl_enc_status jxl_make_container_header(jxl_context* mm,
                                                    int ftyp_version,
                                                    jxl_array_u8* out) {
   jxl_array_construct_empty(out, mm);
@@ -452,7 +452,7 @@ static inline jxl_status jxl_make_container_header(jxl_context* mm,
   }
   JXL_RETURN_IF_ERROR(jxl_array_append(&tmp, ftyp, sizeof(ftyp)));
   jxl_array_swap(out, &tmp);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 
@@ -627,10 +627,10 @@ static inline jxl_buffered_chunk* jxl_buffered_chunks_front(
   return &self->ptr[0];
 }
 
-static inline jxl_status jxl_buffered_chunks_reserve(
+static inline jxl_enc_status jxl_buffered_chunks_reserve(
     jxl_buffered_chunks* self,
     size_t new_capacity) {
-  if (new_capacity <= self->capacity) return jxl_ok_status();
+  if (new_capacity <= self->capacity) return jxl_enc_ok_status();
 
   size_t grown = self->capacity;
   if (grown == 0) grown = 16;
@@ -672,10 +672,10 @@ static inline jxl_status jxl_buffered_chunks_reserve(
   }
   self->ptr = neu;
   self->capacity = grown;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_buffered_chunks_emplace(
+static inline jxl_enc_status jxl_buffered_chunks_emplace(
     jxl_buffered_chunks* self, size_t index,
     size_t pos, jxl_context* mm) {
   
@@ -697,7 +697,7 @@ static inline jxl_status jxl_buffered_chunks_emplace(
   jxl_buffered_chunk_construct_empty(self->ptr + index);
     jxl_buffered_chunk_init(self->ptr + index, pos, mm);
   ++self->len;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static inline void jxl_buffered_chunks_erase(
@@ -727,7 +727,7 @@ static inline size_t jxl_encoder_output_processor_wrapper_insert_buffer(
   }
   JXL_DASSERT(i == jxl_buffered_chunks_size(&self->internal_buffers_) ||
               jxl_buffered_chunks_at(&self->internal_buffers_, i)->start != pos);
-  if (!jxl_status_ok(jxl_buffered_chunks_emplace(&self->internal_buffers_, i, pos,
+  if (!jxl_enc_status_ok(jxl_buffered_chunks_emplace(&self->internal_buffers_, i, pos,
                              self->ctx_))) {
     JXL_CRASH();
   }
@@ -761,19 +761,19 @@ typedef struct jxl_output_processor_buffer {
   jxl_encoder_output_processor_wrapper* wrapper_;
 } jxl_output_processor_buffer;
 
-jxl_status jxl_encoder_output_processor_wrapper_get_buffer(
+jxl_enc_status jxl_encoder_output_processor_wrapper_get_buffer(
     jxl_encoder_output_processor_wrapper* self, size_t min_size,
     size_t requested_size, jxl_output_processor_buffer* out);
-jxl_status jxl_encoder_output_processor_wrapper_seek(
+jxl_enc_status jxl_encoder_output_processor_wrapper_seek(
     jxl_encoder_output_processor_wrapper* self, size_t pos);
-jxl_status jxl_encoder_output_processor_wrapper_set_finalized_position(
+jxl_enc_status jxl_encoder_output_processor_wrapper_set_finalized_position(
     jxl_encoder_output_processor_wrapper* self);
-jxl_status jxl_encoder_output_processor_wrapper_set_avail_out(
+jxl_enc_status jxl_encoder_output_processor_wrapper_set_avail_out(
     jxl_encoder_output_processor_wrapper* self, uint8_t** next_out,
     size_t* avail_out);
-jxl_status jxl_encoder_output_processor_wrapper_release_buffer(
+jxl_enc_status jxl_encoder_output_processor_wrapper_release_buffer(
     jxl_encoder_output_processor_wrapper* self, size_t bytes_used);
-jxl_status jxl_encoder_output_processor_wrapper_flush_output(
+jxl_enc_status jxl_encoder_output_processor_wrapper_flush_output(
     jxl_encoder_output_processor_wrapper* self, uint8_t** next_out,
     size_t* avail_out);
 
@@ -806,18 +806,18 @@ static inline void jxl_output_processor_buffer_init(jxl_output_processor_buffer*
   self->wrapper_ = wrapper;
 }
 
-static inline jxl_status jxl_output_processor_buffer_advance(
+static inline jxl_enc_status jxl_output_processor_buffer_advance(
     jxl_output_processor_buffer* self, size_t count) {
   JXL_ENSURE(count <= self->size_);
   self->data_ += count;
   self->size_ -= count;
   self->bytes_used_ += count;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_output_processor_buffer_release(
+static inline jxl_enc_status jxl_output_processor_buffer_release(
     jxl_output_processor_buffer* self) {
-  jxl_status result = jxl_ok_status();
+  jxl_enc_status result = jxl_enc_ok_status();
   if (self->data_) {
     result = jxl_encoder_output_processor_wrapper_release_buffer(self->wrapper_,
                                                            self->bytes_used_);
@@ -827,11 +827,11 @@ static inline jxl_status jxl_output_processor_buffer_release(
   return result;
 }
 
-static inline jxl_status jxl_output_processor_buffer_append(
+static inline jxl_enc_status jxl_output_processor_buffer_append(
     jxl_output_processor_buffer* self, const void* data, size_t count) {
   memcpy(self->data_, data, count);
   JXL_RETURN_IF_ERROR(jxl_output_processor_buffer_advance(self, count));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static inline void jxl_output_processor_buffer_swap(jxl_output_processor_buffer* self,
@@ -852,20 +852,20 @@ static inline void jxl_output_processor_buffer_swap(jxl_output_processor_buffer*
 
 static inline void jxl_output_processor_buffer_destroy(jxl_output_processor_buffer* self) {
   if (self == NULL) return;
-  jxl_status result = jxl_output_processor_buffer_release(self);
+  jxl_enc_status result = jxl_output_processor_buffer_release(self);
   (void)result;
-  JXL_DASSERT(jxl_status_ok(result));
+  JXL_DASSERT(jxl_enc_status_ok(result));
 }
 
-static inline jxl_status jxl_append_data(jxl_encoder_output_processor_wrapper* output_processor,
+static inline jxl_enc_status jxl_append_data(jxl_encoder_output_processor_wrapper* output_processor,
                               const uint8_t* data, size_t size) {
   size_t written = 0;
   while (written < size) {
     jxl_output_processor_buffer buffer;
     jxl_output_processor_buffer_construct_empty(&buffer);
-    jxl_status status = jxl_encoder_output_processor_wrapper_get_buffer(
+    jxl_enc_status status = jxl_encoder_output_processor_wrapper_get_buffer(
         output_processor, 1, size - written, &buffer);
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_output_processor_buffer_destroy(&buffer);
       return status;
     }
@@ -873,10 +873,10 @@ static inline jxl_status jxl_append_data(jxl_encoder_output_processor_wrapper* o
         JXL_MIN(size - written, jxl_output_processor_buffer_size(&buffer));
     status = jxl_output_processor_buffer_append(&buffer, data + written, n);
     jxl_output_processor_buffer_destroy(&buffer);
-    if (!jxl_status_ok(status)) return status;
+    if (!jxl_enc_status_ok(status)) return status;
     written += n;
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Forward decl so FrameSettings can be completed before jxl_owned_frame_settings.
@@ -986,8 +986,8 @@ static inline void jxl_owned_frame_settings_list_clear(jxl_owned_frame_settings_
     self->len = 0;
   }
 
-static inline jxl_status jxl_owned_frame_settings_list_reserve(jxl_owned_frame_settings_list* self, size_t new_capacity) {
-    if (new_capacity <= self->capacity) return jxl_ok_status();
+static inline jxl_enc_status jxl_owned_frame_settings_list_reserve(jxl_owned_frame_settings_list* self, size_t new_capacity) {
+    if (new_capacity <= self->capacity) return jxl_enc_ok_status();
 
     size_t grown = self->capacity;
     if (grown == 0) grown = 16;
@@ -1024,7 +1024,7 @@ static inline jxl_status jxl_owned_frame_settings_list_reserve(jxl_owned_frame_s
     }
     self->ptr = neu;
     self->capacity = grown;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
 static inline void jxl_owned_frame_settings_list_destroy(jxl_owned_frame_settings_list* self) {
@@ -1037,7 +1037,7 @@ static inline void jxl_owned_frame_settings_list_destroy(jxl_owned_frame_setting
   self->ptr = NULL;
   self->capacity = 0;
 }
-static inline jxl_status jxl_owned_frame_settings_list_emplace_back(jxl_owned_frame_settings_list* self, jxl_owned_frame_settings* value) {
+static inline jxl_enc_status jxl_owned_frame_settings_list_emplace_back(jxl_owned_frame_settings_list* self, jxl_owned_frame_settings* value) {
     if (self->len == self->capacity) {
       size_t need;
       if (!jxl_safe_add(self->capacity, (size_t)(1), &need)) {
@@ -1048,7 +1048,7 @@ static inline jxl_status jxl_owned_frame_settings_list_emplace_back(jxl_owned_fr
     jxl_owned_frame_settings_construct_empty(self->ptr + self->len);
     jxl_owned_frame_settings_swap(self->ptr + self->len, value);
     ++self->len;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
 
@@ -1125,11 +1125,11 @@ static inline void jxl_encoder_destroy_contents(jxl_encoder* self) {
   jxl_array_destroy(&self->jpeg_metadata);
 }
 
-jxl_status jxl_encoder_process_one_enqueued_input(jxl_encoder* self);
-jxl_status jxl_encoder_append_box(jxl_encoder* self, const jxl_enc_box_type* type,
+jxl_enc_status jxl_encoder_process_one_enqueued_input(jxl_encoder* self);
+jxl_enc_status jxl_encoder_append_box(jxl_encoder* self, const jxl_enc_box_type* type,
                                 bool unbounded, size_t box_max_size,
-                                jxl_status (*write_box)(void*), void* opaque);
-jxl_status jxl_encoder_append_box_with_contents(jxl_encoder* self,
+                                jxl_enc_status (*write_box)(void*), void* opaque);
+jxl_enc_status jxl_encoder_append_box_with_contents(jxl_encoder* self,
                                             const jxl_enc_box_type* type,
                                             const uint8_t* contents,
                                             size_t size);

@@ -26,7 +26,7 @@ struct jxl_container_parser {
     jxlp_index_state jxlp_index_state;
     uint32_t jxlp_expected_index;
     jxl_box_header pending_header;
-    jxl_box_type brotli_inner_type;
+    jxl_container_box_type brotli_inner_type;
     int has_brotli_inner_type;
     size_t bytes_left;
     int has_bytes_left;
@@ -47,10 +47,17 @@ static int sig_might_match(const uint8_t *buf, size_t len, const uint8_t *sig, s
     return memcmp(buf, sig, n) == 0;
 }
 
-static int is_reserved_brob_type(const jxl_box_type *ty) {
+static void set_event_box_type(jxl_box_type out, jxl_container_box_type ty) {
+    out[0] = (char)ty.bytes[0];
+    out[1] = (char)ty.bytes[1];
+    out[2] = (char)ty.bytes[2];
+    out[3] = (char)ty.bytes[3];
+}
+
+static int is_reserved_brob_type(const jxl_container_box_type *ty) {
     return (ty->bytes[0] == 'j' && ty->bytes[1] == 'x' && ty->bytes[2] == 'l') ||
-           jxl_box_type_eq(*ty, JXL_BOX_BROTLI_COMPRESSED) ||
-           jxl_box_type_eq(*ty, JXL_BOX_JPEG_RECONSTRUCTION);
+           jxl_container_box_type_eq(*ty, JXL_BOX_BROTLI_COMPRESSED) ||
+           jxl_container_box_type_eq(*ty, JXL_BOX_JPEG_RECONSTRUCTION);
 }
 
 jxl_container_parser *jxl_container_parser_create(jxl_context *alloc) {
@@ -140,7 +147,7 @@ jxl_bs_status_t jxl_container_parser_emit(jxl_container_parser *parser, const ui
             *buf += header_size;
             *len -= header_size;
 
-            if (jxl_box_type_eq(header.ty, JXL_BOX_CODESTREAM)) {
+            if (jxl_container_box_type_eq(header.ty, JXL_BOX_CODESTREAM)) {
                 if (parser->jxlp_index_state == JXLP_INITIAL) {
                     parser->jxlp_index_state = JXLP_SINGLE_JXLC;
                 } else if (parser->jxlp_index_state == JXLP_SINGLE_JXLC) {
@@ -158,7 +165,7 @@ jxl_bs_status_t jxl_container_parser_emit(jxl_container_parser *parser, const ui
                 return JXL_BS_OK;
             }
 
-            if (jxl_box_type_eq(header.ty, JXL_BOX_PARTIAL_CODESTREAM)) {
+            if (jxl_container_box_type_eq(header.ty, JXL_BOX_PARTIAL_CODESTREAM)) {
                 if (header.has_box_size && header.box_size < 4) {
                     return JXL_BS_INVALID_BOX;
                 }
@@ -184,9 +191,9 @@ jxl_bs_status_t jxl_container_parser_emit(jxl_container_parser *parser, const ui
                 parser->bytes_left = (size_t)header.box_size;
             }
 
-            if (!jxl_box_type_eq(header.ty, JXL_BOX_BROTLI_COMPRESSED)) {
+            if (!jxl_container_box_type_eq(header.ty, JXL_BOX_BROTLI_COMPRESSED)) {
                 event->type = JXL_PARSE_EVENT_AUX_BOX_START;
-                event->box_type = header.ty;
+                set_event_box_type(event->box_type, header.ty);
                 event->brotli_compressed = 0;
                 event->last_box = !header.has_box_size;
                 *has_event = 1;
@@ -269,9 +276,9 @@ jxl_bs_status_t jxl_container_parser_emit(jxl_container_parser *parser, const ui
             return JXL_BS_OK;
 
         case DETECT_IN_AUX_BOX:
-            if (jxl_box_type_eq(parser->pending_header.ty, JXL_BOX_BROTLI_COMPRESSED) &&
+            if (jxl_container_box_type_eq(parser->pending_header.ty, JXL_BOX_BROTLI_COMPRESSED) &&
                 !parser->has_brotli_inner_type) {
-                jxl_box_type ty;
+                jxl_container_box_type ty;
                 if (*len < 4) {
                     return JXL_BS_OK;
                 }
@@ -290,7 +297,7 @@ jxl_bs_status_t jxl_container_parser_emit(jxl_container_parser *parser, const ui
                 parser->brotli_inner_type = ty;
                 parser->has_brotli_inner_type = 1;
                 event->type = JXL_PARSE_EVENT_AUX_BOX_START;
-                event->box_type = ty;
+                set_event_box_type(event->box_type, ty);
                 event->brotli_compressed = 1;
                 event->last_box = !parser->pending_header.has_box_size;
                 *has_event = 1;
@@ -299,13 +306,13 @@ jxl_bs_status_t jxl_container_parser_emit(jxl_container_parser *parser, const ui
 
             {
                 size_t payload_len;
-                jxl_box_type ty = parser->has_brotli_inner_type ? parser->brotli_inner_type
+                jxl_container_box_type ty = parser->has_brotli_inner_type ? parser->brotli_inner_type
                                                                 : parser->pending_header.ty;
                 if (parser->has_bytes_left && parser->bytes_left == 0) {
                     parser->state = DETECT_WAITING_BOX_HEADER;
                     parser->has_brotli_inner_type = 0;
                     event->type = JXL_PARSE_EVENT_AUX_BOX_END;
-                    event->box_type = ty;
+                    set_event_box_type(event->box_type, ty);
                     *has_event = 1;
                     return JXL_BS_OK;
                 }
@@ -319,7 +326,7 @@ jxl_bs_status_t jxl_container_parser_emit(jxl_container_parser *parser, const ui
                 }
 
                 event->type = JXL_PARSE_EVENT_AUX_BOX_DATA;
-                event->box_type = ty;
+                set_event_box_type(event->box_type, ty);
                 event->data = *buf;
                 event->data_len = payload_len;
                 *buf += payload_len;

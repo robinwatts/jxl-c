@@ -51,7 +51,7 @@ static jxl_histogram_params jxl_modular_histogram_params(
   return params;
 }
 
-static jxl_status jxl_merge_trees(const jxl_tree* trees, size_t num_trees,
+static jxl_enc_status jxl_merge_trees(const jxl_tree* trees, size_t num_trees,
                   const jxl_array_size* tree_splits, size_t begin, size_t end,
                   jxl_tree* tree) {
   JXL_ENSURE(num_trees + 1 == jxl_array_len(tree_splits));
@@ -65,12 +65,12 @@ static jxl_status jxl_merge_trees(const jxl_tree* trees, size_t num_trees,
       jxl_array_at(tree, i)->lchild += sz;
       jxl_array_at(tree, i)->rchild += sz;
     }
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   size_t mid = (begin + end) / 2;
   size_t splitval = *jxl_array_at_const(tree_splits, mid) - 1;
   size_t cur = jxl_array_len(tree);
-  if (!jxl_status_ok(jxl_array_property_decision_node_push_back(tree, jxl_property_decision_node_split(
+  if (!jxl_enc_status_ok(jxl_array_property_decision_node_push_back(tree, jxl_property_decision_node_split(
                               1 /*stream_id*/, (int)(splitval), 0, 0)))) {
     JXL_CRASH();
   }
@@ -79,10 +79,10 @@ static jxl_status jxl_merge_trees(const jxl_tree* trees, size_t num_trees,
   jxl_array_at(tree, cur)->rchild = jxl_array_len(tree);
   JXL_RETURN_IF_ERROR(
       jxl_merge_trees(trees, num_trees, tree_splits, begin, mid, tree));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_set_splitting_heuristic_props(jxl_modular_options* options,
+static jxl_enc_status jxl_set_splitting_heuristic_props(jxl_modular_options* options,
                                   const jxl_array_u32* prop_order,
                                   size_t n) {
   if (n > kMaxSplittingHeuristicsProperties) {
@@ -92,7 +92,7 @@ static jxl_status jxl_set_splitting_heuristic_props(jxl_modular_options* options
   for (size_t i = 0; i < n; ++i) {
     options->splitting_heuristics_properties[i] = *jxl_array_at_const(prop_order, i);
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 typedef struct jxl_tree_flag_ctx {
@@ -101,7 +101,7 @@ typedef struct jxl_tree_flag_ctx {
   bool tree_empty;
 } jxl_tree_flag_ctx;
 
-static jxl_status jxl_write_tree_flag_body(void* opaque) {
+static jxl_enc_status jxl_write_tree_flag_body(void* opaque) {
   jxl_tree_flag_ctx* c = (jxl_tree_flag_ctx*)(opaque);
   // If we are using brotli, or not using modular mode.
   if (c->tree_empty) {
@@ -110,27 +110,27 @@ static jxl_status jxl_write_tree_flag_body(void* opaque) {
   } else {
     jxl_bit_writer_write(c->writer, 1, 1);
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_modular_frame_encoder_create(jxl_context* ctx,
+jxl_enc_status jxl_modular_frame_encoder_create(jxl_context* ctx,
                                    const jxl_enc_frame_header* frame_header,
                                    const jxl_compress_params* cparams_orig,
                                    jxl_modular_frame_encoder* out){
   jxl_modular_frame_encoder self;
   jxl_modular_frame_encoder_init_mm(&self, ctx);
-  jxl_status status =
+  jxl_enc_status status =
       jxl_modular_frame_encoder_init(&self, frame_header, cparams_orig);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_modular_frame_encoder_destroy(&self);
     return status;
   }
   jxl_modular_frame_encoder_swap(out, &self);
   jxl_modular_frame_encoder_destroy(&self);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self, const jxl_enc_frame_header* frame_header,
+jxl_enc_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self, const jxl_enc_frame_header* frame_header,
                                  const jxl_compress_params* cparams_orig){
   self->frame_dim_ = jxl_enc_frame_header_to_frame_dimensions(frame_header);
   self->cparams_ = *cparams_orig;
@@ -150,7 +150,7 @@ jxl_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self, const
                                          2, 3, 4,  5, 6,  7,  8};
     jxl_array_u32 prop_order;
     jxl_array_construct_empty(&prop_order, self->ctx_);
-    if (!jxl_status_ok(jxl_array_assign(&prop_order, kPropOrder,
+    if (!jxl_enc_status_ok(jxl_array_assign(&prop_order, kPropOrder,
                      sizeof(kPropOrder) / sizeof(kPropOrder[0])))) {
       jxl_array_destroy(&prop_order);
       return JXL_FAILURE("OOM");
@@ -158,7 +158,7 @@ jxl_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self, const
     if (num_streams < 30 && self->cparams_.speed_tier > kTortoise) {
       jxl_array_erase(&prop_order, jxl_array_data(&prop_order) + 1, jxl_array_data(&prop_order) + 2);
     }
-    jxl_status prop_status = jxl_ok_status();
+    jxl_enc_status prop_status = jxl_enc_ok_status();
     switch (self->cparams_.speed_tier) {
       case kHare:
         prop_status =
@@ -198,7 +198,7 @@ jxl_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self, const
         break;
     }
     jxl_array_destroy(&prop_order);
-    if (!jxl_status_ok(prop_status)) return prop_status;
+    if (!jxl_enc_status_ok(prop_status)) return prop_status;
   }
   self->cparams_.options.nb_repeats = JXL_MIN(1.0f, self->cparams_.options.nb_repeats);
 
@@ -235,16 +235,16 @@ jxl_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self, const
   jxl_array_at(&self->stream_options_, 0)->histogram_params =
       jxl_modular_histogram_params(&self->cparams_, &empty_extra_dc_precision);
   jxl_array_destroy(&empty_extra_dc_precision);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* self) {
+jxl_enc_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* self) {
   // Avoid creating a tree with leaves that don't correspond to any pixels.
   jxl_array_size useful_splits;
   jxl_array_construct_empty(&useful_splits, self->ctx_);
-  jxl_status status =
+  jxl_enc_status status =
       jxl_array_reserve(&useful_splits, jxl_array_len(&self->tree_splits_));
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&useful_splits);
     return status;
   }
@@ -257,7 +257,7 @@ jxl_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* sel
     }
     if (has_pixels) {
       status = jxl_array_size_push_back(&useful_splits, *jxl_array_at(&self->tree_splits_, chunk));
-      if (!jxl_status_ok(status)) {
+      if (!jxl_enc_status_ok(status)) {
         jxl_array_destroy(&useful_splits);
         return status;
       }
@@ -265,10 +265,10 @@ jxl_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* sel
   }
   if (jxl_array_empty(&useful_splits)) {
     jxl_array_destroy(&useful_splits);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   status = jxl_array_size_push_back(&useful_splits, jxl_array_back(&self->tree_splits_));
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&useful_splits);
     return status;
   }
@@ -292,7 +292,7 @@ jxl_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* sel
           jxl_images_data(&self->stream_images_), jxl_array_data(&self->stream_options_),
           start, stop, &empty_multiplier_info, jxl_trees_at(&trees, chunk));
       jxl_array_destroy(&empty_multiplier_info);
-      if (!jxl_status_ok(status)) {
+      if (!jxl_enc_status_ok(status)) {
         jxl_trees_destroy(&trees);
         jxl_array_destroy(&useful_splits);
         return status;
@@ -318,13 +318,13 @@ jxl_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* sel
   status = jxl_merge_trees(jxl_trees_data(&trees), jxl_trees_size(&trees),
                              &useful_splits, 0,
                              jxl_array_len(&useful_splits) - 1, &self->tree_);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_trees_destroy(&trees);
     jxl_array_destroy(&useful_splits);
     return status;
   }
   status = jxl_token_streams_resize(&self->tree_tokens_, 1);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_trees_destroy(&trees);
     jxl_array_destroy(&useful_splits);
     return status;
@@ -334,7 +334,7 @@ jxl_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* sel
   jxl_array_construct_empty(&decoded_tree, self->ctx_);
   status = jxl_tokenize_tree(&self->tree_,
                         jxl_token_streams_data(&self->tree_tokens_), &decoded_tree);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&decoded_tree);
     jxl_trees_destroy(&trees);
     jxl_array_destroy(&useful_splits);
@@ -351,10 +351,10 @@ jxl_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* sel
   jxl_array_destroy(&decoded_tree);
   jxl_trees_destroy(&trees);
   jxl_array_destroy(&useful_splits);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_modular_frame_encoder_compute_tokens(jxl_modular_frame_encoder* self) {
+jxl_enc_status jxl_modular_frame_encoder_compute_tokens(jxl_modular_frame_encoder* self) {
   size_t num_streams = jxl_images_size(&self->stream_images_);
   JXL_RETURN_IF_ERROR(jxl_group_headers_resize(&self->stream_headers_, num_streams));
   JXL_RETURN_IF_ERROR(jxl_token_streams_resize(&self->tokens_, num_streams));
@@ -366,17 +366,17 @@ jxl_array_clear(jxl_token_streams_at(&self->tokens_, stream_id));
                         stream_id, &self->tree_, jxl_group_headers_at(&self->stream_headers_, stream_id),
                         jxl_token_streams_at(&self->tokens_, stream_id), jxl_array_at(&self->image_widths_, stream_id)));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_modular_frame_encoder_encode_global_info(jxl_modular_frame_encoder* self, jxl_bit_writer* writer) {
+jxl_enc_status jxl_modular_frame_encoder_encode_global_info(jxl_modular_frame_encoder* self, jxl_bit_writer* writer) {
   jxl_context* ctx = jxl_bit_writer_ctx(writer);
   bool skip_rest = false;
   jxl_tree_flag_ctx tree_ctx = {writer, &skip_rest,
                           jxl_token_streams_empty(&self->tree_tokens_) || jxl_array_empty(jxl_token_streams_at(&self->tree_tokens_, 0))};
   JXL_RETURN_IF_ERROR(jxl_bit_writer_with_max_bits(writer, 1, kLayerModularTree,
                                           jxl_write_tree_flag_body, &tree_ctx));
-  if (skip_rest) return jxl_ok_status();
+  if (skip_rest) return jxl_enc_ok_status();
 
   // Write tree
   jxl_histogram_params params =
@@ -387,10 +387,10 @@ jxl_status jxl_modular_frame_encoder_encode_global_info(jxl_modular_frame_encode
     jxl_array_size empty_widths;
     jxl_array_construct_empty(&empty_widths, ctx);
     size_t cost;
-    jxl_status tree_status = jxl_build_and_encode_histograms(
+    jxl_enc_status tree_status = jxl_build_and_encode_histograms(
         ctx, &params, kNumTreeContexts, &self->tree_tokens_, &tree_code,
         writer, kLayerModularTree, &empty_widths, &cost);
-    if (!jxl_status_ok(tree_status)) {
+    if (!jxl_enc_status_ok(tree_status)) {
       jxl_array_destroy(&empty_widths);
       jxl_entropy_encoding_data_destroy(&tree_code);
       return tree_status;
@@ -400,7 +400,7 @@ jxl_status jxl_modular_frame_encoder_encode_global_info(jxl_modular_frame_encode
                                     kLayerModularTree);
     jxl_array_destroy(&empty_widths);
     jxl_entropy_encoding_data_destroy(&tree_code);
-    if (!jxl_status_ok(tree_status)) return tree_status;
+    if (!jxl_enc_status_ok(tree_status)) return tree_status;
   }
   params = jxl_modular_histogram_params(&self->cparams_, &self->extra_dc_precision);
   // Write histograms.
@@ -409,25 +409,25 @@ jxl_status jxl_modular_frame_encoder_encode_global_info(jxl_modular_frame_encode
       ctx, &params, (jxl_array_len(&self->tree_) + 1) / 2, &self->tokens_, &self->code_, writer,
       kLayerModularGlobal, &self->image_widths_, &cost));
   (void)cost;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_modular_frame_encoder_encode_stream(jxl_modular_frame_encoder* self, jxl_bit_writer* writer,
+jxl_enc_status jxl_modular_frame_encoder_encode_stream(jxl_modular_frame_encoder* self, jxl_bit_writer* writer,
                                          jxl_layer_type layer,
                                          const jxl_modular_stream_id* stream){
   size_t stream_id = jxl_modular_stream_id_id(*stream, &self->frame_dim_);
   if (jxl_channels_empty(&jxl_images_at(&self->stream_images_, stream_id)->channel)) {
     JXL_DEBUG_V(10, "Modular stream %" jxl_pr_iu_s " is empty.", stream_id);
-    return jxl_ok_status();  // jxl_image with no channels, header never gets decoded.
+    return jxl_enc_ok_status();  // jxl_image with no channels, header never gets decoded.
   }
   JXL_RETURN_IF_ERROR(
       jxl_bundle_write(&jxl_group_headers_at(&self->stream_headers_, stream_id)->fields, writer, layer));
   JXL_RETURN_IF_ERROR(
       jxl_write_tokens(jxl_token_streams_at(&self->tokens_, stream_id), &self->code_, 0, writer, layer));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_modular_frame_encoder_add_var_dctdc(jxl_modular_frame_encoder* self, const jxl_enc_frame_header* frame_header,
+jxl_enc_status jxl_modular_frame_encoder_add_var_dctdc(jxl_modular_frame_encoder* self, const jxl_enc_frame_header* frame_header,
                                         const jxl_image3_f* dc, const jxl_rect* r,
                                         size_t group_index,
                                         jxl_passes_encoder_state* enc_state){
@@ -509,10 +509,10 @@ jxl_status jxl_modular_frame_encoder_add_var_dctdc(jxl_modular_frame_encoder* se
 
   jxl_fill_quant_dc(r, &enc_state->shared.quant_dc, jxl_images_at(&self->stream_images_, stream_id),
               &frame_header->chroma_subsampling, &enc_state->shared.block_ctx_map);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_modular_frame_encoder_add_ac_metadata(jxl_modular_frame_encoder* self, const jxl_rect* r, size_t group_index,
+jxl_enc_status jxl_modular_frame_encoder_add_ac_metadata(jxl_modular_frame_encoder* self, const jxl_rect* r, size_t group_index,
                                           jxl_passes_encoder_state* enc_state){
   jxl_context* ctx = jxl_passes_encoder_state_ctx(enc_state);
   size_t stream_id = jxl_modular_stream_id_id(jxl_modular_stream_id_ac_metadata(group_index), &self->frame_dim_);
@@ -575,10 +575,10 @@ jxl_status jxl_modular_frame_encoder_add_ac_metadata(jxl_modular_frame_encoder* 
   }
   jxl_channels_at(&image->channel, 2)->w = num;
   *jxl_array_at(&self->ac_metadata_size, group_index) = num;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_modular_frame_encoder_encode_quant_table(
+jxl_enc_status jxl_modular_frame_encoder_encode_quant_table(
     jxl_context* ctx, size_t size_x, size_t size_y,
     jxl_bit_writer* writer, const jxl_quant_encoding* encoding, size_t idx,
     jxl_modular_frame_encoder* modular_frame_encoder){
@@ -593,7 +593,7 @@ jxl_status jxl_modular_frame_encoder_encode_quant_table(
   return jxl_modular_frame_encoder_encode_stream(modular_frame_encoder, writer, kLayerHeader, &qt);
 }
 
-jxl_status jxl_modular_frame_encoder_add_quant_table(jxl_modular_frame_encoder* self, size_t size_x, size_t size_y,
+jxl_enc_status jxl_modular_frame_encoder_add_quant_table(jxl_modular_frame_encoder* self, size_t size_x, size_t size_y,
                                           const jxl_quant_encoding* encoding,
                                           const jxl_array_int* qtable,
                                           size_t idx){
@@ -615,5 +615,5 @@ jxl_status jxl_modular_frame_encoder_add_quant_table(jxl_modular_frame_encoder* 
       }
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }

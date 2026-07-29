@@ -2,6 +2,7 @@
 #include "dequant_expand.h"
 
 #include "context.h"
+#include "context_caches.h"
 #include "vardct/dct_select.h"
 
 #include <math.h>
@@ -279,10 +280,10 @@ static jxl_vardct_status_t expand_encoding(jxl_context *ctx, const jxl_dequant_m
     jxl_context_dequant *expanded;
     jxl_vardct_status_t st;
     size_t mat_len;
-    if (ctx == NULL) {
+    if (ctx == NULL || ctx->dequant == NULL) {
         return JXL_VARDCT_BITSTREAM_ERROR;
     }
-    expanded = &ctx->dequant;
+    expanded = ctx->dequant;
     st = JXL_VARDCT_OK;
     w = 0;
     h = 0;
@@ -444,14 +445,14 @@ static jxl_vardct_status_t expand_encoding(jxl_context *ctx, const jxl_dequant_m
 
 void jxl_context_dequant_free(jxl_context *ctx) {
     size_t i;
-    if (ctx == NULL) {
+    if (ctx == NULL || ctx->dequant == NULL) {
         return;
     }
     for (i = 0; i < JXL_DEQUANT_MATRIX_COUNT; ++i) {
         size_t ch;
         for (ch = 0; ch < 3; ++ch) {
-            buf_free(ctx, &ctx->dequant.weights[i][ch]);
-            buf_free(ctx, &ctx->dequant.weights_tr[i][ch]);
+            buf_free(ctx, &ctx->dequant->weights[i][ch]);
+            buf_free(ctx, &ctx->dequant->weights_tr[i][ch]);
         }
     }
 }
@@ -481,16 +482,17 @@ jxl_vardct_status_t jxl_dequant_matrix_set_build_weights(jxl_context *ctx,
 const float *jxl_dequant_matrix_weights(jxl_context *ctx, const jxl_dequant_matrix_set *set,
                                         size_t matrix_idx, size_t channel, size_t *len_out) {
     (void)set;
-    if (ctx == NULL || matrix_idx >= JXL_DEQUANT_MATRIX_COUNT || channel >= 3) {
+    if (ctx == NULL || ctx->dequant == NULL || matrix_idx >= JXL_DEQUANT_MATRIX_COUNT ||
+        channel >= 3) {
         if (len_out != NULL) {
             *len_out = 0;
         }
         return NULL;
     }
     if (len_out != NULL) {
-        *len_out = ctx->dequant.weights[matrix_idx][channel].len;
+        *len_out = ctx->dequant->weights[matrix_idx][channel].len;
     }
-    return ctx->dequant.weights[matrix_idx][channel].data;
+    return ctx->dequant->weights[matrix_idx][channel].data;
 }
 
 const float *jxl_dequant_matrix_weights_transposed(jxl_context *ctx,
@@ -498,14 +500,15 @@ const float *jxl_dequant_matrix_weights_transposed(jxl_context *ctx,
                                                    size_t matrix_idx, size_t channel,
                                                    size_t *len_out) {
     (void)set;
-    if (ctx == NULL || matrix_idx >= JXL_DEQUANT_MATRIX_COUNT || channel >= 3) {
+    if (ctx == NULL || ctx->dequant == NULL || matrix_idx >= JXL_DEQUANT_MATRIX_COUNT ||
+        channel >= 3) {
         if (len_out != NULL) {
             *len_out = 0;
         }
         return NULL;
     }
     if (len_out != NULL) {
-        *len_out = ctx->dequant.weights_tr[matrix_idx][channel].len;
+        *len_out = ctx->dequant->weights_tr[matrix_idx][channel].len;
     }
-    return ctx->dequant.weights_tr[matrix_idx][channel].data;
+    return ctx->dequant->weights_tr[matrix_idx][channel].data;
 }

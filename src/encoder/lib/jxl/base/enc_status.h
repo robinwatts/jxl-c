@@ -6,7 +6,8 @@
 #ifndef LIB_JXL_BASE_ENC_STATUS_H_
 #define LIB_JXL_BASE_ENC_STATUS_H_
 
-// Error handling: jxl_status return type + helper macros.
+// Encoder-internal error handling (jxl_enc_status). Distinct from public
+// jxl_status_t in <jxl/status.h>; encode.c maps between the two at the API edge.
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -137,56 +138,56 @@ JXL_NORETURN static JXL_NOINLINE bool jxl_abort() {
 #define JXL_DASSERT(condition)
 #endif
 
-// A jxl_status value from a jxl_status_code or jxl_status which prints a debug message
+// A jxl_enc_status value from a jxl_enc_status_code or jxl_enc_status which prints a debug message
 // when enabled.
 #define JXL_STATUS(status, format, ...)                                   \
-  jxl_status_message(jxl_status_from_code(status), "%s:%d: " format "\n", \
+  jxl_enc_status_message(jxl_enc_status_from_code(status), "%s:%d: " format "\n", \
                        __FILE__, __LINE__, ##__VA_ARGS__)
 
-// Notify of an error but discard the resulting jxl_status value. This is only
+// Notify of an error but discard the resulting jxl_enc_status value. This is only
 // useful for debug builds or when building with JXL_CRASH_ON_ERROR.
 #define JXL_NOTIFY_ERROR(format, ...)                                      \
   (void)JXL_STATUS(kGenericError, "JXL_ERROR: " format, \
                    ##__VA_ARGS__)
 
-// An error jxl_status with a message. The JXL_STATUS() macro will return a jxl_status
+// An error jxl_enc_status with a message. The JXL_STATUS() macro will return a jxl_enc_status
 // object with a kGenericError/kUnsupported/kNotEnoughBytes code, but the comma
 // operator helps with clang-tidy inference and potentially with optimizations.
 #define JXL_FAILURE(format, ...)                                              \
   ((void)JXL_STATUS(kGenericError, "JXL_FAILURE: " format, \
                     ##__VA_ARGS__),                                           \
-   jxl_status_from_code(kGenericError))
+   jxl_enc_status_from_code(kGenericError))
 #define JXL_UNSUPPORTED(format, ...)                            \
   ((void)JXL_STATUS(kUnsupported,            \
                     "JXL_UNSUPPORTED: " format, ##__VA_ARGS__), \
-   jxl_status_from_code(kUnsupported))
+   jxl_enc_status_from_code(kUnsupported))
 #define JXL_NOT_ENOUGH_BYTES(format, ...)                            \
   ((void)JXL_STATUS(kNotEnoughBytes,              \
                     "JXL_NOT_ENOUGH_BYTES: " format, ##__VA_ARGS__), \
-   jxl_status_from_code(kNotEnoughBytes))
+   jxl_enc_status_from_code(kNotEnoughBytes))
 
 // Always evaluates the status exactly once, so can be used for non-debug calls.
-// Returns from the current context if the passed jxl_status expression is an error
-// (fatal or non-fatal). The return value is the passed jxl_status.
+// Returns from the current context if the passed jxl_enc_status expression is an error
+// (fatal or non-fatal). The return value is the passed jxl_enc_status.
 #define JXL_RETURN_IF_ERROR(status)                                       \
   do {                                                                    \
-    jxl_status jxl_return_if_error_status = (status);                  \
-    if (!jxl_status_ok(jxl_return_if_error_status)) {                                \
-      (void)jxl_status_message(                                         \
+    jxl_enc_status jxl_return_if_error_status = (status);                  \
+    if (!jxl_enc_status_ok(jxl_return_if_error_status)) {                                \
+      (void)jxl_enc_status_message(                                         \
           jxl_return_if_error_status,                                     \
           "%s:%d: JXL_RETURN_IF_ERROR code=%d: %s\n", __FILE__, __LINE__, \
-          (int)(jxl_status_get_code(jxl_return_if_error_status)), #status);  \
+          (int)(jxl_enc_status_get_code(jxl_return_if_error_status)), #status);  \
       return jxl_return_if_error_status;                                  \
     }                                                                     \
   } while (0)
 
-// As above, but without calling jxl_status_message. Intended for bundles (see
+// As above, but without calling jxl_enc_status_message. Intended for bundles (see
 // fields.h), which have numerous call sites (-> relevant for code size) and do
 // not want to generate excessive messages when decoding partial headers.
 #define JXL_QUIET_RETURN_IF_ERROR(status)                \
   do {                                                   \
-    jxl_status jxl_return_if_error_status = (status); \
-    if (!jxl_status_ok(jxl_return_if_error_status)) {               \
+    jxl_enc_status jxl_return_if_error_status = (status); \
+    if (!jxl_enc_status_ok(jxl_return_if_error_status)) {               \
       return jxl_return_if_error_status;                 \
     }                                                    \
   } while (0)
@@ -210,7 +211,7 @@ JXL_NORETURN static JXL_NOINLINE bool jxl_abort() {
   } while (0)
 #endif
 
-typedef enum jxl_status_code {
+typedef enum jxl_enc_status_code {
   // Non-fatal errors (negative values).
   kNotEnoughBytes = -1,
 
@@ -220,47 +221,47 @@ typedef enum jxl_status_code {
   // Fatal-errors (positive values)
   kGenericError = 1,
   kUnsupported = 2,
-} jxl_status_code;
+} jxl_enc_status_code;
 
-// jxl_status that raises compiler warnings if not used after being returned from a
+// jxl_enc_status that raises compiler warnings if not used after being returned from a
 // function. In case of error, the status can carry an extra error code which is
-// split between fatal and non-fatal error codes. Use jxl_status_ok() instead of treating
-// jxl_status as a bool. Aggregate-friendly: set code_ via jxl_status_from_code / helpers.
-typedef struct jxl_status {
-  jxl_status_code code_;
-} jxl_status;
+// split between fatal and non-fatal error codes. Use jxl_enc_status_ok() instead of treating
+// jxl_enc_status as a bool. Aggregate-friendly: set code_ via jxl_enc_status_from_code / helpers.
+typedef struct jxl_enc_status {
+  jxl_enc_status_code code_;
+} jxl_enc_status;
 
-static inline bool jxl_status_ok(jxl_status s) { return s.code_ == kOk; }
+static inline bool jxl_enc_status_ok(jxl_enc_status s) { return s.code_ == kOk; }
 
-static inline jxl_status_code jxl_status_get_code(jxl_status s) { return s.code_; }
+static inline jxl_enc_status_code jxl_enc_status_get_code(jxl_enc_status s) { return s.code_; }
 
-static inline bool jxl_status_is_fatal_error(jxl_status s) {
+static inline bool jxl_enc_status_is_fatal_error(jxl_enc_status s) {
   return (int32_t)(s.code_) > 0;
 }
 
-static inline jxl_status jxl_status_from_code(jxl_status_code code) {
-  jxl_status s;
+static inline jxl_enc_status jxl_enc_status_from_code(jxl_enc_status_code code) {
+  jxl_enc_status s;
   s.code_ = code;
   return s;
 }
 
-static inline jxl_status jxl_ok_status() { return jxl_status_from_code(kOk); }
+static inline jxl_enc_status jxl_enc_ok_status() { return jxl_enc_status_from_code(kOk); }
 
-static inline jxl_status jxl_error_status() {
-  return jxl_status_from_code(kGenericError);
+static inline jxl_enc_status jxl_enc_error_status() {
+  return jxl_enc_status_from_code(kGenericError);
 }
 
-/* Convert a bool success flag into jxl_status (true → Ok, false → generic error). */
-static inline jxl_status jxl_status_from_bool(bool ok) {
-  return ok ? jxl_ok_status() : jxl_error_status();
+/* Convert a bool success flag into jxl_enc_status (true → Ok, false → generic error). */
+static inline jxl_enc_status jxl_enc_status_from_bool(bool ok) {
+  return ok ? jxl_enc_ok_status() : jxl_enc_error_status();
 }
 
-/* Helper to create a jxl_status and print the debug message or abort when needed. */
-static inline JXL_FORMAT(2, 3) jxl_status jxl_status_message(jxl_status status,
+/* Helper to create a jxl_enc_status and print the debug message or abort when needed. */
+static inline JXL_FORMAT(2, 3) jxl_enc_status jxl_enc_status_message(jxl_enc_status status,
                                                     const char* format, ...) {
   // This block will be optimized out when JXL_IS_DEBUG_BUILD is disabled.
-  if ((JXL_IS_DEBUG_BUILD && jxl_status_is_fatal_error(status)) ||
-      (JXL_DEBUG_ON_ALL_ERROR && !jxl_status_ok(status))) {
+  if ((JXL_IS_DEBUG_BUILD && jxl_enc_status_is_fatal_error(status)) ||
+      (JXL_DEBUG_ON_ALL_ERROR && !jxl_enc_status_ok(status))) {
     va_list args;
     va_start(args, format);
 #ifdef USE_ANDROID_LOGGER
@@ -272,7 +273,7 @@ static inline JXL_FORMAT(2, 3) jxl_status jxl_status_message(jxl_status status,
   }
 #if JXL_CRASH_ON_ERROR
   // JXL_CRASH_ON_ERROR means to jxl_abort() only on non-fatal errors.
-  if (jxl_status_is_fatal_error(status)) {
+  if (jxl_enc_status_is_fatal_error(status)) {
     jxl_abort();
   }
 #endif  // JXL_CRASH_ON_ERROR

@@ -16,7 +16,7 @@
 #include "lib/jxl/enc_ans_params.h"
 
 // `in` / `out` are parallel to `in_counts` / `out_counts`.
-jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
+jxl_enc_status jxl_cluster_histograms(const jxl_histogram_params* params,
                          const jxl_array_histogram* in,
                          const jxl_hist_count_streams* in_counts,
                          size_t max_histograms, jxl_array_histogram* out,

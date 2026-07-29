@@ -27,7 +27,7 @@ typedef struct {
 } jxl_aux_box_reader;
 
 typedef struct {
-    jxl_box_type ty;
+    jxl_container_box_type ty;
     uint8_t *data;
     size_t data_len;
 } aux_box_entry;
@@ -38,7 +38,7 @@ struct jxl_aux_box_list {
     size_t box_count;
     size_t box_cap;
     jxl_aux_box_reader current_box;
-    jxl_box_type current_box_ty;
+    jxl_container_box_type current_box_ty;
     int has_current_box_ty;
     int last_box;
 #if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
@@ -181,8 +181,30 @@ static jxl_bs_status_t aux_box_reader_finalize(jxl_aux_box_reader *reader) {
     return JXL_BS_OK;
 }
 
-static int is_jbrd_box(jxl_box_type ty) {
-    return jxl_box_type_eq(ty, JXL_BOX_JPEG_RECONSTRUCTION);
+static int public_box_type_eq(jxl_container_box_type a, const char b[4]) {
+    return a.bytes[0] == (uint8_t)b[0] && a.bytes[1] == (uint8_t)b[1] &&
+           a.bytes[2] == (uint8_t)b[2] && a.bytes[3] == (uint8_t)b[3];
+}
+
+static jxl_container_box_type internal_box_type_of_public(const char ty[4]) {
+    jxl_container_box_type out;
+    out.bytes[0] = (uint8_t)ty[0];
+    out.bytes[1] = (uint8_t)ty[1];
+    out.bytes[2] = (uint8_t)ty[2];
+    out.bytes[3] = (uint8_t)ty[3];
+    return out;
+}
+
+static int is_jbrd_box_public(const char ty[4]) {
+    return public_box_type_eq(internal_box_type_of_public(ty), "jbrd");
+}
+
+static int is_jbrd_box_internal(jxl_container_box_type ty) {
+    return jxl_container_box_type_eq(ty, JXL_BOX_JPEG_RECONSTRUCTION);
+}
+
+static int is_jbrd_box(const char ty[4]) {
+    return is_jbrd_box_public(ty);
 }
 
 #if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
@@ -290,7 +312,7 @@ static jxl_bs_status_t aux_box_list_finalize(jxl_aux_box_list *list) {
         return JXL_BS_OK;
     }
 
-    if (is_jbrd_box(list->current_box_ty)) {
+    if (is_jbrd_box_internal(list->current_box_ty)) {
 #if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
         jxl_bs_status_t st = jbrd_finalize(list);
         if (st != JXL_BS_OK) {
@@ -367,7 +389,7 @@ jxl_bs_status_t jxl_aux_box_list_handle_event(jxl_aux_box_list *list,
         return JXL_BS_OK;
     case JXL_PARSE_EVENT_AUX_BOX_START:
         list->has_current_box_ty = 1;
-        list->current_box_ty = event->box_type;
+        list->current_box_ty = internal_box_type_of_public(event->box_type);
         if (!is_jbrd_box(event->box_type)) {
             jxl_bs_status_t st;
             if (event->brotli_compressed) {
@@ -383,7 +405,7 @@ jxl_bs_status_t jxl_aux_box_list_handle_event(jxl_aux_box_list *list,
         return JXL_BS_OK;
     case JXL_PARSE_EVENT_AUX_BOX_DATA:
         list->has_current_box_ty = 1;
-        list->current_box_ty = event->box_type;
+        list->current_box_ty = internal_box_type_of_public(event->box_type);
         if (is_jbrd_box(event->box_type)) {
 #if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
             return jbrd_feed_bytes(list, event->data, event->data_len);
@@ -394,7 +416,7 @@ jxl_bs_status_t jxl_aux_box_list_handle_event(jxl_aux_box_list *list,
         return aux_box_reader_feed(&list->current_box, event->data, event->data_len);
     case JXL_PARSE_EVENT_AUX_BOX_END:
         list->has_current_box_ty = 1;
-        list->current_box_ty = event->box_type;
+        list->current_box_ty = internal_box_type_of_public(event->box_type);
         return aux_box_list_finalize(list);
     }
     return JXL_BS_OK;
@@ -415,7 +437,7 @@ static jxl_aux_box_data first_of_type(const jxl_aux_box_list *list, jxl_box_type
 
     memset(&result, 0, sizeof(result));
     for (i = 0; i < list->box_count; ++i) {
-        if (jxl_box_type_eq(list->boxes[i].ty, ty)) {
+        if (public_box_type_eq(list->boxes[i].ty, ty)) {
             result.tag = JXL_AUX_BOX_HAS_DATA;
             result.data = list->boxes[i].data;
             result.data_len = list->boxes[i].data_len;
@@ -423,7 +445,7 @@ static jxl_aux_box_data first_of_type(const jxl_aux_box_list *list, jxl_box_type
         }
     }
 
-    if (list->last_box && (!list->has_current_box_ty || !jxl_box_type_eq(list->current_box_ty, ty))) {
+    if (list->last_box && (!list->has_current_box_ty || !public_box_type_eq(list->current_box_ty, ty))) {
         result.tag = JXL_AUX_BOX_NOT_FOUND;
         return result;
     }
@@ -436,11 +458,11 @@ jxl_aux_box_data jxl_aux_box_list_first_of_type(const jxl_aux_box_list *list, jx
 }
 
 jxl_aux_box_data jxl_aux_box_list_first_exif(const jxl_aux_box_list *list) {
-    return first_of_type(list, JXL_BOX_EXIF);
+    return first_of_type(list, (jxl_box_type){'E','x','i','f'});
 }
 
 jxl_aux_box_data jxl_aux_box_list_first_xml(const jxl_aux_box_list *list) {
-    return first_of_type(list, JXL_BOX_XML);
+    return first_of_type(list, (jxl_box_type){'x','m','l',' '});
 }
 
 #if defined(JXL_C_ENABLE_JBR) && JXL_C_ENABLE_JBR
@@ -458,7 +480,7 @@ jxl_aux_jbrd_data jxl_aux_box_list_jbrd(const jxl_aux_box_list *list) {
         return result;
     }
     if (list->last_box &&
-        (!list->has_current_box_ty || !is_jbrd_box(list->current_box_ty))) {
+        (!list->has_current_box_ty || !is_jbrd_box_internal(list->current_box_ty))) {
         result.tag = JXL_AUX_JBRD_NOT_FOUND;
         return result;
     }

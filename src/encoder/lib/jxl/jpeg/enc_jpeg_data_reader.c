@@ -58,13 +58,13 @@ static inline int jxl_read_uint16(const uint8_t* data, size_t* pos) {
   return v;
 }
 
-static jxl_status jxl_process_sof_components(const uint8_t* data, const size_t len, size_t* pos,
+static jxl_enc_status jxl_process_sof_components(const uint8_t* data, const size_t len, size_t* pos,
                             jxl_jpeg_data* jpg, size_t start_pos, size_t marker_len,
                             jxl_array_u8* ids_seen);
 
 // Reads the Start of Frame (SOF) marker segment and fills in *jpg with the
 // parsed data.
-static jxl_status jxl_process_sof(const uint8_t* data, const size_t len, size_t* pos,
+static jxl_enc_status jxl_process_sof(const uint8_t* data, const size_t len, size_t* pos,
                   jxl_jpeg_data* jpg) {
   if (jpg->width != 0) {
     return JXL_FAILURE("Duplicate SOF marker.");
@@ -98,16 +98,16 @@ static jxl_status jxl_process_sof(const uint8_t* data, const size_t len, size_t*
   // Read sampling factors and quant table index for each component.
   jxl_array_u8 ids_seen;
   jxl_array_construct_empty(&ids_seen, jpg->huffman_code.ctx);
-  jxl_status status = jxl_process_sof_components(data, len, pos, jpg, start_pos,
+  jxl_enc_status status = jxl_process_sof_components(data, len, pos, jpg, start_pos,
                                        marker_len, &ids_seen);
   jxl_array_destroy(&ids_seen);
   return status;
 }
 
-static jxl_status jxl_process_sof_components(const uint8_t* data, const size_t len, size_t* pos,
+static jxl_enc_status jxl_process_sof_components(const uint8_t* data, const size_t len, size_t* pos,
                             jxl_jpeg_data* jpg, size_t start_pos, size_t marker_len,
                             jxl_array_u8* ids_seen) {
-  if (!jxl_status_ok(jxl_array_u8_resize_fill(ids_seen, 256, (uint8_t)(0)))) {
+  if (!jxl_enc_status_ok(jxl_array_u8_resize_fill(ids_seen, 256, (uint8_t)(0)))) {
     return JXL_FAILURE("OOM");
   }
   int max_h_samp_factor = 1;
@@ -147,17 +147,17 @@ static jxl_status jxl_process_sof_components(const uint8_t* data, const size_t l
     c->height_in_blocks = MCU_rows * c->v_samp_factor;
   }
   JXL_JPEG_VERIFY_MARKER_END();
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_process_sos_with_ids(const uint8_t* data, const size_t len, size_t* pos,
+static jxl_enc_status jxl_process_sos_with_ids(const uint8_t* data, const size_t len, size_t* pos,
                          jxl_jpeg_data* jpg, size_t start_pos, size_t marker_len,
                          size_t comps_in_scan, jxl_jpeg_scan_info* scan_info,
                          jxl_array_u8* ids_seen);
 
 // Reads the Start of Scan (SOS) marker segment and fills in *scan_info with the
 // parsed data.
-static jxl_status jxl_process_sos(const uint8_t* data, const size_t len, size_t* pos,
+static jxl_enc_status jxl_process_sos(const uint8_t* data, const size_t len, size_t* pos,
                   jxl_jpeg_data* jpg) {
   const size_t start_pos = *pos;
   JXL_JPEG_VERIFY_LEN(3);
@@ -171,17 +171,17 @@ static jxl_status jxl_process_sos(const uint8_t* data, const size_t len, size_t*
   JXL_JPEG_VERIFY_LEN(2 * comps_in_scan);
   jxl_array_u8 ids_seen;
   jxl_array_construct_empty(&ids_seen, jpg->huffman_code.ctx);
-  jxl_status status = jxl_process_sos_with_ids(data, len, pos, jpg, start_pos, marker_len,
+  jxl_enc_status status = jxl_process_sos_with_ids(data, len, pos, jpg, start_pos, marker_len,
                                     comps_in_scan, &scan_info, &ids_seen);
   jxl_array_destroy(&ids_seen);
   return status;
 }
 
-static jxl_status jxl_process_sos_with_ids(const uint8_t* data, const size_t len, size_t* pos,
+static jxl_enc_status jxl_process_sos_with_ids(const uint8_t* data, const size_t len, size_t* pos,
                          jxl_jpeg_data* jpg, size_t start_pos, size_t marker_len,
                          size_t comps_in_scan, jxl_jpeg_scan_info* scan_info,
                          jxl_array_u8* ids_seen) {
-  if (!jxl_status_ok(jxl_array_u8_resize_fill(ids_seen, 256, (uint8_t)(0)))) {
+  if (!jxl_enc_status_ok(jxl_array_u8_resize_fill(ids_seen, 256, (uint8_t)(0)))) {
     return JXL_FAILURE("OOM");
   }
   for (size_t i = 0; i < comps_in_scan; ++i) {
@@ -251,10 +251,10 @@ static jxl_status jxl_process_sos_with_ids(const uint8_t* data, const size_t len
   JXL_RETURN_IF_ERROR(jxl_u32_chunks_push_empty(&jpg->scan_reset_points));
   JXL_RETURN_IF_ERROR(jxl_extra_zero_run_chunks_push_empty(&jpg->scan_extra_zero_runs));
   JXL_JPEG_VERIFY_MARKER_END();
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_process_dht_values(const uint8_t* data, const size_t len, size_t* pos,
+static jxl_enc_status jxl_process_dht_values(const uint8_t* data, const size_t len, size_t* pos,
                         jxl_jpeg_data* jpg, size_t start_pos, size_t marker_len,
                         int total_count, int max_depth, int space,
                         bool is_ac_table, jxl_huffman_table_entry* huff_lut,
@@ -263,7 +263,7 @@ static jxl_status jxl_process_dht_values(const uint8_t* data, const size_t len, 
 // Reads the Define Huffman Table (DHT) marker segment and fills in *jpg with
 // the parsed data. Builds the Huffman decoding table in either dc_huff_lut or
 // ac_huff_lut, depending on the type and slot_id of Huffman code being read.
-static jxl_status jxl_process_dht(const uint8_t* data, const size_t len,
+static jxl_enc_status jxl_process_dht(const uint8_t* data, const size_t len,
                   jxl_array_huffman_table_entry* dc_huff_lut,
                   jxl_array_huffman_table_entry* ac_huff_lut, size_t* pos,
                   jxl_jpeg_data* jpg) {
@@ -276,8 +276,8 @@ static jxl_status jxl_process_dht(const uint8_t* data, const size_t len,
     jxl_jpeg_huffman_code huff;
     jxl_jpeg_huffman_code_construct_empty(&huff);
     huff.is_last = true;
-if (!jxl_status_ok(jxl_array_jpeg_huffman_code_push_back(&jpg->huffman_code, huff))) JXL_CRASH();
-return jxl_ok_status();
+if (!jxl_enc_status_ok(jxl_array_jpeg_huffman_code_push_back(&jpg->huffman_code, huff))) JXL_CRASH();
+return jxl_enc_ok_status();
   }
   while (*pos < start_pos + marker_len) {
     JXL_JPEG_VERIFY_LEN(1 + kJpegHuffmanMaxBitLength);
@@ -316,22 +316,22 @@ return jxl_ok_status();
     JXL_JPEG_VERIFY_LEN(total_count);
     jxl_array_u8 values_seen;
     jxl_array_construct_empty(&values_seen, jpg->huffman_code.ctx);
-    jxl_status values_status = jxl_process_dht_values(
+    jxl_enc_status values_status = jxl_process_dht_values(
         data, len, pos, jpg, start_pos, marker_len, total_count, max_depth,
         space, is_ac_table, huff_lut, &huff, &values_seen);
     jxl_array_destroy(&values_seen);
-    if (!jxl_status_ok(values_status)) return values_status;
+    if (!jxl_enc_status_ok(values_status)) return values_status;
   }
   JXL_JPEG_VERIFY_MARKER_END();
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_process_dht_values(const uint8_t* data, const size_t len, size_t* pos,
+static jxl_enc_status jxl_process_dht_values(const uint8_t* data, const size_t len, size_t* pos,
                         jxl_jpeg_data* jpg, size_t start_pos, size_t marker_len,
                         int total_count, int max_depth, int space,
                         bool is_ac_table, jxl_huffman_table_entry* huff_lut,
                         jxl_jpeg_huffman_code* huff, jxl_array_u8* values_seen) {
-  if (!jxl_status_ok(jxl_array_u8_resize_fill(values_seen, 256, (uint8_t)(0)))) {
+  if (!jxl_enc_status_ok(jxl_array_u8_resize_fill(values_seen, 256, (uint8_t)(0)))) {
     return JXL_FAILURE("OOM");
   }
   for (int i = 0; i < total_count; ++i) {
@@ -361,13 +361,13 @@ static jxl_status jxl_process_dht_values(const uint8_t* data, const size_t len, 
   }
   huff->is_last = (*pos == start_pos + marker_len);
   jxl_build_jpeg_huffman_table(huff->counts, huff->values, huff_lut);
-  if (!jxl_status_ok(jxl_array_jpeg_huffman_code_push_back(&jpg->huffman_code, *huff))) JXL_CRASH();
-  return jxl_ok_status();
+  if (!jxl_enc_status_ok(jxl_array_jpeg_huffman_code_push_back(&jpg->huffman_code, *huff))) JXL_CRASH();
+  return jxl_enc_ok_status();
 }
 
 // Reads the Define Quantization Table (DQT) marker segment and fills in *jpg
 // with the parsed data.
-static jxl_status jxl_process_dqt(const uint8_t* data, const size_t len, size_t* pos,
+static jxl_enc_status jxl_process_dqt(const uint8_t* data, const size_t len, size_t* pos,
                   jxl_jpeg_data* jpg) {
   const size_t start_pos = *pos;
   JXL_JPEG_VERIFY_LEN(2);
@@ -394,14 +394,14 @@ static jxl_status jxl_process_dqt(const uint8_t* data, const size_t len, size_t*
       table.values[kJPEGNaturalOrder[i]] = quant_val;
     }
     table.is_last = (*pos == start_pos + marker_len);
-if (!jxl_status_ok(jxl_array_jpeg_quant_table_push_back(&jpg->quant, table))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_jpeg_quant_table_push_back(&jpg->quant, table))) JXL_CRASH();
 }
   JXL_JPEG_VERIFY_MARKER_END();
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Reads the DRI marker and saves the restart interval into *jpg.
-static jxl_status jxl_process_dri(const uint8_t* data, const size_t len, size_t* pos,
+static jxl_enc_status jxl_process_dri(const uint8_t* data, const size_t len, size_t* pos,
                   bool* found_dri, jxl_jpeg_data* jpg) {
   if (*found_dri) {
     return JXL_FAILURE("Duplicate DRI marker.");
@@ -413,11 +413,11 @@ static jxl_status jxl_process_dri(const uint8_t* data, const size_t len, size_t*
   int restart_interval = jxl_read_uint16(data, pos);
   jpg->restart_interval = restart_interval;
   JXL_JPEG_VERIFY_MARKER_END();
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Saves the APP marker segment as a string to *jpg.
-static jxl_status jxl_process_app(const uint8_t* data, const size_t len, size_t* pos,
+static jxl_enc_status jxl_process_app(const uint8_t* data, const size_t len, size_t* pos,
                   jxl_jpeg_data* jpg) {
   JXL_JPEG_VERIFY_LEN(2);
   size_t marker_len = jxl_read_uint16(data, pos);
@@ -428,8 +428,8 @@ static jxl_status jxl_process_app(const uint8_t* data, const size_t len, size_t*
   const uint8_t* app_str_start = data + *pos - 3;
   jxl_array_u8 app_str;
   jxl_array_construct_empty(&app_str, jpg->huffman_code.ctx);
-  jxl_status status = jxl_array_assign(&app_str, app_str_start, marker_len + 1);
-  if (!jxl_status_ok(status)) {
+  jxl_enc_status status = jxl_array_assign(&app_str, app_str_start, marker_len + 1);
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&app_str);
     return status;
   }
@@ -440,7 +440,7 @@ static jxl_status jxl_process_app(const uint8_t* data, const size_t len, size_t*
 }
 
 // Saves the COM marker segment as a string to *jpg.
-static jxl_status jxl_process_com(const uint8_t* data, const size_t len, size_t* pos,
+static jxl_enc_status jxl_process_com(const uint8_t* data, const size_t len, size_t* pos,
                   jxl_jpeg_data* jpg) {
   JXL_JPEG_VERIFY_LEN(2);
   size_t marker_len = jxl_read_uint16(data, pos);
@@ -449,8 +449,8 @@ static jxl_status jxl_process_com(const uint8_t* data, const size_t len, size_t*
   const uint8_t* com_str_start = data + *pos - 3;
   jxl_array_u8 com_str;
   jxl_array_construct_empty(&com_str, jpg->huffman_code.ctx);
-  jxl_status status = jxl_array_assign(&com_str, com_str_start, marker_len + 1);
-  if (!jxl_status_ok(status)) {
+  jxl_enc_status status = jxl_array_assign(&com_str, com_str_start, marker_len + 1);
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&com_str);
     return status;
   }
@@ -468,7 +468,7 @@ static void jxl_bit_reader_state_reset(jxl_bit_reader_state* self, size_t pos);
 static uint8_t jxl_bit_reader_state_get_next_byte(jxl_bit_reader_state* self);
 static void jxl_bit_reader_state_fill_bit_window(jxl_bit_reader_state* self);
 static int jxl_bit_reader_state_read_bits(jxl_bit_reader_state* self, int nbits);
-static jxl_status jxl_bit_reader_state_finish_stream(jxl_bit_reader_state* self, jxl_jpeg_data* jpg,
+static jxl_enc_status jxl_bit_reader_state_finish_stream(jxl_bit_reader_state* self, jxl_jpeg_data* jpg,
                                   size_t* pos);
 
 struct jxl_bit_reader_state {
@@ -537,7 +537,7 @@ static int jxl_bit_reader_state_read_bits(jxl_bit_reader_state* self, int nbits)
 // Enqueue the padding bits seen (0 or 1).
 // Returns error if there is inconsistent or invalid padding or the stream
 // ended too early.
-static jxl_status jxl_bit_reader_state_finish_stream(jxl_bit_reader_state* self, jxl_jpeg_data* jpg,
+static jxl_enc_status jxl_bit_reader_state_finish_stream(jxl_bit_reader_state* self, jxl_jpeg_data* jpg,
                                   size_t* pos) {
   int npadbits = self->bits_left_ & 7;
   if (npadbits > 0) {
@@ -568,7 +568,7 @@ static jxl_status jxl_bit_reader_state_finish_stream(jxl_bit_reader_state* self,
     return JXL_FAILURE("Unexpected end of scan.");
   }
   *pos = self->pos_;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Returns the next Huffman-coded symbol.
@@ -630,7 +630,7 @@ static int jxl_huff_extend(int x, int s) {
 }
 
 // Decodes one 8x8 block of DCT coefficients from the bit stream.
-static jxl_status jxl_decode_dct_block(const jxl_huffman_table_entry* dc_huff,
+static jxl_enc_status jxl_decode_dct_block(const jxl_huffman_table_entry* dc_huff,
                       const jxl_huffman_table_entry* ac_huff, int jxl_ss, int Se, int Al,
                       int* eobrun, bool* reset_state, int* num_zero_runs,
                       jxl_bit_reader_state* br, jxl_jpeg_data* jpg, jxl_jpeg_coeff* last_dc_coeff,
@@ -659,11 +659,11 @@ static jxl_status jxl_decode_dct_block(const jxl_huffman_table_entry* dc_huff,
     ++jxl_ss;
   }
   if (jxl_ss > Se) {
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   if (*eobrun > 0) {
     --(*eobrun);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   *num_zero_runs = 0;
   for (int k = jxl_ss; k <= Se; k++) {
@@ -709,10 +709,10 @@ static jxl_status jxl_decode_dct_block(const jxl_huffman_table_entry* dc_huff,
     }
   }
   --(*eobrun);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_refine_dct_block(const jxl_huffman_table_entry* ac_huff, int jxl_ss, int Se, int Al,
+static jxl_enc_status jxl_refine_dct_block(const jxl_huffman_table_entry* ac_huff, int jxl_ss, int Se, int Al,
                       int* eobrun, bool* reset_state, jxl_bit_reader_state* br,
                       jxl_jpeg_data* jpg, jxl_jpeg_coeff* coeffs) {
   // Nowadays multiplication is even faster than variable shift.
@@ -726,7 +726,7 @@ static jxl_status jxl_refine_dct_block(const jxl_huffman_table_entry* ac_huff, i
     ++jxl_ss;
   }
   if (jxl_ss > Se) {
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   int p1 = Am;
   int m1 = -Am;
@@ -818,10 +818,10 @@ static jxl_status jxl_refine_dct_block(const jxl_huffman_table_entry* ac_huff, i
     }
   }
   --(*eobrun);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_process_restart(const uint8_t* data, const size_t len,
+static jxl_enc_status jxl_process_restart(const uint8_t* data, const size_t len,
                       int* next_restart_marker, jxl_bit_reader_state* br,
                       jxl_jpeg_data* jpg) {
   size_t pos = 0;
@@ -836,10 +836,10 @@ static jxl_status jxl_process_restart(const uint8_t* data, const size_t len,
   jxl_bit_reader_state_reset(br, pos + 2);
   *next_restart_marker += 1;
   *next_restart_marker &= 0x7;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_process_scan(const uint8_t* data, const size_t len,
+static jxl_enc_status jxl_process_scan(const uint8_t* data, const size_t len,
                    const jxl_array_huffman_table_entry* dc_huff_lut,
                    const jxl_array_huffman_table_entry* ac_huff_lut,
                    uint16_t scan_progression[kJpegMaxComponents][kDCTBlockSize],
@@ -912,7 +912,7 @@ static jxl_status jxl_process_scan(const uint8_t* data, const size_t len,
       // Handle the restart intervals.
       if (jpg->restart_interval > 0) {
         if (restarts_to_go == 0) {
-          if (jxl_status_ok(jxl_process_restart(data, len, &next_restart_marker, &br, jpg))) {
+          if (jxl_enc_status_ok(jxl_process_restart(data, len, &next_restart_marker, &br, jpg))) {
             restarts_to_go = jpg->restart_interval;
             memset((void*)(last_dc_coeff), 0, sizeof(last_dc_coeff));
             if (eobrun > 0) {
@@ -976,7 +976,7 @@ static jxl_status jxl_process_scan(const uint8_t* data, const size_t len,
   if (eobrun > 0) {
     return JXL_FAILURE("End-of-block run too long.");
   }
-  if (!jxl_status_ok(jxl_bit_reader_state_finish_stream(&br, jpg, pos))) {
+  if (!jxl_enc_status_ok(jxl_bit_reader_state_finish_stream(&br, jpg, pos))) {
     return JXL_FAILURE("Invalid scan.");
   }
   if (*pos > len) {
@@ -984,12 +984,12 @@ static jxl_status jxl_process_scan(const uint8_t* data, const size_t len,
                        " len=%" jxl_pr_iu_s,
                        *pos, len);
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Changes the quant_idx field of the components to refer to the index of the
 // quant table in the jpg->quant array.
-static jxl_status jxl_fixup_indexes(jxl_jpeg_data* jpg) {
+static jxl_enc_status jxl_fixup_indexes(jxl_jpeg_data* jpg) {
   for (size_t i = 0; i < jxl_array_len(&jpg->components); ++i) {
     jxl_jpeg_component* c = jxl_array_at(&jpg->components, i);
     bool found_index = false;
@@ -1005,7 +1005,7 @@ static jxl_status jxl_fixup_indexes(jxl_jpeg_data* jpg) {
                          c->quant_idx);
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static size_t jxl_find_next_marker(const uint8_t* data, const size_t len, size_t pos) {
@@ -1024,7 +1024,7 @@ static size_t jxl_find_next_marker(const uint8_t* data, const size_t len, size_t
   return num_skipped;
 }
 
-static jxl_status jxl_read_jpeg_after_soi(const uint8_t* data, const size_t len, jxl_jpeg_data* jpg,
+static jxl_enc_status jxl_read_jpeg_after_soi(const uint8_t* data, const size_t len, jxl_jpeg_data* jpg,
                         size_t pos, jxl_array_huffman_table_entry* dc_huff_lut,
                         jxl_array_huffman_table_entry* ac_huff_lut) {
   int lut_size = kMaxHuffmanTables * kJpegHuffmanLutSize;
@@ -1050,14 +1050,14 @@ static jxl_status jxl_read_jpeg_after_soi(const uint8_t* data, const size_t len,
           jxl_array_u8_push_back(&jpg->marker_order, (uint8_t)(0xff)));
       jxl_array_u8 skipped;
       jxl_array_construct_empty(&skipped, jpg->huffman_code.ctx);
-      jxl_status skip_status = jxl_array_assign(&skipped, data + pos, num_skipped);
-      if (!jxl_status_ok(skip_status)) {
+      jxl_enc_status skip_status = jxl_array_assign(&skipped, data + pos, num_skipped);
+      if (!jxl_enc_status_ok(skip_status)) {
         jxl_array_destroy(&skipped);
         return skip_status;
       }
       skip_status = jxl_byte_chunks_push_back_u8(&jpg->inter_marker_data, &skipped);
       jxl_array_destroy(&skipped);
-      if (!jxl_status_ok(skip_status)) return skip_status;
+      if (!jxl_enc_status_ok(skip_status)) return skip_status;
       pos += num_skipped;
     }
     JXL_JPEG_EXPECT_MARKER();
@@ -1150,10 +1150,10 @@ static jxl_status jxl_read_jpeg_after_soi(const uint8_t* data, const size_t len,
   if (jxl_array_len(&jpg->huffman_code) >= kMaxDHTMarkers) {
     return JXL_FAILURE("Too many Huffman tables.");
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_read_jpeg(const uint8_t* data, const size_t len, jxl_jpeg_data* jpg) {
+jxl_enc_status jxl_read_jpeg(const uint8_t* data, const size_t len, jxl_jpeg_data* jpg) {
   size_t pos = 0;
   // Check SOI marker.
   JXL_JPEG_EXPECT_MARKER();
@@ -1167,7 +1167,7 @@ jxl_status jxl_read_jpeg(const uint8_t* data, const size_t len, jxl_jpeg_data* j
   jxl_array_construct_empty(&dc_huff_lut, mm);
   jxl_array_huffman_table_entry ac_huff_lut;
   jxl_array_construct_empty(&ac_huff_lut, mm);
-  jxl_status status =
+  jxl_enc_status status =
       jxl_read_jpeg_after_soi(data, len, jpg, pos, &dc_huff_lut, &ac_huff_lut);
   jxl_array_destroy(&dc_huff_lut);
   jxl_array_destroy(&ac_huff_lut);

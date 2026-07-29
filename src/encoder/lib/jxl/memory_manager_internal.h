@@ -31,7 +31,7 @@ JXL_STATIC_ASSERT(
 
 // Returns recommended distance in bytes between the start of two consecutive
 // rows.
-jxl_status jxl_bytes_per_row(size_t xsize, size_t sizeof_t, size_t* out);
+jxl_enc_status jxl_bytes_per_row(size_t xsize, size_t sizeof_t, size_t* out);
 
 typedef struct jxl_aligned_memory {
   // TODO(eustas): we can offer "actually accessible" size; it is 0-2KiB bigger
@@ -44,7 +44,7 @@ typedef struct jxl_aligned_memory {
 } jxl_aligned_memory;
 
 void jxl_aligned_memory_destroy(jxl_aligned_memory* self);
-jxl_status jxl_aligned_memory_create(jxl_context* ctx, size_t size,
+jxl_enc_status jxl_aligned_memory_create(jxl_context* ctx, size_t size,
                            size_t pre_padding, jxl_aligned_memory* out);
 void jxl_aligned_memory_init(jxl_aligned_memory* self, jxl_context* ctx,
                        void* allocation, size_t pre_padding);

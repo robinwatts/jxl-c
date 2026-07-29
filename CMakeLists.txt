@@ -153,11 +153,12 @@ if(JXL_C_REQUIRE_LCMS2)
 endif()
 
 set(JXL_C_PUBLIC_HEADERS
+    include/jxl/jxl.h
     include/jxl/allocator.h
     include/jxl/status.h
     include/jxl/color_encoding.h
-    include/jxl/decode_types.h
     include/jxl/types.h
+    include/jxl/decode_types.h
     include/jxl/context.h
     include/jxl/decode.h
     include/jxl/encode.h
@@ -166,6 +167,8 @@ set(JXL_C_PUBLIC_HEADERS
     include/jxl/cms.h
     include/jxl/codestream_header.h
     include/jxl/version.h
+    include/jxl/jxl_export.h
+    include/jxl/jxl_cms_export.h
 )
 
 set(JXL_C_BITSTREAM_SOURCES

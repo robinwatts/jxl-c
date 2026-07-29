@@ -25,52 +25,52 @@ typedef struct jxl_write_visitor {
   bool ok;
 } jxl_write_visitor;
 
-static jxl_status jxl_write_visitor_ok(const jxl_write_visitor* self) {
-  return jxl_status_from_bool(self->ok);
+static jxl_enc_status jxl_write_visitor_ok(const jxl_write_visitor* self) {
+  return jxl_enc_status_from_bool(self->ok);
 }
 
-static jxl_status jxl_write_bits(jxl_visitor* self, size_t bits, uint32_t /*default_value*/,
+static jxl_enc_status jxl_write_bits(jxl_visitor* self, size_t bits, uint32_t /*default_value*/,
                  uint32_t* JXL_RESTRICT value) {
   jxl_write_visitor* v = (jxl_write_visitor*)(self);
-  v->ok = v->ok && jxl_status_ok(jxl_bits_coder_write(bits, *value, v->writer));
-  return jxl_ok_status();
+  v->ok = v->ok && jxl_enc_status_ok(jxl_bits_coder_write(bits, *value, v->writer));
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_write_u32(jxl_visitor* self, jxl_u32_enc enc, uint32_t /*default_value*/,
+static jxl_enc_status jxl_write_u32(jxl_visitor* self, jxl_u32_enc enc, uint32_t /*default_value*/,
                 uint32_t* JXL_RESTRICT value) {
   jxl_write_visitor* v = (jxl_write_visitor*)(self);
-  v->ok = v->ok && jxl_status_ok(jxl_u32_coder_write(enc, *value, v->writer));
-  return jxl_ok_status();
+  v->ok = v->ok && jxl_enc_status_ok(jxl_u32_coder_write(enc, *value, v->writer));
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_write_u64(jxl_visitor* self, uint64_t /*default_value*/,
+static jxl_enc_status jxl_write_u64(jxl_visitor* self, uint64_t /*default_value*/,
                 uint64_t* JXL_RESTRICT value) {
   jxl_write_visitor* v = (jxl_write_visitor*)(self);
-  v->ok = v->ok && jxl_status_ok(jxl_u64_coder_write(*value, v->writer));
-  return jxl_ok_status();
+  v->ok = v->ok && jxl_enc_status_ok(jxl_u64_coder_write(*value, v->writer));
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_write_f16(jxl_visitor* self, float /*default_value*/,
+static jxl_enc_status jxl_write_f16(jxl_visitor* self, float /*default_value*/,
                 float* JXL_RESTRICT value) {
   jxl_write_visitor* v = (jxl_write_visitor*)(self);
-  v->ok = v->ok && jxl_status_ok(jxl_f16_coder_write(*value, v->writer));
-  return jxl_ok_status();
+  v->ok = v->ok && jxl_enc_status_ok(jxl_f16_coder_write(*value, v->writer));
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_write_begin_extensions(jxl_visitor* self, uint64_t* JXL_RESTRICT extensions) {
+static jxl_enc_status jxl_write_begin_extensions(jxl_visitor* self, uint64_t* JXL_RESTRICT extensions) {
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_default_begin_extensions(self, extensions));
   jxl_write_visitor* v = (jxl_write_visitor*)(self);
   if (*extensions == 0) {
     JXL_ENSURE(v->extension_bits == 0);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   // TODO(janwas): extend API to pass in array of extension_bits, one per
   // extension. We currently ascribe all bits to the first extension, but
   // this is only an encoder limitation. NOTE: extension_bits can be zero
   // if an extension does not require any additional fields.
-  v->ok = v->ok && jxl_status_ok(jxl_u64_coder_write(v->extension_bits, v->writer));
+  v->ok = v->ok && jxl_enc_status_ok(jxl_u64_coder_write(v->extension_bits, v->writer));
   for (uint64_t remaining_extensions = *extensions & (*extensions - 1);
        remaining_extensions != 0;
        remaining_extensions &= remaining_extensions - 1) {
-    v->ok = v->ok && jxl_status_ok(jxl_u64_coder_write(0, v->writer));
+    v->ok = v->ok && jxl_enc_status_ok(jxl_u64_coder_write(0, v->writer));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static const jxl_visitor_ops kWriteOps = {
@@ -103,7 +103,7 @@ typedef struct jxl_bundle_write_ctx {
   size_t extension_bits;
 } jxl_bundle_write_ctx;
 
-static jxl_status jxl_bundle_write_body(void* opaque) {
+static jxl_enc_status jxl_bundle_write_body(void* opaque) {
   jxl_bundle_write_ctx* c = (jxl_bundle_write_ctx*)(opaque);
   jxl_write_visitor visitor;
   jxl_write_visitor_init(&visitor, c->extension_bits, c->writer);
@@ -111,14 +111,14 @@ static jxl_status jxl_bundle_write_body(void* opaque) {
   return jxl_write_visitor_ok(&visitor);
 }
 
-static jxl_status jxl_write_codestream_marker_body(void* opaque) {
+static jxl_enc_status jxl_write_codestream_marker_body(void* opaque) {
   jxl_bit_writer* w = (jxl_bit_writer*)(opaque);
   jxl_bit_writer_write(w, 8, 0xFF);
   jxl_bit_writer_write(w, 8, kCodestreamMarker);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_bundle_write(const jxl_fields* fields, jxl_bit_writer* writer, jxl_layer_type layer) {
+jxl_enc_status jxl_bundle_write(const jxl_fields* fields, jxl_bit_writer* writer, jxl_layer_type layer) {
   size_t extension_bits;
   size_t total_bits;
   JXL_RETURN_IF_ERROR(jxl_bundle_can_encode(fields, &extension_bits, &total_bits));
@@ -128,18 +128,18 @@ jxl_status jxl_bundle_write(const jxl_fields* fields, jxl_bit_writer* writer, jx
 }
 
 // Returns false if the value is too large to encode.
-jxl_status jxl_bits_coder_write(const size_t bits, const uint32_t value,
+jxl_enc_status jxl_bits_coder_write(const size_t bits, const uint32_t value,
                         jxl_bit_writer* JXL_RESTRICT writer) {
   if (value >= (1ULL << bits)) {
     return JXL_FAILURE("Value %d too large to encode in %" PRIu64 " bits",
                        value, (uint64_t)(bits));
   }
   jxl_bit_writer_write(writer, bits, value);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Returns false if the value is too large to encode.
-jxl_status jxl_u32_coder_write(const jxl_u32_enc enc, const uint32_t value,
+jxl_enc_status jxl_u32_coder_write(const jxl_u32_enc enc, const uint32_t value,
                        jxl_bit_writer* JXL_RESTRICT writer) {
   uint32_t selector;
   size_t total_bits;
@@ -154,11 +154,11 @@ jxl_status jxl_u32_coder_write(const jxl_u32_enc enc, const uint32_t value,
     jxl_bit_writer_write(writer, total_bits - 2, value - offset);
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Returns false if the value is too large to encode.
-jxl_status jxl_u64_coder_write(uint64_t value, jxl_bit_writer* JXL_RESTRICT writer) {
+jxl_enc_status jxl_u64_coder_write(uint64_t value, jxl_bit_writer* JXL_RESTRICT writer) {
   if (value == 0) {
     // Selector: use 0 bits, value 0
     jxl_bit_writer_write(writer, 2, 0);
@@ -194,10 +194,10 @@ jxl_status jxl_u64_coder_write(uint64_t value, jxl_bit_writer* JXL_RESTRICT writ
     }
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_f16_coder_write(float value, jxl_bit_writer* JXL_RESTRICT writer) {
+jxl_enc_status jxl_f16_coder_write(float value, jxl_bit_writer* JXL_RESTRICT writer) {
   uint32_t bits32;
   memcpy(&bits32, &value, sizeof(bits32));
   const uint32_t sign = bits32 >> 31;
@@ -212,7 +212,7 @@ jxl_status jxl_f16_coder_write(float value, jxl_bit_writer* JXL_RESTRICT writer)
   // Tiny or zero => zero.
   if (exp < -24) {
     jxl_bit_writer_write(writer, 16, 0);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   uint32_t biased_exp16;
@@ -235,10 +235,10 @@ jxl_status jxl_f16_coder_write(float value, jxl_bit_writer* JXL_RESTRICT writer)
   const uint32_t bits16 = (sign << 15) | (biased_exp16 << 10) | mantissa16;
   JXL_ENSURE(bits16 < 0x10000);
   jxl_bit_writer_write(writer, 16, bits16);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_write_codestream_headers_impl(jxl_codec_metadata* metadata, jxl_bit_writer* writer) {
+jxl_enc_status jxl_write_codestream_headers_impl(jxl_codec_metadata* metadata, jxl_bit_writer* writer) {
   // JPEG VisitFields invariants: nested preview/animation/EC/opsin bodies are
   // never entered; AllDefault/Bool/U32 gates above them still write bits.
   JXL_DASSERT(!metadata->m.xyb_encoded);
@@ -264,10 +264,10 @@ jxl_status jxl_write_codestream_headers_impl(jxl_codec_metadata* metadata, jxl_b
   JXL_RETURN_IF_ERROR(jxl_bundle_write(&metadata->transform_data.fields, writer,
                                     kLayerHeader));
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_write_frame_header_impl(const jxl_enc_frame_header* frame,
+jxl_enc_status jxl_write_frame_header_impl(const jxl_enc_frame_header* frame,
                         jxl_bit_writer* JXL_RESTRICT writer){
   // JPEG VisitFields invariants: multi-pass / gab / EPF / DC-frame / animation
   // nests are never entered; their false gates still write bits.
@@ -285,34 +285,34 @@ jxl_status jxl_write_frame_header_impl(const jxl_enc_frame_header* frame,
   return jxl_bundle_write(&frame->fields, writer, kLayerHeader);
 }
 
-jxl_status jxl_write_image_metadata(const jxl_image_metadata* metadata,
+jxl_enc_status jxl_write_image_metadata(const jxl_image_metadata* metadata,
                           jxl_bit_writer* JXL_RESTRICT writer, jxl_layer_type layer) {
   return jxl_bundle_write(&metadata->fields, writer, layer);
 }
 
-jxl_status jxl_write_quantizer_params_impl(const jxl_quantizer_params* params,
+jxl_enc_status jxl_write_quantizer_params_impl(const jxl_quantizer_params* params,
                             jxl_bit_writer* JXL_RESTRICT writer, jxl_layer_type layer){
   return jxl_bundle_write(&params->fields, writer, layer);
 }
 
-jxl_status jxl_write_size_header_impl(const jxl_enc_size_header* size, jxl_bit_writer* JXL_RESTRICT writer,
+jxl_enc_status jxl_write_size_header_impl(const jxl_enc_size_header* size, jxl_bit_writer* JXL_RESTRICT writer,
                        jxl_layer_type layer){
   return jxl_bundle_write(&size->fields, writer, layer);
 }
 
 
-jxl_status jxl_write_codestream_headers(jxl_codec_metadata* metadata, jxl_bit_writer* writer) {
+jxl_enc_status jxl_write_codestream_headers(jxl_codec_metadata* metadata, jxl_bit_writer* writer) {
   return jxl_write_codestream_headers_impl(metadata, writer);
 }
 
-jxl_status jxl_write_frame_header(const jxl_enc_frame_header* frame, jxl_bit_writer* JXL_RESTRICT writer) {
+jxl_enc_status jxl_write_frame_header(const jxl_enc_frame_header* frame, jxl_bit_writer* JXL_RESTRICT writer) {
   return jxl_write_frame_header_impl(frame, writer);
 }
 
-jxl_status jxl_write_quantizer_params(const jxl_quantizer_params* params, jxl_bit_writer* JXL_RESTRICT writer, jxl_layer_type layer) {
+jxl_enc_status jxl_write_quantizer_params(const jxl_quantizer_params* params, jxl_bit_writer* JXL_RESTRICT writer, jxl_layer_type layer) {
   return jxl_write_quantizer_params_impl(params, writer, layer);
 }
 
-jxl_status jxl_write_size_header(const jxl_enc_size_header* size, jxl_bit_writer* JXL_RESTRICT writer, jxl_layer_type layer) {
+jxl_enc_status jxl_write_size_header(const jxl_enc_size_header* size, jxl_bit_writer* JXL_RESTRICT writer, jxl_layer_type layer) {
   return jxl_write_size_header_impl(size, writer, layer);
 }

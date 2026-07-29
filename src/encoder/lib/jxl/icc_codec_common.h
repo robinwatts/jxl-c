@@ -114,10 +114,10 @@ enum { kNumICCContexts = 41 };
 
 uint32_t jxl_decode_uint32(const uint8_t* data, size_t size, size_t pos);
 jxl_tag jxl_decode_keyword(const uint8_t* data, size_t size, size_t pos);
-jxl_status jxl_append_keyword(const jxl_tag* keyword, jxl_padded_bytes* data);
+jxl_enc_status jxl_append_keyword(const jxl_tag* keyword, jxl_padded_bytes* data);
 
 // Checks if a + b > size, taking possible integer overflow into account.
-jxl_status jxl_check_out_of_bounds(uint64_t a, uint64_t b, uint64_t size);
+jxl_enc_status jxl_check_out_of_bounds(uint64_t a, uint64_t b, uint64_t size);
 
 typedef struct jxl_icc_header_bytes {
   uint8_t bytes[kICCHeaderSize];

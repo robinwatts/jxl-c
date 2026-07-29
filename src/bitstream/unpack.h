@@ -2,6 +2,7 @@
 #ifndef JXL_BITSTREAM_UNPACK_H_
 #define JXL_BITSTREAM_UNPACK_H_
 
+#include "compiler.h"
 #include "jxl/decode_types.h"
 
 jxl_inline int32_t jxl_unpack_signed(uint32_t x) {

@@ -36,7 +36,7 @@
 #include "lib/jxl/base/common.h"
 
 
-jxl_status jxl_make_frame_header(const jxl_frame_info* frame_info,
+jxl_enc_status jxl_make_frame_header(const jxl_frame_info* frame_info,
                        const jxl_jpeg_data* jpeg_data,
                        jxl_enc_frame_header* JXL_RESTRICT frame_header){
   frame_header->is_last = frame_info->is_last;
@@ -75,7 +75,7 @@ jxl_status jxl_make_frame_header(const jxl_frame_info* frame_info,
   JXL_DASSERT(jxl_array_empty(&frame_header->extra_channel_upsampling));
   JXL_DASSERT(jxl_blending_infos_empty(&frame_header->extra_channel_blending_info));
   JXL_DASSERT(frame_header->save_as_reference == 0);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static void jxl_find_avg_index_of_sum_maximum256(const int32_t* array, int* idx,
@@ -125,7 +125,7 @@ static void jxl_compute_jpeg_transcoding_data_cleanup(jxl_array_quant_encoding* 
   if (dc != NULL) jxl_image3_f_destroy(dc);
 }
 
-static jxl_status jxl_compute_jpeg_transcoding_data(const jxl_jpeg_data* jpeg_data,
+static jxl_enc_status jxl_compute_jpeg_transcoding_data(const jxl_jpeg_data* jpeg_data,
                                   const jxl_enc_frame_header* frame_header,
                                   jxl_modular_frame_encoder* enc_modular,
                                   jxl_passes_encoder_state* enc_state){
@@ -154,8 +154,8 @@ static jxl_status jxl_compute_jpeg_transcoding_data(const jxl_jpeg_data* jpeg_da
   jxl_array_construct_empty(&qe, ctx);
   {
     jxl_quant_encoding init = jxl_quant_encoding_library(0);
-    jxl_status status = jxl_array_quant_encoding_resize_fill(&qe, kNumQuantTables, init);
-    if (!jxl_status_ok(status)) {
+    jxl_enc_status status = jxl_array_quant_encoding_resize_fill(&qe, kNumQuantTables, init);
+    if (!jxl_enc_status_ok(status)) {
       jxl_compute_jpeg_transcoding_data_cleanup(&qe, NULL, NULL, NULL, NULL, NULL);
       return status;
     }
@@ -172,8 +172,8 @@ static jxl_status jxl_compute_jpeg_transcoding_data(const jxl_jpeg_data* jpeg_da
   jxl_array_int qt;
   jxl_array_construct_empty(&qt, ctx);
   {
-    jxl_status status = jxl_array_resize_zero(&qt, kDCTBlockSize * 3);
-    if (!jxl_status_ok(status)) {
+    jxl_enc_status status = jxl_array_resize_zero(&qt, kDCTBlockSize * 3);
+    if (!jxl_enc_status_ok(status)) {
       jxl_compute_jpeg_transcoding_data_cleanup(&qe, raw_qtables, &qt, NULL, NULL, NULL);
       return status;
     }
@@ -194,9 +194,9 @@ static jxl_status jxl_compute_jpeg_transcoding_data(const jxl_jpeg_data* jpeg_da
     qt_dc[c] = *jxl_array_at(&qt, kDCTBlockSize * c);
   }
   {
-    jxl_status status = jxl_dequant_matrices_set_custom_dc(&shared->matrices,
+    jxl_enc_status status = jxl_dequant_matrices_set_custom_dc(&shared->matrices,
                                                  dcquantization);
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_compute_jpeg_transcoding_data_cleanup(&qe, raw_qtables, &qt, NULL, NULL, NULL);
       return status;
     }
@@ -209,8 +209,8 @@ static jxl_status jxl_compute_jpeg_transcoding_data(const jxl_jpeg_data* jpeg_da
   jxl_array_i32 scaled_qtable;
   jxl_array_construct_empty(&scaled_qtable, ctx);
   {
-    jxl_status status = jxl_array_resize_zero(&scaled_qtable, kDCTBlockSize * 3);
-    if (!jxl_status_ok(status)) {
+    jxl_enc_status status = jxl_array_resize_zero(&scaled_qtable, kDCTBlockSize * 3);
+    if (!jxl_enc_status_ok(status)) {
       jxl_compute_jpeg_transcoding_data_cleanup(&qe, raw_qtables, &qt, &scaled_qtable,
                                         NULL, NULL);
       return status;
@@ -236,15 +236,15 @@ static jxl_status jxl_compute_jpeg_transcoding_data(const jxl_jpeg_data* jpeg_da
 
   const size_t dct_idx = (size_t)(kAcStrategyDCT);
   *jxl_array_at(&qe, dct_idx) = jxl_quant_encoding_raw(0);
-  if (!jxl_status_ok(jxl_array_copy_from(&raw_qtables[dct_idx], &qt))) {
+  if (!jxl_enc_status_ok(jxl_array_copy_from(&raw_qtables[dct_idx], &qt))) {
     jxl_compute_jpeg_transcoding_data_cleanup(&qe, raw_qtables, &qt, &scaled_qtable,
                                       NULL, NULL);
     return JXL_FAILURE("raw_qtables copy failed");
   }
   {
-    jxl_status status = jxl_dequant_matrices_set_custom(
+    jxl_enc_status status = jxl_dequant_matrices_set_custom(
       &shared->matrices, &qe, raw_qtables, enc_modular);
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_compute_jpeg_transcoding_data_cleanup(&qe, raw_qtables, &qt, &scaled_qtable,
                                         NULL, NULL);
       return status;
@@ -343,9 +343,9 @@ static jxl_status jxl_compute_jpeg_transcoding_data(const jxl_jpeg_data* jpeg_da
 
   jxl_image3_f dc;
   jxl_image3_f_construct_empty(&dc);
-  jxl_status status =
+  jxl_enc_status status =
       jxl_image3_f_create(ctx, xsize_blocks, ysize_blocks, &dc);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_compute_jpeg_transcoding_data_cleanup(&qe, raw_qtables, &qt, &scaled_qtable,
                                       NULL, &dc);
     return status;
@@ -358,7 +358,7 @@ static jxl_status jxl_compute_jpeg_transcoding_data(const jxl_jpeg_data* jpeg_da
   jxl_array_size dc_counts;
   jxl_array_construct_empty(&dc_counts, ctx);
   status = jxl_array_resize_zero(&dc_counts, 2048);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_compute_jpeg_transcoding_data_cleanup(&qe, raw_qtables, &qt, &scaled_qtable,
                                       &dc_counts, &dc);
     return status;
@@ -464,7 +464,7 @@ jxl_array_clear(&dct[i]);
     cumsum += *jxl_array_at(&dc_counts, j);
     if (cumsum > cut) {
       status = jxl_array_int_push_back(&dct[1], j - 1025);
-      if (!jxl_status_ok(status)) {
+      if (!jxl_enc_status_ok(status)) {
         jxl_compute_jpeg_transcoding_data_cleanup(&qe, raw_qtables, &qt, &scaled_qtable,
                                           &dc_counts, &dc);
         return status;
@@ -477,7 +477,7 @@ jxl_array_clear(&dct[i]);
   jxl_array_u8* ctx_map = &enc_state->shared.block_ctx_map.ctx_map;
 jxl_array_clear(ctx_map);
   status = jxl_array_resize_zero(ctx_map, 3 * kNumOrders * *num_dc_ctxs);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_compute_jpeg_transcoding_data_cleanup(&qe, raw_qtables, &qt, &scaled_qtable,
                                       &dc_counts, &dc);
     return status;
@@ -508,14 +508,14 @@ jxl_array_clear(ctx_map);
     const jxl_rect r = jxl_frame_dimensions_dc_group_rect(&enc_state->shared.frame_dim, group_index);
     status = jxl_modular_frame_encoder_add_var_dctdc(enc_modular, frame_header, &dc, &r,
                                             group_index, enc_state);
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_compute_jpeg_transcoding_data_cleanup(&qe, raw_qtables, &qt, &scaled_qtable,
                                         &dc_counts, &dc);
       return status;
     }
     status =
         jxl_modular_frame_encoder_add_ac_metadata(enc_modular, &r, group_index, enc_state);
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_compute_jpeg_transcoding_data_cleanup(&qe, raw_qtables, &qt, &scaled_qtable,
                                         &dc_counts, &dc);
       return status;
@@ -524,10 +524,10 @@ jxl_array_clear(ctx_map);
 
   jxl_compute_jpeg_transcoding_data_cleanup(&qe, raw_qtables, &qt, &scaled_qtable,
                                     &dc_counts, &dc);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_compute_all_coeff_orders(jxl_passes_encoder_state* enc_state,
+static jxl_enc_status jxl_compute_all_coeff_orders(jxl_passes_encoder_state* enc_state,
                              const jxl_frame_dimensions* frame_dim){
   jxl_rect used_orders_rect = jxl_rect_from_size(
       jxl_image_i_x_size(&enc_state->shared.raw_quant_field),
@@ -542,7 +542,7 @@ static jxl_status jxl_compute_all_coeff_orders(jxl_passes_encoder_state* enc_sta
       enc_state->used_acs, used_orders_info.used, used_orders_info.customize,
       jxl_array_at(&enc_state->shared.coeff_orders, 0)));
   enc_state->used_acs |= used_orders_info.used;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Working area for jxl_tokenize_coefficients (per-group!)
@@ -559,15 +559,15 @@ static inline void jxl_enc_cache_destroy(jxl_enc_cache* self) {
 }
 
 // Allocates memory when first called.
-static jxl_status jxl_enc_cache_init_once(jxl_enc_cache* self, jxl_context* ctx) {
+static jxl_enc_status jxl_enc_cache_init_once(jxl_enc_cache* self, jxl_context* ctx) {
   if (jxl_image3_i_x_size(&self->num_nzeroes) == 0) {
     JXL_RETURN_IF_ERROR(jxl_image3_i_create(ctx, kGroupDimInBlocks,
                                           kGroupDimInBlocks, &self->num_nzeroes));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_tokenize_all_coefficients(const jxl_enc_frame_header* frame_header,
+static jxl_enc_status jxl_tokenize_all_coefficients(const jxl_enc_frame_header* frame_header,
                                jxl_passes_encoder_state* enc_state){
   jxl_passes_shared_state* shared = &enc_state->shared;
   jxl_enc_cache group_cache;
@@ -582,8 +582,8 @@ static jxl_status jxl_tokenize_all_coefficients(const jxl_enc_frame_header* fram
         jxl_ac_image_plane_row(&enc_state->coeffs, 1, group_index, 0).ptr32,
         jxl_ac_image_plane_row(&enc_state->coeffs, 2, group_index, 0).ptr32,
     };
-    jxl_status status = jxl_enc_cache_init_once(&group_cache, ctx);
-    if (!jxl_status_ok(status)) {
+    jxl_enc_status status = jxl_enc_cache_init_once(&group_cache, ctx);
+    if (!jxl_enc_status_ok(status)) {
       jxl_enc_cache_destroy(&group_cache);
       return status;
     }
@@ -592,16 +592,16 @@ static jxl_status jxl_tokenize_all_coefficients(const jxl_enc_frame_header* fram
         &frame_header->chroma_subsampling, &group_cache.num_nzeroes,
         jxl_token_streams_at(&enc_state->ac_tokens, group_index), &shared->quant_dc,
         &shared->raw_quant_field, &shared->block_ctx_map);
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_enc_cache_destroy(&group_cache);
       return status;
     }
   }
   jxl_enc_cache_destroy(&group_cache);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_encode_global_dc_info(const jxl_passes_shared_state* shared, jxl_bit_writer* writer){
+static jxl_enc_status jxl_encode_global_dc_info(const jxl_passes_shared_state* shared, jxl_bit_writer* writer){
   // Encode quantizer DC and global scale.
   jxl_quantizer_params params = jxl_enc_quantizer_get_params(&shared->quantizer);
   JXL_RETURN_IF_ERROR(
@@ -609,7 +609,7 @@ static jxl_status jxl_encode_global_dc_info(const jxl_passes_shared_state* share
   JXL_RETURN_IF_ERROR(jxl_encode_block_ctx_map(&shared->block_ctx_map, writer));
   JXL_RETURN_IF_ERROR(jxl_color_correlation_encode_dc(jxl_color_correlation_map_base(&shared->cmap), writer,
                                                kLayerDc));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 typedef struct jxl_histo_ctx {
@@ -617,10 +617,10 @@ typedef struct jxl_histo_ctx {
   size_t num_histo_bits;
 } jxl_histo_ctx;
 
-static jxl_status jxl_write_num_histograms_body(void* opaque) {
+static jxl_enc_status jxl_write_num_histograms_body(void* opaque) {
   jxl_histo_ctx* c = (jxl_histo_ctx*)(opaque);
   jxl_bit_writer_write(c->writer, c->num_histo_bits, 0);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 typedef struct jxl_order_ctx {
@@ -628,7 +628,7 @@ typedef struct jxl_order_ctx {
   uint32_t used_orders;
 } jxl_order_ctx;
 
-static jxl_status jxl_write_used_orders_body(void* opaque) {
+static jxl_enc_status jxl_write_used_orders_body(void* opaque) {
   jxl_order_ctx* c = (jxl_order_ctx*)(opaque);
   return jxl_u32_coder_write(jxl_order_enc(), c->used_orders, c->writer);
 }
@@ -638,10 +638,10 @@ typedef struct jxl_dc_prec_ctx {
   uint8_t precision;
 } jxl_dc_prec_ctx;
 
-static jxl_status jxl_write_dc_precision_body(void* opaque) {
+static jxl_enc_status jxl_write_dc_precision_body(void* opaque) {
   jxl_dc_prec_ctx* c = (jxl_dc_prec_ctx*)(opaque);
   jxl_bit_writer_write(c->output, 2, c->precision);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 typedef struct jxl_ac_meta_ctx {
@@ -650,18 +650,18 @@ typedef struct jxl_ac_meta_ctx {
   size_t ac_metadata_size_m1;
 } jxl_ac_meta_ctx;
 
-static jxl_status jxl_write_ac_metadata_size_body(void* opaque) {
+static jxl_enc_status jxl_write_ac_metadata_size_body(void* opaque) {
   jxl_ac_meta_ctx* c = (jxl_ac_meta_ctx*)(opaque);
   jxl_bit_writer_write(c->output, c->nb_bits, c->ac_metadata_size_m1);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_zero_pad_group_body(void* opaque) {
+static jxl_enc_status jxl_zero_pad_group_body(void* opaque) {
   jxl_bit_writer_zero_pad_to_byte((jxl_bit_writer*)(opaque));  // end of group.
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_encode_global_ac_info(jxl_passes_encoder_state* enc_state, jxl_bit_writer* writer,
+static jxl_enc_status jxl_encode_global_ac_info(jxl_passes_encoder_state* enc_state, jxl_bit_writer* writer,
                           jxl_modular_frame_encoder* enc_modular) {
   jxl_passes_shared_state* shared = &enc_state->shared;
   jxl_context* ctx = jxl_passes_encoder_state_ctx(enc_state);
@@ -705,7 +705,7 @@ static jxl_status jxl_encode_global_ac_info(jxl_passes_encoder_state* enc_state,
           kANSHistApproximate;
     }
     size_t cost;
-    jxl_status hist_status = jxl_build_and_encode_histograms(
+    jxl_enc_status hist_status = jxl_build_and_encode_histograms(
         ctx, &hist_params, jxl_block_ctx_map_num_ac_contexts(&shared->block_ctx_map),
         &enc_state->ac_tokens, &enc_state->ac_codes, writer, kLayerAc,
         &empty_ac_widths, &cost);
@@ -714,9 +714,9 @@ static jxl_status jxl_encode_global_ac_info(jxl_passes_encoder_state* enc_state,
     JXL_RETURN_IF_ERROR(hist_status);
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_encode_groups(const jxl_enc_frame_header* frame_header,
+static jxl_enc_status jxl_encode_groups(const jxl_enc_frame_header* frame_header,
                     jxl_passes_encoder_state* enc_state,
                     jxl_modular_frame_encoder* enc_modular,
                     jxl_bit_writers* group_codes){
@@ -795,10 +795,10 @@ static jxl_status jxl_encode_groups(const jxl_enc_frame_header* frame_header,
     JXL_RETURN_IF_ERROR(
         jxl_bit_writer_with_max_bits(bw, 8, kLayerAc, jxl_zero_pad_group_body, bw));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_compute_encoding_data(
+static jxl_enc_status jxl_compute_encoding_data(
     const jxl_compress_params* cparams, const jxl_codec_metadata* metadata,
     const jxl_jpeg_data* jpeg_data, jxl_enc_frame_header* mutable_frame_header,
     jxl_modular_frame_encoder* enc_modular, jxl_passes_encoder_state* enc_state,
@@ -840,17 +840,17 @@ static jxl_status jxl_compute_encoding_data(
 
   JXL_RETURN_IF_ERROR(jxl_encode_groups(mutable_frame_header, enc_state, enc_modular,
                                    group_codes));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_encode_frame_one_shot_write_codestream(
+static jxl_enc_status jxl_encode_frame_one_shot_write_codestream(
     jxl_context* ctx, jxl_enc_frame_header* frame_header,
     jxl_bit_writers* group_codes,
     jxl_encoder_output_processor_wrapper* output_processor) {
   jxl_bit_writer writer;
   jxl_bit_writer_make(ctx, &writer);
-  jxl_status status = jxl_write_frame_header(frame_header, &writer);
-  if (!jxl_status_ok(status)) {
+  jxl_enc_status status = jxl_write_frame_header(frame_header, &writer);
+  if (!jxl_enc_status_ok(status)) {
     jxl_bit_writer_destroy(&writer);
     return status;
   }
@@ -858,7 +858,7 @@ static jxl_status jxl_encode_frame_one_shot_write_codestream(
   jxl_array_size group_sizes;
   jxl_array_construct_empty(&group_sizes, ctx);
   status = jxl_array_reserve(&group_sizes, jxl_bit_writers_size(group_codes));
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&group_sizes);
     jxl_bit_writer_destroy(&writer);
     return status;
@@ -868,20 +868,20 @@ static jxl_status jxl_encode_frame_one_shot_write_codestream(
     JXL_ENSURE(jxl_bit_writer_bits_written(bw) % kBitsPerByte == 0);
     status =
         jxl_array_size_push_back(&group_sizes, jxl_bit_writer_bits_written(bw) / kBitsPerByte);
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_array_destroy(&group_sizes);
       jxl_bit_writer_destroy(&writer);
       return status;
     }
   }
   status = jxl_write_toc_permutation(&writer);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&group_sizes);
     jxl_bit_writer_destroy(&writer);
     return status;
   }
   status = jxl_write_toc_sizes(&group_sizes, &writer);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&group_sizes);
     jxl_bit_writer_destroy(&writer);
     return status;
@@ -890,7 +890,7 @@ static jxl_status jxl_encode_frame_one_shot_write_codestream(
 
   status = jxl_bit_writer_append_byte_aligned(
       &writer, jxl_bit_writers_data(group_codes), jxl_bit_writers_size(group_codes));
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_bit_writer_destroy(&writer);
     return status;
   }
@@ -903,7 +903,7 @@ static jxl_status jxl_encode_frame_one_shot_write_codestream(
   return status;
 }
 
-static jxl_status jxl_encode_frame_one_shot_with_header(
+static jxl_enc_status jxl_encode_frame_one_shot_with_header(
     jxl_context* ctx, const jxl_compress_params* cparams,
     const jxl_frame_info* frame_info, const jxl_codec_metadata* metadata,
     jxl_encoder_jpeg_frame_adapter* frame_data,
@@ -913,20 +913,20 @@ static jxl_status jxl_encode_frame_one_shot_with_header(
   jxl_jpeg_data jpeg_data;
   jxl_encoder_jpeg_frame_adapter_take_jpeg_data(frame_data, &jpeg_data,
                                                 ctx);
-  jxl_status status = jxl_make_frame_header(frame_info, &jpeg_data, frame_header);
-  if (!jxl_status_ok(status)) {
+  jxl_enc_status status = jxl_make_frame_header(frame_info, &jpeg_data, frame_header);
+  if (!jxl_enc_status_ok(status)) {
     jxl_jpeg_data_destroy(&jpeg_data);
     return status;
   }
   status = jxl_modular_frame_encoder_create(ctx, frame_header, cparams,
                                      enc_modular);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_jpeg_data_destroy(&jpeg_data);
     return status;
   }
   status = jxl_compute_encoding_data(cparams, metadata, &jpeg_data, frame_header,
                                enc_modular, enc_state, group_codes);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_jpeg_data_destroy(&jpeg_data);
     return status;
   }
@@ -936,7 +936,7 @@ static jxl_status jxl_encode_frame_one_shot_with_header(
                                            group_codes, output_processor);
 }
 
-static jxl_status jxl_encode_frame_one_shot_with_modular(
+static jxl_enc_status jxl_encode_frame_one_shot_with_modular(
     jxl_context* ctx, const jxl_compress_params* cparams,
     const jxl_frame_info* frame_info, const jxl_codec_metadata* metadata,
     jxl_encoder_jpeg_frame_adapter* frame_data,
@@ -945,14 +945,14 @@ static jxl_status jxl_encode_frame_one_shot_with_modular(
     jxl_modular_frame_encoder* enc_modular) {
   jxl_enc_frame_header frame_header;
   jxl_enc_frame_header_init(&frame_header, metadata);
-  jxl_status status = jxl_encode_frame_one_shot_with_header(
+  jxl_enc_status status = jxl_encode_frame_one_shot_with_header(
       ctx, cparams, frame_info, metadata, frame_data,
       output_processor, group_codes, enc_state, enc_modular, &frame_header);
   jxl_enc_frame_header_destroy(&frame_header);
   return status;
 }
 
-static jxl_status jxl_encode_frame_one_shot_body_inner(
+static jxl_enc_status jxl_encode_frame_one_shot_body_inner(
     jxl_context* ctx, const jxl_compress_params* cparams,
     const jxl_frame_info* frame_info, const jxl_codec_metadata* metadata,
     jxl_encoder_jpeg_frame_adapter* frame_data,
@@ -960,14 +960,14 @@ static jxl_status jxl_encode_frame_one_shot_body_inner(
     jxl_bit_writers* group_codes, jxl_passes_encoder_state* enc_state) {
   jxl_modular_frame_encoder enc_modular;
   jxl_modular_frame_encoder_init_mm(&enc_modular, ctx);
-  jxl_status status = jxl_encode_frame_one_shot_with_modular(
+  jxl_enc_status status = jxl_encode_frame_one_shot_with_modular(
       ctx, cparams, frame_info, metadata, frame_data,
       output_processor, group_codes, enc_state, &enc_modular);
   jxl_modular_frame_encoder_destroy(&enc_modular);
   return status;
 }
 
-static jxl_status jxl_encode_frame_one_shot_body(
+static jxl_enc_status jxl_encode_frame_one_shot_body(
     jxl_context* ctx, const jxl_compress_params* cparams,
     const jxl_frame_info* frame_info, const jxl_codec_metadata* metadata,
     jxl_encoder_jpeg_frame_adapter* frame_data,
@@ -975,14 +975,14 @@ static jxl_status jxl_encode_frame_one_shot_body(
     jxl_bit_writers* group_codes) {
   jxl_passes_encoder_state enc_state;
   jxl_passes_encoder_state_init(&enc_state, ctx);
-  jxl_status status = jxl_encode_frame_one_shot_body_inner(
+  jxl_enc_status status = jxl_encode_frame_one_shot_body_inner(
       ctx, cparams, frame_info, metadata, frame_data,
       output_processor, group_codes, &enc_state);
   jxl_passes_encoder_state_destroy(&enc_state);
   return status;
 }
 
-static jxl_status jxl_encode_frame_one_shot(jxl_context* ctx,
+static jxl_enc_status jxl_encode_frame_one_shot(jxl_context* ctx,
                           const jxl_compress_params* cparams,
                           const jxl_frame_info* frame_info,
                           const jxl_codec_metadata* metadata,
@@ -991,7 +991,7 @@ static jxl_status jxl_encode_frame_one_shot(jxl_context* ctx,
   jxl_bit_writers group_codes;
   jxl_bit_writers_construct_empty(&group_codes);
   group_codes.ctx = ctx;
-  jxl_status status =
+  jxl_enc_status status =
       jxl_encode_frame_one_shot_body(ctx, cparams, frame_info, metadata,
                              frame_data, output_processor, &group_codes);
   jxl_bit_writers_destroy(&group_codes);
@@ -999,7 +999,7 @@ static jxl_status jxl_encode_frame_one_shot(jxl_context* ctx,
 }
 
 
-jxl_status jxl_encode_frame(jxl_context* ctx,
+jxl_enc_status jxl_encode_frame(jxl_context* ctx,
                    const jxl_compress_params* cparams_orig,
                    const jxl_frame_info* frame_info, const jxl_codec_metadata* metadata,
                    jxl_encoder_jpeg_frame_adapter* frame_data,

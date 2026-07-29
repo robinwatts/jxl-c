@@ -62,18 +62,18 @@ static void jxl_make_fixed_tree(int property, const jxl_array_i32 *cutoffs, jxl_
   jxl_array_construct_empty(&q, mm);
   size_t q_head = 0;
   // Leaf IDs will be set by roundtrip decoding the tree.
-if (!jxl_status_ok(jxl_array_property_decision_node_push_back(&tree, jxl_property_decision_node_leaf(pred, 0, 1)))) JXL_CRASH();
-if (!jxl_status_ok(jxl_array_fixed_tree_node_info_push_back(&q, jxl_fixed_tree_node_info_make(0, jxl_array_len(cutoffs), 0)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_property_decision_node_push_back(&tree, jxl_property_decision_node_leaf(pred, 0, 1)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_fixed_tree_node_info_push_back(&q, jxl_fixed_tree_node_info_make(0, jxl_array_len(cutoffs), 0)))) JXL_CRASH();
 while (q_head < jxl_array_len(&q)) {
     jxl_fixed_tree_node_info info = *jxl_array_at(&q, q_head++);
     if (info.begin + min_gap >= info.end) continue;
     uint32_t split = (info.begin + info.end) / 2;
     int32_t cutoff = *jxl_array_at_const(cutoffs, split) * mul;
     *jxl_array_at(&tree, info.pos) = jxl_property_decision_node_split(property, cutoff, jxl_array_len(&tree), -1);
-if (!jxl_status_ok(jxl_array_fixed_tree_node_info_push_back(&q, jxl_fixed_tree_node_info_make(split + 1, info.end, jxl_array_len(&tree))))) JXL_CRASH();
-if (!jxl_status_ok(jxl_array_property_decision_node_push_back(&tree, jxl_property_decision_node_leaf(pred, 0, 1)))) JXL_CRASH();
-if (!jxl_status_ok(jxl_array_fixed_tree_node_info_push_back(&q, jxl_fixed_tree_node_info_make(info.begin, split, jxl_array_len(&tree))))) JXL_CRASH();
-if (!jxl_status_ok(jxl_array_property_decision_node_push_back(&tree, jxl_property_decision_node_leaf(pred, 0, 1)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_fixed_tree_node_info_push_back(&q, jxl_fixed_tree_node_info_make(split + 1, info.end, jxl_array_len(&tree))))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_property_decision_node_push_back(&tree, jxl_property_decision_node_leaf(pred, 0, 1)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_fixed_tree_node_info_push_back(&q, jxl_fixed_tree_node_info_make(info.begin, split, jxl_array_len(&tree))))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_property_decision_node_push_back(&tree, jxl_property_decision_node_leaf(pred, 0, 1)))) JXL_CRASH();
 }
   jxl_array_destroy(&q);
   jxl_array_swap(out, &tree);
@@ -113,7 +113,7 @@ static void jxl_compute_tree_sample(jxl_gather_sample_ctx *ctx, const pixel_type
   jxl_weighted_state_update_errors(ctx->wp_state, p[x], x, y, ctx->w);
 }
 
-static jxl_status jxl_gather_tree_data(const jxl_image *image, pixel_type chan, size_t group_id,
+static jxl_enc_status jxl_gather_tree_data(const jxl_image *image, pixel_type chan, size_t group_id,
                       const jxl_weighted_header *wp_header,
                       const jxl_modular_options *options, jxl_tree_samples *tree_samples,
                       size_t *total_pixels) {
@@ -127,8 +127,8 @@ static jxl_status jxl_gather_tree_data(const jxl_image *image, pixel_type chan, 
       chan, (int)(group_id)};
   jxl_properties properties;
   jxl_array_construct_empty(&properties, ctx);
-  jxl_status status = jxl_array_resize_zero(&properties, kNumNonrefProperties);
-  if (!jxl_status_ok(status)) {
+  jxl_enc_status status = jxl_array_resize_zero(&properties, kNumNonrefProperties);
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&properties);
     return status;
   }
@@ -148,7 +148,7 @@ static jxl_status jxl_gather_tree_data(const jxl_image *image, pixel_type chan, 
   jxl_channel_construct_empty(&references);
   status = jxl_channel_create(ctx, /*iw=*/0, /*ih=*/1, 0, 0,
                                 &references);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&properties);
     jxl_channel_destroy(&references);
     return status;
@@ -210,10 +210,10 @@ static jxl_status jxl_gather_tree_data(const jxl_image *image, pixel_type chan, 
   jxl_channel_destroy(&references);
   jxl_weighted_state_destroy(&wp_state);
   jxl_array_destroy(&properties);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_learn_tree_from_samples(jxl_tree_samples *tree_samples, size_t total_pixels,
+static jxl_enc_status jxl_learn_tree_from_samples(jxl_tree_samples *tree_samples, size_t total_pixels,
                  const jxl_modular_options *options,
                  const jxl_array_modular_multiplier_info *multiplier_info,
                  jxl_static_prop_range static_prop_range, jxl_tree *out) {
@@ -225,29 +225,29 @@ static jxl_status jxl_learn_tree_from_samples(jxl_tree_samples *tree_samples, si
     }
   }
   if (!jxl_tree_samples_has_samples(tree_samples)) {
-    if (!jxl_status_ok(jxl_array_property_decision_node_push_back(&tree, jxl_property_decision_node_leaf(
+    if (!jxl_enc_status_ok(jxl_array_property_decision_node_push_back(&tree, jxl_property_decision_node_leaf(
             jxl_tree_samples_predictor_from_index(tree_samples, 0), 0, 1)))) JXL_CRASH();
     jxl_array_swap(out, &tree);
     jxl_array_destroy(&tree);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   float pixel_fraction = jxl_tree_samples_num_samples(tree_samples) * 1.0f / total_pixels;
   float required_cost = pixel_fraction * 0.9 + 0.1;
   jxl_tree_samples_all_samples_done(tree_samples);
-  jxl_status status = jxl_compute_best_tree(
+  jxl_enc_status status = jxl_compute_best_tree(
       tree_samples, options->splitting_heuristics_node_threshold * required_cost,
       multiplier_info, static_prop_range, options->fast_decode_multiplier,
       &tree);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&tree);
     return status;
   }
   jxl_array_swap(out, &tree);
   jxl_array_destroy(&tree);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel_type chan,
+static jxl_enc_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel_type chan,
                                  const jxl_weighted_header *wp_header,
                                  const jxl_tree *global_tree, jxl_token **tokenpp,
                                  size_t group_id) {
@@ -278,8 +278,8 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
   jxl_tree_lut tree_lut;
   jxl_array_construct_empty(&tree_lut.context_lookup, ctx);
   if (is_gradient_only) {
-    jxl_status lut_status = jxl_tree_lut_init(&tree_lut, ctx);
-    if (!jxl_status_ok(lut_status)) {
+    jxl_enc_status lut_status = jxl_tree_lut_init(&tree_lut, ctx);
+    if (!jxl_enc_status_ok(lut_status)) {
       jxl_tree_lut_destroy(&tree_lut);
       jxl_array_destroy(&tree);
       return lut_status;
@@ -365,8 +365,8 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
     const ptrdiff_t onerow = jxl_image_i_pixels_per_row(&channel->plane);
     jxl_properties properties;
     jxl_array_construct_empty(&properties, ctx);
-    jxl_status status = jxl_array_resize_zero(&properties, num_props);
-    if (!jxl_status_ok(status)) {
+    jxl_enc_status status = jxl_array_resize_zero(&properties, num_props);
+    if (!jxl_enc_status_ok(status)) {
       jxl_array_destroy(&properties);
       jxl_tree_lut_destroy(&tree_lut);
       jxl_array_destroy(&tree);
@@ -376,7 +376,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
     jxl_channel_construct_empty(&references);
     status = jxl_channel_create(ctx, /*iw=*/0, /*ih=*/1, 0, 0,
                                   &references);
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_array_destroy(&properties);
       jxl_channel_destroy(&references);
       jxl_tree_lut_destroy(&tree_lut);
@@ -401,8 +401,8 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
     const ptrdiff_t onerow = jxl_image_i_pixels_per_row(&channel->plane);
     jxl_properties properties;
     jxl_array_construct_empty(&properties, ctx);
-    jxl_status status = jxl_array_resize_zero(&properties, num_props);
-    if (!jxl_status_ok(status)) {
+    jxl_enc_status status = jxl_array_resize_zero(&properties, num_props);
+    if (!jxl_enc_status_ok(status)) {
       jxl_array_destroy(&properties);
       jxl_tree_lut_destroy(&tree_lut);
       jxl_array_destroy(&tree);
@@ -412,7 +412,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
     jxl_channel_construct_empty(&references);
     status = jxl_channel_create(ctx, /*iw=*/0, /*ih=*/1, 0, 0,
                                   &references);
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_array_destroy(&properties);
       jxl_channel_destroy(&references);
       jxl_tree_lut_destroy(&tree_lut);
@@ -442,7 +442,7 @@ static jxl_status jxl_encode_modular_channel_maans(const jxl_image *image, pixel
   jxl_tree_lut_destroy(&tree_lut);
   jxl_array_destroy(&tree);
   *tokenpp = tokenp;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 void jxl_predefined_tree_impl(jxl_modular_tree_kind tree_kind, size_t total_pixels,
@@ -453,7 +453,7 @@ void jxl_predefined_tree_impl(jxl_modular_tree_kind tree_kind, size_t total_pixe
       // All the data is 0, so no need for a fancy tree.
       jxl_tree tree;
       jxl_array_construct_empty(&tree, mm);
-if (!jxl_status_ok(jxl_array_property_decision_node_push_back(&tree, jxl_property_decision_node_leaf(kPredictorZero, 0, 1)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_property_decision_node_push_back(&tree, jxl_property_decision_node_leaf(kPredictorZero, 0, 1)))) JXL_CRASH();
       jxl_array_swap(out, &tree);
       jxl_array_destroy(&tree);
       return;
@@ -465,7 +465,7 @@ if (!jxl_status_ok(jxl_array_property_decision_node_push_back(&tree, jxl_propert
           15,   23,   31,   47,   63,   95,  127, 191, 255, 392, 500};
       jxl_array_i32 cutoffs;
       jxl_array_construct_empty(&cutoffs, mm);
-      if (!jxl_status_ok(jxl_array_assign(&cutoffs, kCutoffs,
+      if (!jxl_enc_status_ok(jxl_array_assign(&cutoffs, kCutoffs,
                        sizeof(kCutoffs) / sizeof(kCutoffs[0])))) {
         JXL_CRASH();
       }
@@ -481,7 +481,7 @@ if (!jxl_status_ok(jxl_array_property_decision_node_push_back(&tree, jxl_propert
           15,   23,   31,   47,   63,   95,  127, 191, 255, 392, 500};
       jxl_array_i32 cutoffs;
       jxl_array_construct_empty(&cutoffs, mm);
-      if (!jxl_status_ok(jxl_array_assign(&cutoffs, kCutoffs,
+      if (!jxl_enc_status_ok(jxl_array_assign(&cutoffs, kCutoffs,
                        sizeof(kCutoffs) / sizeof(kCutoffs[0])))) {
         JXL_CRASH();
       }
@@ -501,7 +501,7 @@ if (!jxl_status_ok(jxl_array_property_decision_node_push_back(&tree, jxl_propert
   jxl_array_clear(out);
 }
 
-jxl_status jxl_learn_tree_impl(const jxl_image *images, const jxl_modular_options *options,
+jxl_enc_status jxl_learn_tree_impl(const jxl_image *images, const jxl_modular_options *options,
                  const uint32_t start, const uint32_t stop,
                  const jxl_array_modular_multiplier_info *multiplier_info,
                  jxl_tree *out) {
@@ -518,9 +518,9 @@ jxl_status jxl_learn_tree_impl(const jxl_image *images, const jxl_modular_option
   jxl_array_construct_empty(&channel_pixel_count, mm);
   jxl_tree tree;
   jxl_array_construct_empty(&tree, mm);
-  jxl_status status = jxl_tree_samples_set_predictor(&tree_samples, options[start].predictor,
+  jxl_enc_status status = jxl_tree_samples_set_predictor(&tree_samples, options[start].predictor,
                                                 options[start].wp_tree_mode);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&tree);
     jxl_array_destroy(&pixel_samples);
     jxl_array_destroy(&diff_samples);
@@ -533,7 +533,7 @@ jxl_status jxl_learn_tree_impl(const jxl_image *images, const jxl_modular_option
       options[start].splitting_heuristics_properties,
       options[start].num_splitting_heuristics_properties,
       options[start].wp_tree_mode);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&tree);
     jxl_array_destroy(&pixel_samples);
     jxl_array_destroy(&diff_samples);
@@ -611,7 +611,7 @@ jxl_status jxl_learn_tree_impl(const jxl_image *images, const jxl_modular_option
       }
       status = jxl_gather_tree_data(&images[i], c, i, &wp_header, &options[i],
                                          &tree_samples, &total_pixels);
-      if (!jxl_status_ok(status)) {
+      if (!jxl_enc_status_ok(status)) {
         jxl_array_destroy(&tree);
         jxl_array_destroy(&pixel_samples);
         jxl_array_destroy(&diff_samples);
@@ -626,7 +626,7 @@ jxl_status jxl_learn_tree_impl(const jxl_image *images, const jxl_modular_option
   // TODO(veluca): parallelize more.
   status = jxl_learn_tree_from_samples(&tree_samples, total_pixels, &options[start],
                                 multiplier_info, range, &tree);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&tree);
     jxl_array_destroy(&pixel_samples);
     jxl_array_destroy(&diff_samples);
@@ -642,16 +642,16 @@ jxl_status jxl_learn_tree_impl(const jxl_image *images, const jxl_modular_option
   jxl_array_destroy(&group_pixel_count);
   jxl_array_destroy(&channel_pixel_count);
   jxl_tree_samples_destroy(&tree_samples);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_modular_compress_impl(const jxl_image *image, const jxl_modular_options *options,
+jxl_enc_status jxl_modular_compress_impl(const jxl_image *image, const jxl_modular_options *options,
                        size_t group_id, const jxl_tree *tree, jxl_group_header *header,
                        jxl_token_stream *tokens, size_t *width){
   size_t nb_channels = jxl_channels_size(&image->channel);
 
   if (image->w == 0 || image->h == 0 || nb_channels < 1)
-    return jxl_ok_status();  // is there any use for a zero-channel image?
+    return jxl_enc_ok_status();  // is there any use for a zero-channel image?
   if (image->error) return JXL_FAILURE("Invalid image");
 
   JXL_DEBUG_V(
@@ -698,15 +698,15 @@ jxl_status jxl_modular_compress_impl(const jxl_image *image, const jxl_modular_o
 
   *width = image_width;
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_modular_options *opts,
+jxl_enc_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_modular_options *opts,
                               jxl_bit_writer *writer, jxl_layer_type layer){
   size_t nb_channels = jxl_channels_size(&image->channel);
 
   if (image->w == 0 || image->h == 0 || nb_channels < 1)
-    return jxl_ok_status();  // is there any use for a zero-channel image?
+    return jxl_enc_ok_status();  // is there any use for a zero-channel image?
   if (image->error) return JXL_FAILURE("Invalid image");
 
   jxl_modular_options options = *opts;  // Make a copy to modify it.
@@ -737,10 +737,10 @@ jxl_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_m
   if (options.tree_kind == kLearn) {
     jxl_array_modular_multiplier_info empty_multiplier_info;
     jxl_array_construct_empty(&empty_multiplier_info, mm);
-    jxl_status learn_status =
+    jxl_enc_status learn_status =
         jxl_learn_tree_impl(image, &options, 0, 1, &empty_multiplier_info, &tree);
     jxl_array_destroy(&empty_multiplier_info);
-    if (!jxl_status_ok(learn_status)) {
+    if (!jxl_enc_status_ok(learn_status)) {
       jxl_array_destroy(&tree);
       return learn_status;
     }
@@ -771,8 +771,8 @@ jxl_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_m
   jxl_array_construct_empty(&empty_widths, ctx);
   jxl_array_size image_widths;
   jxl_array_construct_empty(&image_widths, mm);
-  jxl_status status = jxl_tokenize_tree(&tree, jxl_token_streams_data(&tree_tokens), &decoded_tree);
-  if (!jxl_status_ok(status)) {
+  jxl_enc_status status = jxl_tokenize_tree(&tree, jxl_token_streams_data(&tree_tokens), &decoded_tree);
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&tree);
     jxl_array_destroy(&decoded_tree);
     jxl_array_destroy(&empty_widths);
@@ -791,7 +791,7 @@ jxl_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_m
       jxl_build_and_encode_histograms(ctx, &options.histogram_params,
                                kNumTreeContexts, &tree_tokens, &code, writer,
                                kLayerModularTree, &empty_widths, &cost);
-  if (jxl_status_ok(status)) {
+  if (jxl_enc_status_ok(status)) {
     status = jxl_write_tokens(jxl_token_streams_at(&tree_tokens, 0), &code, 0, writer,
                          kLayerModularTree);
   }
@@ -799,24 +799,24 @@ jxl_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_m
   size_t image_width = 0;
   // it puts `use_global_tree = true` in the header, but this is not used
   // further
-  if (jxl_status_ok(status)) {
+  if (jxl_enc_status_ok(status)) {
     status = jxl_modular_compress_impl(image, &options, /*group_id=*/0, &tree, &header,
                              jxl_token_streams_at(&tokens, 0), &image_width);
   }
 
   // Write data
-  if (jxl_status_ok(status)) {
+  if (jxl_enc_status_ok(status)) {
     jxl_entropy_encoding_data_destroy(&code);
     jxl_entropy_encoding_data_construct_empty(&code, ctx);
     jxl_entropy_encoding_data_init(&code, ctx);
     jxl_histogram_params histo_params = options.histogram_params;
     status = jxl_array_size_push_back(&image_widths, image_width);
-    if (jxl_status_ok(status)) {
+    if (jxl_enc_status_ok(status)) {
       status = jxl_build_and_encode_histograms(
           ctx, &histo_params, (jxl_array_len(&tree) + 1) / 2, &tokens,
           &code, writer, layer, &image_widths, &cost);
     }
-    if (jxl_status_ok(status)) {
+    if (jxl_enc_status_ok(status)) {
       status = jxl_write_tokens(jxl_token_streams_at(&tokens, 0), &code, 0, writer, layer);
     }
   }
@@ -828,7 +828,7 @@ jxl_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_m
   jxl_entropy_encoding_data_destroy(&code);
   jxl_token_streams_destroy(&tree_tokens);
   jxl_token_streams_destroy(&tokens);
-  if (!jxl_status_ok(status)) return status;
+  if (!jxl_enc_status_ok(status)) return status;
 
   bits = jxl_bit_writer_bits_written(writer) - bits;
   JXL_DEBUG_V(4,
@@ -837,7 +837,7 @@ jxl_status jxl_modular_generic_compress_impl(const jxl_image *image, const jxl_m
               image->w, image->h, image->bitdepth, jxl_channels_size(&image->channel), bits / 8);
   (void)bits;
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 
@@ -845,14 +845,14 @@ void jxl_predefined_tree(jxl_modular_tree_kind tree_kind, size_t total_pixels, i
   jxl_predefined_tree_impl(tree_kind, total_pixels, bitdepth, out);
 }
 
-jxl_status jxl_learn_tree(const jxl_image *images, const jxl_modular_options *opts, uint32_t start, uint32_t stop, const jxl_array_modular_multiplier_info *multiplier_info, jxl_tree *out) {
+jxl_enc_status jxl_learn_tree(const jxl_image *images, const jxl_modular_options *opts, uint32_t start, uint32_t stop, const jxl_array_modular_multiplier_info *multiplier_info, jxl_tree *out) {
   return jxl_learn_tree_impl(images, opts, start, stop, multiplier_info, out);
 }
 
-jxl_status jxl_modular_generic_compress(const jxl_image *image, const jxl_modular_options *opts, jxl_bit_writer *writer, jxl_layer_type layer) {
+jxl_enc_status jxl_modular_generic_compress(const jxl_image *image, const jxl_modular_options *opts, jxl_bit_writer *writer, jxl_layer_type layer) {
   return jxl_modular_generic_compress_impl(image, opts, writer, layer);
 }
 
-jxl_status jxl_modular_compress(const jxl_image *image, const jxl_modular_options *opts, size_t group_id, const jxl_tree *tree, jxl_group_header *header, jxl_token_stream *tokens, size_t *width) {
+jxl_enc_status jxl_modular_compress(const jxl_image *image, const jxl_modular_options *opts, size_t group_id, const jxl_tree *tree, jxl_group_header *header, jxl_token_stream *tokens, size_t *width) {
   return jxl_modular_compress_impl(image, opts, group_id, tree, header, tokens, width);
 }

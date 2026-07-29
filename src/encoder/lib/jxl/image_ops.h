@@ -23,7 +23,7 @@ static inline bool jxl_same_size_rect(const jxl_rect* image1, const jxl_rect* im
 }
 
 // Converts int8 CfL map tiles into modular pixel_type (int32) planes.
-static inline jxl_status jxl_convert_plane_and_clamp(const jxl_rect* rect_from, const jxl_image_sb* from,
+static inline jxl_enc_status jxl_convert_plane_and_clamp(const jxl_rect* rect_from, const jxl_image_sb* from,
                                    const jxl_rect* rect_to,
                                    jxl_image_i* JXL_RESTRICT to) {
   JXL_ENSURE(jxl_same_size_rect(rect_from, rect_to));
@@ -35,7 +35,7 @@ static inline jxl_status jxl_convert_plane_and_clamp(const jxl_rect* rect_from, 
                               INT32_MAX);
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static inline void jxl_fill_image_b(const uint8_t value, jxl_image_b* image) {

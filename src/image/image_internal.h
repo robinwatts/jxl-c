@@ -2,6 +2,7 @@
 #ifndef JXL_IMAGE_INTERNAL_H_
 #define JXL_IMAGE_INTERNAL_H_
 
+#include "compiler.h"
 #include "allocator.h"
 #include "context.h"
 #include "bitstream/bitstream.h"

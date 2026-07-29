@@ -54,7 +54,7 @@ void jxl_plane_base_init(jxl_plane_base* self, const uint32_t xsize, const uint3
   self->sizeof_t_ = sizeof_t;
 }
 
-jxl_status jxl_plane_base_allocate(jxl_plane_base* self, jxl_context* ctx,
+jxl_enc_status jxl_plane_base_allocate(jxl_plane_base* self, jxl_context* ctx,
                          size_t pre_padding) {
   JXL_ENSURE(jxl_aligned_memory_address(&self->bytes_) == NULL);
   JXL_ENSURE(self->bytes_per_row_ == 0);
@@ -65,7 +65,7 @@ jxl_status jxl_plane_base_allocate(jxl_plane_base* self, jxl_context* ctx,
   // Dimensions can be zero, e.g. for lazily-allocated images. Only allocate
   // if nonzero, because "zero" bytes still have padding/bookkeeping overhead.
   if (self->xsize_ == 0 || self->ysize_ == 0) {
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   size_t total_bytes;
@@ -79,6 +79,6 @@ jxl_status jxl_plane_base_allocate(jxl_plane_base* self, jxl_context* ctx,
 
   jxl_initialize_padding(self, self->sizeof_t_);
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 

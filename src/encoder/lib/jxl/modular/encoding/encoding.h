@@ -34,10 +34,10 @@ typedef struct jxl_group_header {
   jxl_weighted_header wp_header;
 } jxl_group_header;
 
-static inline jxl_status jxl_group_header_visit_fields(jxl_group_header* self, jxl_visitor *JXL_RESTRICT visitor);
+static inline jxl_enc_status jxl_group_header_visit_fields(jxl_group_header* self, jxl_visitor *JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_group_header)
 
-static inline jxl_status jxl_group_header_visit_fields(jxl_group_header* self, jxl_visitor *JXL_RESTRICT visitor) {
+static inline jxl_enc_status jxl_group_header_visit_fields(jxl_group_header* self, jxl_visitor *JXL_RESTRICT visitor) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->use_global_tree));
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->wp_header.fields));
     // JPEG encoder-only: modular groups never use transforms. Keep the
@@ -47,7 +47,7 @@ static inline jxl_status jxl_group_header_visit_fields(jxl_group_header* self, j
     if (num_transforms != 0) {
       return JXL_FAILURE("Modular transforms are not supported");
     }
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
 
@@ -120,8 +120,8 @@ static inline void jxl_group_headers_construct_empty(jxl_group_headers* self) {
   self->capacity = 0;
 }
 
-static inline jxl_status jxl_group_headers_reserve(jxl_group_headers* self, size_t new_capacity) {
-    if (new_capacity <= self->capacity) return jxl_ok_status();
+static inline jxl_enc_status jxl_group_headers_reserve(jxl_group_headers* self, size_t new_capacity) {
+    if (new_capacity <= self->capacity) return jxl_enc_ok_status();
 
     size_t grown = self->capacity;
     if (grown == 0) grown = 16;
@@ -159,16 +159,16 @@ static inline jxl_status jxl_group_headers_reserve(jxl_group_headers* self, size
     }
     self->ptr = neu;
     self->capacity = grown;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
-static inline jxl_status jxl_group_headers_resize(jxl_group_headers* self, size_t n) {
+static inline jxl_enc_status jxl_group_headers_resize(jxl_group_headers* self, size_t n) {
     if (n < self->len) {
       for (size_t i = n; i < self->len; ++i) {
         jxl_group_header_destroy(self->ptr + i);
       }
       self->len = n;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     }
     JXL_RETURN_IF_ERROR(jxl_group_headers_reserve(self, n));
     while (self->len < n) {
@@ -176,7 +176,7 @@ static inline jxl_status jxl_group_headers_resize(jxl_group_headers* self, size_
       jxl_group_header_init(self->ptr + self->len);
       ++self->len;
     }
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
 static inline void jxl_group_headers_destroy(jxl_group_headers* self) {
@@ -219,11 +219,11 @@ typedef struct jxl_tree_lut {
 
 } jxl_tree_lut;
 
-static inline jxl_status jxl_tree_lut_init(jxl_tree_lut* self,
+static inline jxl_enc_status jxl_tree_lut_init(jxl_tree_lut* self,
                                            jxl_context* mm) {
   jxl_array_construct_empty(&self->context_lookup, mm);
   JXL_RETURN_IF_ERROR(jxl_array_resize_zero(&self->context_lookup, 2 * kPropRangeFast));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 static inline void jxl_tree_lut_destroy(jxl_tree_lut* self) {
   if (self == NULL) return;
@@ -251,7 +251,7 @@ static inline bool jxl_tree_to_lookup_table(const jxl_flat_tree *tree, jxl_tree_
   jxl_array_tree_range ranges;
   bool ok = true;
   jxl_array_construct_empty(&ranges, lut->context_lookup.ctx);
-  if (!jxl_status_ok(jxl_array_tree_range_push_back(&ranges, jxl_tree_range_make(-kPropRangeFast - 1, kPropRangeFast - 1, 0)))) {
+  if (!jxl_enc_status_ok(jxl_array_tree_range_push_back(&ranges, jxl_tree_range_make(-kPropRangeFast - 1, kPropRangeFast - 1, 0)))) {
     JXL_CRASH();
   }
   while (!jxl_array_empty(&ranges)) {
@@ -293,32 +293,32 @@ static inline bool jxl_tree_to_lookup_table(const jxl_flat_tree *tree, jxl_tree_
     }
     // > side of top node->
     if (node->meta.properties[0] >= kNumStaticProperties) {
-      if (!jxl_status_ok(jxl_array_tree_range_push_back(&ranges,
+      if (!jxl_enc_status_ok(jxl_array_tree_range_push_back(&ranges,
                          jxl_tree_range_make(node->children.splitvals[0], cur.end, node->childID)))) {
         JXL_CRASH();
       }
-      if (!jxl_status_ok(jxl_array_tree_range_push_back(&ranges, jxl_tree_range_make(node->top.splitval0, node->children.splitvals[0],
+      if (!jxl_enc_status_ok(jxl_array_tree_range_push_back(&ranges, jxl_tree_range_make(node->top.splitval0, node->children.splitvals[0],
                                            node->childID + 1)))) {
         JXL_CRASH();
       }
     } else {
-      if (!jxl_status_ok(jxl_array_tree_range_push_back(&ranges,
+      if (!jxl_enc_status_ok(jxl_array_tree_range_push_back(&ranges,
                          jxl_tree_range_make(node->top.splitval0, cur.end, node->childID)))) {
         JXL_CRASH();
       }
     }
     // <= side
     if (node->meta.properties[1] >= kNumStaticProperties) {
-      if (!jxl_status_ok(jxl_array_tree_range_push_back(&ranges, jxl_tree_range_make(node->children.splitvals[1], node->top.splitval0,
+      if (!jxl_enc_status_ok(jxl_array_tree_range_push_back(&ranges, jxl_tree_range_make(node->children.splitvals[1], node->top.splitval0,
                                            node->childID + 2)))) {
         JXL_CRASH();
       }
-      if (!jxl_status_ok(jxl_array_tree_range_push_back(&ranges,
+      if (!jxl_enc_status_ok(jxl_array_tree_range_push_back(&ranges,
                          jxl_tree_range_make(cur.begin, node->children.splitvals[1], node->childID + 3)))) {
         JXL_CRASH();
       }
     } else {
-      if (!jxl_status_ok(jxl_array_tree_range_push_back(&ranges,
+      if (!jxl_enc_status_ok(jxl_array_tree_range_push_back(&ranges,
                          jxl_tree_range_make(cur.begin, node->top.splitval0, node->childID + 2)))) {
         JXL_CRASH();
       }

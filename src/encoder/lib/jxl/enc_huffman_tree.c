@@ -90,11 +90,11 @@ void jxl_create_huffman_tree(jxl_context* mm, const uint32_t* data,
   for (uint32_t count_limit = 1;; count_limit *= 2) {
     jxl_array_huffman_tree tree;
     jxl_array_construct_empty(&tree, mm);
-    if (!jxl_status_ok(jxl_array_init(&tree, mm))) {
+    if (!jxl_enc_status_ok(jxl_array_init(&tree, mm))) {
       jxl_array_destroy(&tree);
       return;
     }
-    if (!jxl_status_ok(jxl_array_reserve(&tree, 2 * length + 1))) {
+    if (!jxl_enc_status_ok(jxl_array_reserve(&tree, 2 * length + 1))) {
       jxl_array_destroy(&tree);
       return;
     }
@@ -103,7 +103,7 @@ void jxl_create_huffman_tree(jxl_context* mm, const uint32_t* data,
       --i;
       if (data[i]) {
         const uint32_t count = JXL_MAX(data[i], count_limit - 1);
-        if (!jxl_status_ok(jxl_array_huffman_tree_push_back(&tree,
+        if (!jxl_enc_status_ok(jxl_array_huffman_tree_push_back(&tree,
                            jxl_huffman_tree_make(count, -1, (int16_t)(i))))) {
           jxl_array_destroy(&tree);
           return;
@@ -129,7 +129,7 @@ void jxl_create_huffman_tree(jxl_context* mm, const uint32_t* data,
     // [2n]: we add a sentinel at the end as well.
     // There will be (2n+1) elements at the end.
     const jxl_huffman_tree sentinel = jxl_huffman_tree_make(UINT32_MAX, -1, -1);
-    if (!jxl_status_ok(jxl_array_huffman_tree_push_back(&tree, sentinel)) || !jxl_status_ok(jxl_array_huffman_tree_push_back(&tree, sentinel))) {
+    if (!jxl_enc_status_ok(jxl_array_huffman_tree_push_back(&tree, sentinel)) || !jxl_enc_status_ok(jxl_array_huffman_tree_push_back(&tree, sentinel))) {
       jxl_array_destroy(&tree);
       return;
     }
@@ -162,7 +162,7 @@ void jxl_create_huffman_tree(jxl_context* mm, const uint32_t* data,
       jxl_array_at(&tree, j_end)->index_right_or_value = (int16_t)(right);
 
       // Add back the last sentinel node.
-      if (!jxl_status_ok(jxl_array_huffman_tree_push_back(&tree, sentinel))) {
+      if (!jxl_enc_status_ok(jxl_array_huffman_tree_push_back(&tree, sentinel))) {
         jxl_array_destroy(&tree);
         return;
       }

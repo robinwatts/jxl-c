@@ -2,6 +2,7 @@
 #ifndef JXL_RENDER_FILTER_UTIL_H_
 #define JXL_RENDER_FILTER_UTIL_H_
 
+#include "compiler.h"
 #include "render/subgrid_f32.h"
 
 #include <stddef.h>

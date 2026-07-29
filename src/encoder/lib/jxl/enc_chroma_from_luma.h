@@ -11,7 +11,7 @@
 #include "lib/jxl/enc_bit_writer.h"
 
 #include "lib/jxl/layer_type.h"
-jxl_status jxl_color_correlation_encode_dc(const jxl_color_correlation* color_correlation,
+jxl_enc_status jxl_color_correlation_encode_dc(const jxl_color_correlation* color_correlation,
                                 jxl_bit_writer* writer, jxl_layer_type layer);
 
 

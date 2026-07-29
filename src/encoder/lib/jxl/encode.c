@@ -31,15 +31,15 @@
 #include "lib/jxl/brotli_alloc.h"
 #include "lib/jxl/enc_allocator.h"
 
-// Map public jxl_status_t onto internal encoder jxl_status (lib/jxl/base/status.h).
-static jxl_status jxl_internal_status_from_api(jxl_status_t s) {
+// Map public jxl_status_t onto encoder-internal jxl_enc_status.
+static jxl_enc_status jxl_internal_status_from_api(jxl_status_t s) {
   switch (s) {
     case JXL_OK:
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     case JXL_NEED_MORE_OUTPUT:
-      return jxl_status_from_code(kNotEnoughBytes);
+      return jxl_enc_status_from_code(kNotEnoughBytes);
     default:
-      return jxl_status_from_code(kGenericError);
+      return jxl_enc_status_from_code(kGenericError);
   }
 }
 
@@ -66,7 +66,7 @@ static jxl_status jxl_internal_status_from_api(jxl_status_t s) {
    JXL_ERROR_GENERIC)
 #endif  // JXL_CRASH_ON_ERROR
 
-jxl_status jxl_encoder_output_processor_wrapper_get_buffer(
+jxl_enc_status jxl_encoder_output_processor_wrapper_get_buffer(
     jxl_encoder_output_processor_wrapper* self, size_t min_size,
     size_t requested_size, jxl_output_processor_buffer* out) {
   JXL_ENSURE(min_size > 0);
@@ -87,7 +87,7 @@ jxl_status jxl_encoder_output_processor_wrapper_get_buffer(
                                    self);
       jxl_output_processor_buffer_swap(out, &tmp);
       jxl_output_processor_buffer_destroy(&tmp);
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     }
   }
 
@@ -110,37 +110,37 @@ jxl_status jxl_encoder_output_processor_wrapper_get_buffer(
                                alloc_size, 0, self);
   jxl_output_processor_buffer_swap(out, &tmp);
   jxl_output_processor_buffer_destroy(&tmp);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_encoder_output_processor_wrapper_seek(
+jxl_enc_status jxl_encoder_output_processor_wrapper_seek(
     jxl_encoder_output_processor_wrapper* self, size_t pos) {
   JXL_ENSURE(!self->has_buffer_);
   JXL_ENSURE(pos >= self->finalized_position_);
   self->position_ = pos;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_encoder_output_processor_wrapper_set_finalized_position(
+jxl_enc_status jxl_encoder_output_processor_wrapper_set_finalized_position(
     jxl_encoder_output_processor_wrapper* self) {
   JXL_ENSURE(!self->has_buffer_);
   self->finalized_position_ = self->position_;
   JXL_RETURN_IF_ERROR(jxl_encoder_output_processor_wrapper_flush_output(
       self, self->next_out_, self->avail_out_));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_encoder_output_processor_wrapper_set_avail_out(
+jxl_enc_status jxl_encoder_output_processor_wrapper_set_avail_out(
     jxl_encoder_output_processor_wrapper* self, uint8_t** next_out,
     size_t* avail_out) {
   self->avail_out_ = avail_out;
   self->next_out_ = next_out;
   JXL_RETURN_IF_ERROR(jxl_encoder_output_processor_wrapper_flush_output(
       self, self->next_out_, self->avail_out_));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_encoder_output_processor_wrapper_release_buffer(
+jxl_enc_status jxl_encoder_output_processor_wrapper_release_buffer(
     jxl_encoder_output_processor_wrapper* self, size_t bytes_used) {
   JXL_ENSURE(self->has_buffer_);
   self->has_buffer_ = false;
@@ -149,21 +149,21 @@ jxl_status jxl_encoder_output_processor_wrapper_release_buffer(
   JXL_ENSURE(idx < jxl_buffered_chunks_size(&self->internal_buffers_));
   if (bytes_used == 0) {
     jxl_buffered_chunks_erase(&self->internal_buffers_, idx);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   jxl_buffered_chunks_at(&self->internal_buffers_, idx)->buffer.written_bytes =
       bytes_used;
   self->position_ += bytes_used;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Tries to write all the bytes up to the finalized position.
-jxl_status jxl_encoder_output_processor_wrapper_flush_output(
+jxl_enc_status jxl_encoder_output_processor_wrapper_flush_output(
     jxl_encoder_output_processor_wrapper* self, uint8_t** next_out,
     size_t* avail_out) {
   JXL_ENSURE(!self->has_buffer_);
   if (!avail_out) {
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   while (self->output_position_ < self->finalized_position_ && *avail_out > 0) {
     JXL_ENSURE(!jxl_buffered_chunks_empty(&self->internal_buffers_));
@@ -196,7 +196,7 @@ jxl_status jxl_encoder_output_processor_wrapper_flush_output(
       jxl_buffered_chunks_erase(&self->internal_buffers_, (size_t)(0));
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 size_t jxl_write_box_header(const jxl_enc_box_type* type, size_t size, bool unbounded,
@@ -237,14 +237,14 @@ typedef struct jxl_write_box_contents_ctx {
   size_t size;
 } jxl_write_box_contents_ctx;
 
-static jxl_status jxl_write_box_contents(void* opaque) {
+static jxl_enc_status jxl_write_box_contents(void* opaque) {
   jxl_write_box_contents_ctx* c = (jxl_write_box_contents_ctx*)(opaque);
   return jxl_append_data(&c->enc->output_processor, c->contents, c->size);
 }
 
-jxl_status jxl_encoder_append_box(jxl_encoder* self, const jxl_enc_box_type* type,
+jxl_enc_status jxl_encoder_append_box(jxl_encoder* self, const jxl_enc_box_type* type,
                                 bool unbounded, size_t box_max_size,
-                                jxl_status (*write_box)(void*), void* opaque) {
+                                jxl_enc_status (*write_box)(void*), void* opaque) {
   size_t current_position = jxl_encoder_output_processor_wrapper_current_position(&self->output_processor);
   bool large_box = false;
   size_t box_header_size = 0;
@@ -271,10 +271,10 @@ jxl_status jxl_encoder_append_box(jxl_encoder* self, const jxl_enc_box_type* typ
   {
     jxl_output_processor_buffer buffer;
     jxl_output_processor_buffer_construct_empty(&buffer);
-    jxl_status status = jxl_encoder_output_processor_wrapper_get_buffer(
+    jxl_enc_status status = jxl_encoder_output_processor_wrapper_get_buffer(
         &self->output_processor, box_contents_start - current_position, 0,
         &buffer);
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_output_processor_buffer_destroy(&buffer);
       return status;
     }
@@ -288,10 +288,10 @@ jxl_status jxl_encoder_append_box(jxl_encoder* self, const jxl_enc_box_type* typ
   }
   JXL_RETURN_IF_ERROR(jxl_encoder_output_processor_wrapper_seek(&self->output_processor, box_contents_end));
   JXL_RETURN_IF_ERROR(jxl_encoder_output_processor_wrapper_set_finalized_position(&self->output_processor));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_encoder_append_box_with_contents(jxl_encoder* self,
+jxl_enc_status jxl_encoder_append_box_with_contents(jxl_encoder* self,
                                             const jxl_enc_box_type* type,
                                             const uint8_t* contents,
                                             size_t size) {
@@ -313,17 +313,17 @@ static void jxl_write_jxlp_box_counter_bytes(uint32_t counter, bool last,
   }
 }
 
-static jxl_status jxl_write_jxlp_box_counter(uint32_t counter, bool last,
+static jxl_enc_status jxl_write_jxlp_box_counter(uint32_t counter, bool last,
                                 jxl_output_processor_buffer* buffer) {
   uint8_t buf[4];
   jxl_write_jxlp_box_counter_bytes(counter, last, buf);
   JXL_RETURN_IF_ERROR(jxl_output_processor_buffer_append(buffer, buf, 4));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static void jxl_queue_frame(const jxl_encoder_frame_settings* frame_settings,
                 jxl_owned_queued_frame* frame) {
-  if (!jxl_status_ok(jxl_owned_queued_frames_emplace_back(&frame_settings->enc->input_queue, frame))) {
+  if (!jxl_enc_status_ok(jxl_owned_queued_frames_emplace_back(&frame_settings->enc->input_queue, frame))) {
     JXL_CRASH();
   }
   frame_settings->enc->num_queued_frames++;
@@ -334,7 +334,7 @@ static bool jxl_queue_jpeg_metadata_box(jxl_encoder* enc, const char* type,
                           jxl_encoder_metadata_boxes* out) {
   enc->has_jpeg_metadata_boxes = true;
   jxl_enc_box_type box_type = jxl_make_box_type(type);
-  return jxl_status_ok(
+  return jxl_enc_status_ok(
       jxl_encoder_metadata_boxes_push_back(out, box_type, contents, compress_box));
 }
 
@@ -356,7 +356,7 @@ static jxl_status_t jxl_brotli_compress(int quality, const uint8_t* in, size_t i
   } while (0)
   jxl_padded_bytes temp_buffer;
   jxl_padded_bytes_make(ctx, &temp_buffer);
-  if (!jxl_status_ok(jxl_padded_bytes_with_initial_space(ctx, kBufferSize,
+  if (!jxl_enc_status_ok(jxl_padded_bytes_with_initial_space(ctx, kBufferSize,
                                         &temp_buffer))) {
     jxl_padded_bytes_destroy(&temp_buffer);
     QUIT("Initialization of jxl_padded_bytes failed");
@@ -381,7 +381,7 @@ static jxl_status_t jxl_brotli_compress(int quality, const uint8_t* in, size_t i
     }
     size_t out_size = next_out - jxl_padded_bytes_data(&temp_buffer);
     jxl_msan_unpoison_memory(next_out - out_size, out_size);
-    if (!jxl_status_ok(jxl_padded_bytes_resize(out, jxl_padded_bytes_size(out) + out_size))) {
+    if (!jxl_enc_status_ok(jxl_padded_bytes_resize(out, jxl_padded_bytes_size(out) + out_size))) {
       jxl_padded_bytes_destroy(&temp_buffer);
       BrotliEncoderDestroyInstance(enc);
       return JXL_API_ERROR_NOSET("resizing of jxl_padded_bytes failed");
@@ -396,16 +396,16 @@ static jxl_status_t jxl_brotli_compress(int quality, const uint8_t* in, size_t i
   return JXL_OK;
 }
 
-static jxl_status jxl_write_metadata_box(jxl_encoder* enc, int brotli_effort,
+static jxl_enc_status jxl_write_metadata_box(jxl_encoder* enc, int brotli_effort,
                              const jxl_encoder_metadata_box* box,
                              const jxl_bytes* contents) {
   if (box->compress_box) {
     jxl_padded_bytes compressed;
     jxl_padded_bytes_make(enc->ctx, &compressed);
-    jxl_status status = jxl_padded_bytes_append(
+    jxl_enc_status status = jxl_padded_bytes_append(
         &compressed, jxl_enc_box_type_data(&box->type),
         jxl_enc_box_type_data(&box->type) + jxl_enc_box_type_size());
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_padded_bytes_destroy(&compressed);
       return status;
     }
@@ -422,12 +422,12 @@ static jxl_status jxl_write_metadata_box(jxl_encoder* enc, int brotli_effort,
           enc, &brob, jxl_padded_bytes_data(&compressed),
           jxl_padded_bytes_size(&compressed));
       jxl_padded_bytes_destroy(&compressed);
-      if (!jxl_status_ok(status)) return status;
+      if (!jxl_enc_status_ok(status)) return status;
     }
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   JXL_RETURN_IF_ERROR(jxl_encoder_append_box_with_contents(enc, &box->type, jxl_bytes_data(contents), jxl_bytes_size(contents)));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Returns 5 or 10 on success, or -1 if settings exceed level 10 limits.
@@ -471,13 +471,13 @@ static jxl_status_t jxl_setup_metadata_from_jpeg(jxl_encoder* enc,
   if (enc->jpeg_metadata_set) {
     return JXL_OK;
   }
-  if (!jxl_status_ok(jxl_set_color_encoding_from_jpeg_data(
+  if (!jxl_enc_status_ok(jxl_set_color_encoding_from_jpeg_data(
           enc->ctx, &enc->cms, jpeg_data, &enc->metadata.m.color_encoding))) {
     return JXL_API_ERROR(
         enc, JXL_ERROR_INVALID_INPUT,
         "Error decoding the ICC profile embedded in the input JPEG");
   }
-  if (!jxl_status_ok(jxl_enc_size_header_set(&enc->metadata.size, jpeg_data->width, jpeg_data->height))) {
+  if (!jxl_enc_status_ok(jxl_enc_size_header_set(&enc->metadata.size, jpeg_data->width, jpeg_data->height))) {
     return JXL_API_ERROR(enc, JXL_ERROR_API_USAGE, "Invalid dimensions");
   }
   enc->metadata.m.bit_depth.bits_per_sample = 8;
@@ -505,9 +505,9 @@ static jxl_status_t jxl_setup_metadata_from_jpeg(jxl_encoder* enc,
   return JXL_OK;
 }
 
-static jxl_status jxl_zero_pad_header_body(void* opaque) {
+static jxl_enc_status jxl_zero_pad_header_body(void* opaque) {
   jxl_bit_writer_zero_pad_to_byte((jxl_bit_writer*)(opaque));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 typedef struct jxl_jxlp_ctx {
@@ -516,19 +516,19 @@ typedef struct jxl_jxlp_ctx {
   size_t* jxlp_counter;
 } jxl_jxlp_ctx;
 
-static jxl_status jxl_write_jxlp_box_contents(void* opaque) {
+static jxl_enc_status jxl_write_jxlp_box_contents(void* opaque) {
   jxl_jxlp_ctx* c = (jxl_jxlp_ctx*)(opaque);
   jxl_output_processor_buffer buffer;
   jxl_output_processor_buffer_construct_empty(&buffer);
-  jxl_status status = jxl_encoder_output_processor_wrapper_get_buffer(
+  jxl_enc_status status = jxl_encoder_output_processor_wrapper_get_buffer(
       &c->enc->output_processor, jxl_padded_bytes_size(c->header_bytes) + 4, 0,
       &buffer);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_output_processor_buffer_destroy(&buffer);
     return status;
   }
   status = jxl_write_jxlp_box_counter((*c->jxlp_counter)++, /*last=*/false, &buffer);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_output_processor_buffer_destroy(&buffer);
     return status;
   }
@@ -538,7 +538,7 @@ static jxl_status jxl_write_jxlp_box_contents(void* opaque) {
   return status;
 }
 
-jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
+jxl_enc_status jxl_encoder_process_one_enqueued_input_body_with_header(
     jxl_encoder* self, jxl_owned_queued_frame* input_frame,
     jxl_padded_bytes* header_bytes) {
   const bool last_frame = self->input_closed && (self->num_queued_frames == 0);
@@ -558,7 +558,7 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
     }
     jxl_bit_writer writer;
     jxl_bit_writer_make(self->ctx, &writer);
-    if (!jxl_status_ok(jxl_write_codestream_headers(&self->metadata, &writer))) {
+    if (!jxl_enc_status_ok(jxl_write_codestream_headers(&self->metadata, &writer))) {
       jxl_bit_writer_destroy(&writer);
       return JXL_API_ERROR_AS_STATUS(self, JXL_ERROR_GENERIC,
                            "Failed to write codestream header");
@@ -567,16 +567,16 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
       jxl_bytes icc_bytes = jxl_bytes_make(
           jxl_array_data_const(jxl_enc_color_encoding_icc(&self->metadata.m.color_encoding)),
           jxl_array_len(jxl_enc_color_encoding_icc(&self->metadata.m.color_encoding)));
-      if (!jxl_status_ok(jxl_write_icc(&icc_bytes, &writer, kLayerHeader))) {
+      if (!jxl_enc_status_ok(jxl_write_icc(&icc_bytes, &writer, kLayerHeader))) {
         jxl_bit_writer_destroy(&writer);
         return JXL_API_ERROR_AS_STATUS(self, JXL_ERROR_GENERIC,
                              "Failed to write ICC profile");
       }
     }
     {
-      jxl_status pad_status = jxl_bit_writer_with_max_bits(
+      jxl_enc_status pad_status = jxl_bit_writer_with_max_bits(
           &writer, 8, kLayerHeader, jxl_zero_pad_header_body, &writer);
-      if (!jxl_status_ok(pad_status)) {
+      if (!jxl_enc_status_ok(pad_status)) {
         jxl_bit_writer_destroy(&writer);
         return pad_status;
       }
@@ -594,8 +594,8 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
       self->container_ftyp_version = 0;
       jxl_array_u8 container_header;
       jxl_array_construct_empty(&container_header, self->ctx);
-      jxl_status box_status = jxl_make_container_header(self->ctx, 0, &container_header);
-      if (!jxl_status_ok(box_status)) {
+      jxl_enc_status box_status = jxl_make_container_header(self->ctx, 0, &container_header);
+      if (!jxl_enc_status_ok(box_status)) {
         jxl_array_destroy(&container_header);
         return box_status;
       }
@@ -603,7 +603,7 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
                               jxl_array_data(&container_header),
                               jxl_array_len(&container_header));
       jxl_array_destroy(&container_header);
-      if (!jxl_status_ok(box_status)) return box_status;
+      if (!jxl_enc_status_ok(box_status)) return box_status;
 
       if (self->codestream_level != 5) {
         const uint8_t level = (uint8_t)(self->codestream_level);
@@ -613,20 +613,20 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
           jxl_enc_box_type jxll = jxl_make_box_type("jxll");
           box_status = jxl_append_box_header(&jxll, 1,
                                             /*unbounded=*/false, &jxll_box);
-          if (!jxl_status_ok(box_status)) {
+          if (!jxl_enc_status_ok(box_status)) {
             jxl_array_destroy(&jxll_box);
             return box_status;
           }
         }
         box_status = jxl_array_u8_push_back(&jxll_box, level);
-        if (!jxl_status_ok(box_status)) {
+        if (!jxl_enc_status_ok(box_status)) {
           jxl_array_destroy(&jxll_box);
           return box_status;
         }
         box_status = jxl_append_data(&self->output_processor, jxl_array_data(&jxll_box),
                                 jxl_array_len(&jxll_box));
         jxl_array_destroy(&jxll_box);
-        if (!jxl_status_ok(box_status)) return box_status;
+        if (!jxl_enc_status_ok(box_status)) return box_status;
       }
 
       bool partial_header =
@@ -695,7 +695,7 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
 
   jxl_frame_info frame_info;
   frame_info.is_last = last_frame;
-  if (!jxl_status_ok(jxl_encode_frame(self->ctx, &jxl_owned_queued_frame_get(input_frame)->cparams, &frame_info,
+  if (!jxl_enc_status_ok(jxl_encode_frame(self->ctx, &jxl_owned_queued_frame_get(input_frame)->cparams, &frame_info,
                         &self->metadata, &jxl_owned_queued_frame_get(input_frame)->frame_data, &self->output_processor))) {
     return JXL_API_ERROR_AS_STATUS(self, JXL_ERROR_GENERIC,
                                  "Failed to encode frame");
@@ -708,9 +708,9 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
     JXL_RETURN_IF_ERROR(jxl_encoder_output_processor_wrapper_seek(&self->output_processor, frame_start_pos));
     jxl_array_u8 box_header;
     jxl_array_construct_empty(&box_header, self->ctx);
-    jxl_status box_status =
+    jxl_enc_status box_status =
         jxl_array_resize_zero(&box_header, box_header_size);
-    if (!jxl_status_ok(box_status)) {
+    if (!jxl_enc_status_ok(box_status)) {
       jxl_array_destroy(&box_header);
       return box_status;
     }
@@ -741,27 +741,27 @@ jxl_status jxl_encoder_process_one_enqueued_input_body_with_header(
     box_status = jxl_append_data(&self->output_processor, jxl_array_data(&box_header),
                             jxl_array_len(&box_header));
     jxl_array_destroy(&box_header);
-    if (!jxl_status_ok(box_status)) return box_status;
+    if (!jxl_enc_status_ok(box_status)) return box_status;
     JXL_ENSURE(jxl_encoder_output_processor_wrapper_current_position(&self->output_processor) ==
                frame_start_pos + box_header_size);
     JXL_RETURN_IF_ERROR(jxl_encoder_output_processor_wrapper_seek(&self->output_processor, content_start + content_size));
   }
   JXL_RETURN_IF_ERROR(jxl_encoder_output_processor_wrapper_set_finalized_position(&self->output_processor));
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_encoder_process_one_enqueued_input_body(
+jxl_enc_status jxl_encoder_process_one_enqueued_input_body(
     jxl_encoder* self, jxl_owned_queued_frame* input_frame) {
   jxl_padded_bytes header_bytes;
   jxl_padded_bytes_make(self->ctx, &header_bytes);
-  jxl_status status = jxl_encoder_process_one_enqueued_input_body_with_header(
+  jxl_enc_status status = jxl_encoder_process_one_enqueued_input_body_with_header(
       self, input_frame, &header_bytes);
   jxl_padded_bytes_destroy(&header_bytes);
   return status;
 }
 
-jxl_status jxl_encoder_process_one_enqueued_input(jxl_encoder* self) {
+jxl_enc_status jxl_encoder_process_one_enqueued_input(jxl_encoder* self) {
   JXL_ENSURE(!jxl_owned_queued_frames_empty(&self->input_queue));
   jxl_owned_queued_frame input_frame;
   jxl_owned_queued_frame_construct_empty(&input_frame);
@@ -769,7 +769,7 @@ jxl_status jxl_encoder_process_one_enqueued_input(jxl_encoder* self) {
   jxl_owned_queued_frames_erase(&self->input_queue, (size_t)(0));
   self->num_queued_frames--;
 
-  jxl_status status = jxl_encoder_process_one_enqueued_input_body(self, &input_frame);
+  jxl_enc_status status = jxl_encoder_process_one_enqueued_input_body(self, &input_frame);
   jxl_owned_queued_frame_destroy(&input_frame);
   return status;
 }
@@ -788,7 +788,7 @@ jxl_encoder_frame_settings* jxl_encoder_frame_settings_create(
   }
 
   jxl_encoder_frame_settings* ret = jxl_owned_frame_settings_get(&opts);
-  if (!jxl_status_ok(jxl_owned_frame_settings_list_emplace_back(&enc->encoder_options, &opts))) {
+  if (!jxl_enc_status_ok(jxl_owned_frame_settings_list_emplace_back(&enc->encoder_options, &opts))) {
     JXL_CRASH();
   }
   jxl_owned_frame_settings_destroy(&opts);
@@ -926,9 +926,9 @@ jxl_status_t jxl_encoder_add_jpeg_frame(
   jxl_jpeg_data_init(&jpeg_data, ctx);
   {
     jxl_bytes jpg_bytes = jxl_bytes_make(buffer, size);
-    jxl_status status = jxl_parse_jpg(ctx, &jpg_bytes, &jpeg_data);
-    if (!jxl_status_ok(status)) {
-      if (jxl_status_get_code(status) == kUnsupported) {
+    jxl_enc_status status = jxl_parse_jpg(ctx, &jpg_bytes, &jpeg_data);
+    if (!jxl_enc_status_ok(status)) {
+      if (jxl_enc_status_get_code(status) == kUnsupported) {
         return JXL_API_ERROR(
             frame_settings->enc, JXL_ERROR_UNSUPPORTED,
             "Unsupported JPEG feature (CMYK, arithmetic coding, etc.)");
@@ -953,7 +953,7 @@ jxl_status_t jxl_encoder_add_jpeg_frame(
   }
   jxl_jpeg_blobs blobs;
   jxl_jpeg_blobs_construct_empty(&blobs, ctx);
-  if (!jxl_status_ok(jxl_set_blobs_from_jpeg_data(&jpeg_data, &blobs))) {
+  if (!jxl_enc_status_ok(jxl_set_blobs_from_jpeg_data(&jpeg_data, &blobs))) {
     jxl_jpeg_blobs_destroy(&blobs);
     return JXL_API_ERROR(frame_settings->enc, JXL_ERROR_INVALID_INPUT,
                          "Error during parsing of input JPEG blobs");
@@ -981,7 +981,7 @@ jxl_status_t jxl_encoder_add_jpeg_frame(
     exif_size += 4;  // prefix 4 zero bytes for tiff offset
     jxl_array_u8 exif;
     jxl_array_construct_empty(&exif, ctx);
-    if (!jxl_status_ok(jxl_array_resize_zero(&exif, exif_size))) {
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(&exif, exif_size))) {
       jxl_array_destroy(&exif);
       jxl_jpeg_blobs_destroy(&blobs);
       jxl_encoder_metadata_boxes_destroy(&metadata_boxes);
@@ -1021,7 +1021,7 @@ jxl_status_t jxl_encoder_add_jpeg_frame(
     }
     jxl_array_u8 jpeg_metadata;
     jxl_array_construct_empty(&jpeg_metadata, ctx);
-    if (!jxl_status_ok(jxl_encode_jpeg_data(frame_settings->enc->ctx,
+    if (!jxl_enc_status_ok(jxl_encode_jpeg_data(frame_settings->enc->ctx,
                                    &jpeg_data, &jpeg_metadata,
                                    &frame_settings->cparams))) {
       jxl_array_destroy(&jpeg_metadata);
@@ -1061,11 +1061,11 @@ void jxl_encoder_close_input(jxl_encoder* enc) { enc->input_closed = true; }
 
 jxl_status_t jxl_encoder_process_output(jxl_encoder* enc, uint8_t** next_out,
                                          size_t* avail_out) {
-  if (!jxl_status_ok(jxl_encoder_output_processor_wrapper_set_avail_out(&enc->output_processor, next_out, avail_out))) {
+  if (!jxl_enc_status_ok(jxl_encoder_output_processor_wrapper_set_avail_out(&enc->output_processor, next_out, avail_out))) {
     return JXL_ERROR_GENERIC;
   }
   while (*avail_out != 0 && !jxl_owned_queued_frames_empty(&enc->input_queue)) {
-    if (!jxl_status_ok(jxl_encoder_process_one_enqueued_input(enc))) {
+    if (!jxl_enc_status_ok(jxl_encoder_process_one_enqueued_input(enc))) {
       return JXL_ERROR_GENERIC;
     }
   }

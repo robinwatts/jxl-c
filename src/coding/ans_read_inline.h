@@ -2,6 +2,7 @@
 #ifndef JXL_CODING_ANS_READ_INLINE_H_
 #define JXL_CODING_ANS_READ_INLINE_H_
 
+#include "compiler.h"
 #include "coding/ans.h"
 #include "coding/error.h"
 

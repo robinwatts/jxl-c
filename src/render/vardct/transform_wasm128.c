@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#include "compiler.h"
 #include "render/vardct/transform_wasm128.h"
 
 #include "render/vardct/dct_2d_wasm128.h"

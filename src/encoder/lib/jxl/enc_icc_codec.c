@@ -33,13 +33,13 @@
 // elements at the bottom of the rightmost column. The input is the input matrix
 // in scanline order, the output is the result matrix in scanline order, with
 // missing elements skipped over (this may occur at multiple positions).
-static jxl_status jxl_unshuffle(jxl_context* ctx, uint8_t* data, size_t size,
+static jxl_enc_status jxl_unshuffle(jxl_context* ctx, uint8_t* data, size_t size,
                  size_t width) {
   size_t height = (size + width - 1) / width;  // amount of rows of input
   jxl_padded_bytes result;
-  jxl_status status =
+  jxl_enc_status status =
       jxl_padded_bytes_with_initial_space(ctx, size, &result);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_padded_bytes_destroy(&result);
     return status;
   }
@@ -57,13 +57,13 @@ static jxl_status jxl_unshuffle(jxl_context* ctx, uint8_t* data, size_t size,
     data[i] = *jxl_padded_bytes_at(&result, i);
   }
   jxl_padded_bytes_destroy(&result);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // This is performed by the encoder, the encoder must be able to encode any
 // random byte stream (not just byte streams that are a valid ICC profile), so
 // an error returned by this function is an implementation error.
-static jxl_status jxl_predict_and_shuffle(size_t stride, size_t width, int order, size_t num,
+static jxl_enc_status jxl_predict_and_shuffle(size_t stride, size_t width, int order, size_t num,
                          const uint8_t* data, size_t size, size_t* pos,
                          jxl_padded_bytes* result) {
   JXL_RETURN_IF_ERROR(jxl_check_out_of_bounds(*pos, num, size));
@@ -84,10 +84,10 @@ static jxl_status jxl_predict_and_shuffle(size_t stride, size_t width, int order
     JXL_RETURN_IF_ERROR(
         jxl_unshuffle(ctx, jxl_padded_bytes_data(result) + start, num, width));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_encode_var_int(uint64_t value, jxl_padded_bytes* data) {
+static inline jxl_enc_status jxl_encode_var_int(uint64_t value, jxl_padded_bytes* data) {
   size_t pos = jxl_padded_bytes_size(data);
   JXL_RETURN_IF_ERROR(jxl_padded_bytes_resize(data, jxl_padded_bytes_size(data) + 9));
   size_t output_size = jxl_padded_bytes_size(data);
@@ -121,7 +121,7 @@ static bool jxl_tag_size_sane(size_t tagsize) {
 // form that is easier to compress (more zeroes, ...) and will compress better
 // with brotli.
 
-jxl_status jxl_predict_icc_main_step(jxl_context* ctx, const uint8_t* icc,
+jxl_enc_status jxl_predict_icc_main_step(jxl_context* ctx, const uint8_t* icc,
                           size_t size, size_t* pos, jxl_tag* tag, size_t* tagstart,
                           size_t* tagsize, size_t* clutstart, size_t* last0,
                           jxl_padded_bytes* commands, jxl_padded_bytes* data,
@@ -310,10 +310,10 @@ jxl_status jxl_predict_icc_main_step(jxl_context* ctx, const uint8_t* icc,
   if (jxl_padded_bytes_empty(commands_add) && jxl_padded_bytes_empty(data_add)) {
     (*pos)++;
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_predict_icc_body(const uint8_t* icc, size_t size, jxl_padded_bytes* result,
+jxl_enc_status jxl_predict_icc_body(const uint8_t* icc, size_t size, jxl_padded_bytes* result,
                       jxl_padded_bytes* commands, jxl_padded_bytes* data,
                       jxl_padded_bytes* header, jxl_array_tag* tags,
                       jxl_array_size* tagstarts, jxl_array_size* tagsizes) {
@@ -346,7 +346,7 @@ jxl_status jxl_predict_icc_body(const uint8_t* icc, size_t size, jxl_padded_byte
       uint8_t b = *jxl_padded_bytes_at(data, b_i);
       JXL_RETURN_IF_ERROR(jxl_padded_bytes_push_back(result, b));
     }
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   // jxl_tag list
@@ -365,7 +365,7 @@ jxl_status jxl_predict_icc_body(const uint8_t* icc, size_t size, jxl_padded_byte
       uint32_t tagsize = jxl_decode_uint32(icc, size, pos + 8);
       pos += 12;
 
-      if (!jxl_status_ok(jxl_array_tag_push_back(tags, tag))) JXL_CRASH();
+      if (!jxl_enc_status_ok(jxl_array_tag_push_back(tags, tag))) JXL_CRASH();
       JXL_RETURN_IF_ERROR(jxl_array_size_push_back(tagstarts, (size_t)(tagstart)));
       JXL_RETURN_IF_ERROR(jxl_array_size_push_back(tagsizes, (size_t)(tagsize)));
 
@@ -464,12 +464,12 @@ jxl_status jxl_predict_icc_body(const uint8_t* icc, size_t size, jxl_padded_byte
     jxl_padded_bytes data_add;
     jxl_padded_bytes_make(ctx, &commands_add);
     jxl_padded_bytes_make(ctx, &data_add);
-    jxl_status step_status = jxl_predict_icc_main_step(
+    jxl_enc_status step_status = jxl_predict_icc_main_step(
         ctx, icc, size, &pos, &tag, &tagstart, &tagsize, &clutstart,
         &last0, commands, data, tagstarts, tagsizes, &commands_add, &data_add);
     jxl_padded_bytes_destroy(&commands_add);
     jxl_padded_bytes_destroy(&data_add);
-    if (!jxl_status_ok(step_status)) return step_status;
+    if (!jxl_enc_status_ok(step_status)) return step_status;
   }
 
   JXL_RETURN_IF_ERROR(jxl_encode_var_int(jxl_padded_bytes_size(commands), result));
@@ -482,10 +482,10 @@ jxl_status jxl_predict_icc_body(const uint8_t* icc, size_t size, jxl_padded_byte
     JXL_RETURN_IF_ERROR(jxl_padded_bytes_push_back(result, b));
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_predict_icc(const uint8_t* icc, size_t size, jxl_padded_bytes* result) {
+jxl_enc_status jxl_predict_icc(const uint8_t* icc, size_t size, jxl_padded_bytes* result) {
   jxl_context* ctx = jxl_padded_bytes_ctx(result);
   jxl_padded_bytes commands;
   jxl_padded_bytes data;
@@ -499,7 +499,7 @@ jxl_status jxl_predict_icc(const uint8_t* icc, size_t size, jxl_padded_bytes* re
   jxl_array_construct_empty(&tagstarts, ctx);
   jxl_array_size tagsizes;
   jxl_array_construct_empty(&tagsizes, ctx);
-  jxl_status status = jxl_predict_icc_body(icc, size, result, &commands, &data, &header,
+  jxl_enc_status status = jxl_predict_icc_body(icc, size, result, &commands, &data, &header,
                                  &tags, &tagstarts, &tagsizes);
   jxl_padded_bytes_destroy(&commands);
   jxl_padded_bytes_destroy(&data);
@@ -515,25 +515,25 @@ typedef struct jxl_write_size_ctx {
   jxl_bit_writer* writer;
 } jxl_write_size_ctx;
 
-static jxl_status jxl_write_icc_size_body(void* opaque) {
+static jxl_enc_status jxl_write_icc_size_body(void* opaque) {
   jxl_write_size_ctx* c = (jxl_write_size_ctx*)(opaque);
   return jxl_u64_coder_write(c->size, c->writer);
 }
 
-jxl_status jxl_write_icc_body(const jxl_bytes* icc, jxl_bit_writer* JXL_RESTRICT writer,
+jxl_enc_status jxl_write_icc_body(const jxl_bytes* icc, jxl_bit_writer* JXL_RESTRICT writer,
                     jxl_layer_type layer, jxl_token_streams* tokens) {
   jxl_context* ctx = jxl_bit_writer_ctx(writer);
   jxl_padded_bytes enc;
   jxl_padded_bytes_make(ctx, &enc);
-  jxl_status status = jxl_predict_icc(jxl_bytes_data(icc), jxl_bytes_size(icc), &enc);
-  if (!jxl_status_ok(status)) {
+  jxl_enc_status status = jxl_predict_icc(jxl_bytes_data(icc), jxl_bytes_size(icc), &enc);
+  if (!jxl_enc_status_ok(status)) {
     jxl_padded_bytes_destroy(&enc);
     return status;
   }
   jxl_write_size_ctx size_ctx = {jxl_padded_bytes_size(&enc), writer};
   status =
       jxl_bit_writer_with_max_bits(writer, 128, layer, jxl_write_icc_size_body, &size_ctx);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_padded_bytes_destroy(&enc);
     return status;
   }
@@ -542,7 +542,7 @@ jxl_status jxl_write_icc_body(const jxl_bytes* icc, jxl_bit_writer* JXL_RESTRICT
     uint32_t ctx = (uint32_t)(jxl_iccans_context(
         i, i > 0 ? *jxl_padded_bytes_at(&enc, i - 1) : 0,
         i > 1 ? *jxl_padded_bytes_at(&enc, i - 2) : 0));
-    if (!jxl_status_ok(jxl_array_token_push_back(jxl_token_streams_at(tokens, 0),
+    if (!jxl_enc_status_ok(jxl_array_token_push_back(jxl_token_streams_at(tokens, 0),
                                 jxl_token_make(ctx, *jxl_padded_bytes_at(&enc, i))))) {
       JXL_CRASH();
     }
@@ -560,7 +560,7 @@ jxl_status jxl_write_icc_body(const jxl_bytes* icc, jxl_bit_writer* JXL_RESTRICT
   status = jxl_build_and_encode_histograms(
       ctx, &params, kNumICCContexts, tokens, &code, writer, layer,
       &empty_widths, &cost);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&empty_widths);
     jxl_entropy_encoding_data_destroy(&code);
     jxl_padded_bytes_destroy(&enc);
@@ -575,13 +575,13 @@ jxl_status jxl_write_icc_body(const jxl_bytes* icc, jxl_bit_writer* JXL_RESTRICT
 }
 
 
-jxl_status jxl_write_icc(const jxl_bytes* icc, jxl_bit_writer* JXL_RESTRICT writer,
+jxl_enc_status jxl_write_icc(const jxl_bytes* icc, jxl_bit_writer* JXL_RESTRICT writer,
                 jxl_layer_type layer) {
   if (jxl_bytes_is_empty(icc)) return JXL_FAILURE("ICC must be non-empty");
   jxl_context* ctx = jxl_bit_writer_ctx(writer);
   jxl_token_streams tokens;
   jxl_token_streams_create(&tokens, 1, ctx);
-  jxl_status status = jxl_write_icc_body(icc, writer, layer, &tokens);
+  jxl_enc_status status = jxl_write_icc_body(icc, writer, layer, &tokens);
   jxl_token_streams_destroy(&tokens);
   return status;
 }

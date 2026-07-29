@@ -213,20 +213,20 @@ static inline void jxl_extra_zero_run_chunks_swap(jxl_extra_zero_run_chunks* sel
   jxl_array_swap(&self->starts, &other->starts);
 }
 
-static inline jxl_status jxl_extra_zero_run_chunks_push_empty(jxl_extra_zero_run_chunks* self) {
+static inline jxl_enc_status jxl_extra_zero_run_chunks_push_empty(jxl_extra_zero_run_chunks* self) {
   if (jxl_array_empty(&self->starts)) {
     JXL_RETURN_IF_ERROR(jxl_array_u32_push_back(&self->starts, (uint32_t)(0)));
   }
   return jxl_array_u32_push_back(&self->starts, (uint32_t)(jxl_array_len(&self->data)));
 }
 
-static inline jxl_status jxl_extra_zero_run_chunks_push_to_last(jxl_extra_zero_run_chunks* self,
+static inline jxl_enc_status jxl_extra_zero_run_chunks_push_to_last(jxl_extra_zero_run_chunks* self,
                                            jxl_jpeg_extra_zero_run_info value) {
   JXL_DASSERT(jxl_extra_zero_run_chunks_size(self) > 0);
   JXL_RETURN_IF_ERROR(jxl_array_jpeg_extra_zero_run_info_push_back(&self->data, value));
   *jxl_array_at(&self->starts, jxl_array_len(&self->starts) - 1) =
       (uint32_t)(jxl_array_len(&self->data));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 
@@ -303,7 +303,7 @@ typedef struct jxl_jpeg_data {
 
 } jxl_jpeg_data;
 
-jxl_status jxl_jpeg_data_visit_fields(jxl_jpeg_data* self, jxl_visitor* visitor);
+jxl_enc_status jxl_jpeg_data_visit_fields(jxl_jpeg_data* self, jxl_visitor* visitor);
 JXL_FIELDS_NAME(jxl_jpeg_data)
 
 static inline void jxl_jpeg_data_construct_empty(jxl_jpeg_data* self,

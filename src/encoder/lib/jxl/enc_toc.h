@@ -14,10 +14,10 @@
 
 
 // Writes the TOC permutation header: always "no permutation" + ZeroPadToByte.
-jxl_status jxl_write_toc_permutation(jxl_bit_writer* JXL_RESTRICT writer);
+jxl_enc_status jxl_write_toc_permutation(jxl_bit_writer* JXL_RESTRICT writer);
 
 // Writes the TOC size entries
-jxl_status jxl_write_toc_sizes(const jxl_array_size* group_sizes,
+jxl_enc_status jxl_write_toc_sizes(const jxl_array_size* group_sizes,
                      jxl_bit_writer* JXL_RESTRICT writer);
 
 

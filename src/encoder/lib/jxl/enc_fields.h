@@ -19,15 +19,15 @@
 #include "lib/jxl/layer_type.h"
 // Write headers from the jxl_codec_metadata. Also may modify nonserialized_...
 // fields of the metadata.
-jxl_status jxl_write_codestream_headers(jxl_codec_metadata* metadata, jxl_bit_writer* writer);
+jxl_enc_status jxl_write_codestream_headers(jxl_codec_metadata* metadata, jxl_bit_writer* writer);
 
-jxl_status jxl_write_frame_header(const jxl_enc_frame_header* frame,
+jxl_enc_status jxl_write_frame_header(const jxl_enc_frame_header* frame,
                         jxl_bit_writer* JXL_RESTRICT writer);
 
-jxl_status jxl_write_quantizer_params(const jxl_quantizer_params* params,
+jxl_enc_status jxl_write_quantizer_params(const jxl_quantizer_params* params,
                             jxl_bit_writer* JXL_RESTRICT writer, jxl_layer_type layer);
 
-jxl_status jxl_write_size_header(const jxl_enc_size_header* size, jxl_bit_writer* JXL_RESTRICT writer,
+jxl_enc_status jxl_write_size_header(const jxl_enc_size_header* size, jxl_bit_writer* JXL_RESTRICT writer,
                        jxl_layer_type layer);
 
 

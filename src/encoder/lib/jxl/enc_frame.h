@@ -22,7 +22,7 @@ typedef struct jxl_frame_info {
 } jxl_frame_info;
 
 // Encodes a single frame (including its header) into a byte stream.
-jxl_status jxl_encode_frame(jxl_context* ctx,
+jxl_enc_status jxl_encode_frame(jxl_context* ctx,
                    const jxl_compress_params* cparams_orig,
                    const jxl_frame_info* frame_info, const jxl_codec_metadata* metadata,
                    jxl_encoder_jpeg_frame_adapter* frame_data,

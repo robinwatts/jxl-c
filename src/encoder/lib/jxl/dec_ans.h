@@ -99,7 +99,7 @@ typedef struct jxl_lz77_params {
   size_t nonserialized_distance_context;
 } jxl_lz77_params;
 
-jxl_status jxl_lz77_params_visit_fields(jxl_lz77_params* self, jxl_visitor* JXL_RESTRICT visitor);
+jxl_enc_status jxl_lz77_params_visit_fields(jxl_lz77_params* self, jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_lz77_params)
 
 static inline void jxl_lz77_params_init(jxl_lz77_params* self) {

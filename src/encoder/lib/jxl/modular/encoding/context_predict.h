@@ -27,12 +27,12 @@ enum {
   kWeightedNumProperties = 1
 };
 
-static inline jxl_status jxl_visit_pixel_type_bits(jxl_visitor *visitor, pixel_type default_val,
+static inline jxl_enc_status jxl_visit_pixel_type_bits(jxl_visitor *visitor, pixel_type default_val,
                                  pixel_type *p) {
   uint32_t up = *p;
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 5, default_val, &up));
   *p = up;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 typedef struct jxl_weighted_header {
@@ -45,14 +45,14 @@ typedef struct jxl_weighted_header {
   uint32_t w[kWeightedNumPredictors];
 } jxl_weighted_header;
 
-static inline jxl_status jxl_weighted_header_visit_fields(jxl_weighted_header* self, jxl_visitor *JXL_RESTRICT visitor);
+static inline jxl_enc_status jxl_weighted_header_visit_fields(jxl_weighted_header* self, jxl_visitor *JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_weighted_header)
 
-static inline jxl_status jxl_weighted_header_visit_fields(jxl_weighted_header* self, jxl_visitor *JXL_RESTRICT visitor) {
-    if (jxl_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
+static inline jxl_enc_status jxl_weighted_header_visit_fields(jxl_weighted_header* self, jxl_visitor *JXL_RESTRICT visitor) {
+    if (jxl_enc_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
       // Overwrite all serialized fields, but not any nonserialized_*.
       jxl_visitor_set_default(visitor, &self->fields);
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     }
     JXL_QUIET_RETURN_IF_ERROR(jxl_visit_pixel_type_bits(visitor, 16, &self->p1C));
     JXL_QUIET_RETURN_IF_ERROR(jxl_visit_pixel_type_bits(visitor, 10, &self->p2C));
@@ -65,7 +65,7 @@ static inline jxl_status jxl_weighted_header_visit_fields(jxl_weighted_header* s
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 4, 0xc, &self->w[1]));
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 4, 0xc, &self->w[2]));
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 4, 0xc, &self->w[3]));
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
 
@@ -110,9 +110,9 @@ static inline void jxl_weighted_state_init(jxl_weighted_state* self,
   // All have space for two rows of data.
   for (size_t pred_error_i = 0; pred_error_i < 4; ++pred_error_i) {
     jxl_array_u32* pred_error = &self->pred_errors[pred_error_i];
-    if (!jxl_status_ok(jxl_array_resize_zero(pred_error, (xsize + 2) * 2))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(pred_error, (xsize + 2) * 2))) JXL_CRASH();
   }
-  if (!jxl_status_ok(jxl_array_resize_zero(&self->error, (xsize + 2) * 2))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(&self->error, (xsize + 2) * 2))) JXL_CRASH();
 }
 
 static inline void jxl_weighted_state_destroy(jxl_weighted_state* self) {

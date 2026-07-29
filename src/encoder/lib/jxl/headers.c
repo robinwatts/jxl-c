@@ -62,7 +62,7 @@ size_t jxl_enc_size_header_x_size(const jxl_enc_size_header* self) {
   return self->small_ ? ((self->xsize_div8_minus_1_ + 1) * 8) : self->xsize_;
 }
 
-jxl_status jxl_enc_size_header_set(jxl_enc_size_header* self, size_t xsize64, size_t ysize64) {
+jxl_enc_status jxl_enc_size_header_set(jxl_enc_size_header* self, size_t xsize64, size_t ysize64) {
   const size_t kDimensionCap = UINT32_MAX;
   if (xsize64 > kDimensionCap || ysize64 > kDimensionCap) {
     return JXL_FAILURE("jxl_image too large");
@@ -89,7 +89,7 @@ jxl_status jxl_enc_size_header_set(jxl_enc_size_header* self, size_t xsize64, si
   }
   JXL_ENSURE(jxl_enc_size_header_x_size(self) == xsize64);
   JXL_ENSURE(jxl_enc_size_header_y_size(self) == ysize64);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 size_t jxl_preview_header_x_size(const jxl_preview_header* self) {
@@ -100,50 +100,50 @@ size_t jxl_preview_header_x_size(const jxl_preview_header* self) {
   return self->div8_ ? (self->xsize_div8_ * 8) : self->xsize_;
 }
 
-jxl_status jxl_enc_size_header_visit_fields(jxl_enc_size_header* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_enc_status jxl_enc_size_header_visit_fields(jxl_enc_size_header* self, jxl_visitor* JXL_RESTRICT visitor) {
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->small_));
 
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->small_))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->small_))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 5, 0, &self->ysize_div8_minus_1_));
   }
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, !self->small_))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, !self->small_))) {
     // (Could still be small, but non-multiple of 8.)
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_bits_offset(9, 1), jxl_bits_offset(13, 1), jxl_bits_offset(18, 1), jxl_bits_offset(30, 1)), 1, &self->ysize_));
   }
 
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 3, 0, &self->ratio_));
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->ratio_ == 0 && self->small_))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->ratio_ == 0 && self->small_))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 5, 0, &self->xsize_div8_minus_1_));
   }
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->ratio_ == 0 && !self->small_))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->ratio_ == 0 && !self->small_))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_bits_offset(9, 1), jxl_bits_offset(13, 1), jxl_bits_offset(18, 1), jxl_bits_offset(30, 1)), 1, &self->xsize_));
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_preview_header_visit_fields(jxl_preview_header* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_enc_status jxl_preview_header_visit_fields(jxl_preview_header* self, jxl_visitor* JXL_RESTRICT visitor) {
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->div8_));
 
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->div8_))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->div8_))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(16), jxl_val(32), jxl_bits_offset(5, 1), jxl_bits_offset(9, 33)), 1, &self->ysize_div8_));
   }
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, !self->div8_))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, !self->div8_))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_bits_offset(6, 1), jxl_bits_offset(8, 65), jxl_bits_offset(10, 321), jxl_bits_offset(12, 1345)), 1, &self->ysize_));
   }
 
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 3, 0, &self->ratio_));
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->ratio_ == 0 && self->div8_))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->ratio_ == 0 && self->div8_))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(16), jxl_val(32), jxl_bits_offset(5, 1), jxl_bits_offset(9, 33)), 1, &self->xsize_div8_));
   }
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->ratio_ == 0 && !self->div8_))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->ratio_ == 0 && !self->div8_))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_bits_offset(6, 1), jxl_bits_offset(8, 65), jxl_bits_offset(10, 321), jxl_bits_offset(12, 1345)), 1, &self->xsize_));
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_enc_animation_header_visit_fields(jxl_enc_animation_header* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_enc_status jxl_enc_animation_header_visit_fields(jxl_enc_animation_header* self, jxl_visitor* JXL_RESTRICT visitor) {
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(100), jxl_val(1000), jxl_bits_offset(10, 1), jxl_bits_offset(30, 1)), 1, &self->tps_numerator));
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(1), jxl_val(1001), jxl_bits_offset(8, 1), jxl_bits_offset(10, 1)), 1, &self->tps_denominator));
 
@@ -151,6 +151,6 @@ jxl_status jxl_enc_animation_header_visit_fields(jxl_enc_animation_header* self,
       jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(0), jxl_bits(3), jxl_bits(16), jxl_bits(32)), 0, &self->num_loops));
 
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->have_timecodes));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 

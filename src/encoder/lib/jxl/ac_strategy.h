@@ -176,7 +176,7 @@ typedef struct jxl_ac_strategy_image {
   jxl_image_b layers_;
 } jxl_ac_strategy_image;
 
-jxl_status jxl_ac_strategy_image_create(jxl_context* ctx, size_t xsize,
+jxl_enc_status jxl_ac_strategy_image_create(jxl_context* ctx, size_t xsize,
                              size_t ysize, jxl_ac_strategy_image* out);
 static inline void jxl_ac_strategy_image_construct_empty(jxl_ac_strategy_image* self) {
   jxl_image_b_construct_empty(&self->layers_);

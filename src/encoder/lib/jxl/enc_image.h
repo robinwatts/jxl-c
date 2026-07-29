@@ -31,7 +31,7 @@ typedef struct jxl_plane_base {
   size_t sizeof_t_;
 } jxl_plane_base;
 
-jxl_status jxl_plane_base_allocate(jxl_plane_base* self, jxl_context* ctx,
+jxl_enc_status jxl_plane_base_allocate(jxl_plane_base* self, jxl_context* ctx,
                          size_t pre_padding);
 void jxl_plane_base_init(jxl_plane_base* self, uint32_t xsize, uint32_t ysize,
                    size_t sizeof_t);
@@ -149,31 +149,31 @@ static inline jxl_context* jxl_plane_base_ctx(const jxl_plane_base* self) {
   static inline jxl_context* NAME##_ctx(const NAME* self) { \
     return jxl_plane_base_ctx(&self->plane);                       \
   }                                                                           \
-  static inline jxl_status NAME##_allocate(NAME* self,                        \
+  static inline jxl_enc_status NAME##_allocate(NAME* self,                        \
                                       jxl_context* ctx,     \
                                       size_t pre_padding) {                   \
     return jxl_plane_base_allocate(&self->plane, ctx,              \
                                    pre_padding);                              \
   }                                                                           \
-  static inline jxl_status NAME##_create(jxl_context* ctx,  \
+  static inline jxl_enc_status NAME##_create(jxl_context* ctx,  \
                                     const size_t xsize, const size_t ysize,   \
                                     const size_t pre_padding, NAME* out) {    \
     uint32_t xsize32 = (uint32_t)(xsize);                                     \
     uint32_t ysize32 = (uint32_t)(ysize);                                     \
     NAME image;                                                               \
-    jxl_status status;                                                        \
+    jxl_enc_status status;                                                        \
     JXL_ENSURE(xsize32 == xsize);                                             \
     JXL_ENSURE(ysize32 == ysize);                                             \
     NAME##_construct_empty(&image);                                           \
     jxl_plane_base_init(&image.plane, xsize32, ysize32, sizeof(TYPE));        \
     status = NAME##_allocate(&image, ctx, pre_padding);            \
-    if (!jxl_status_ok(status)) {                                             \
+    if (!jxl_enc_status_ok(status)) {                                             \
       NAME##_destroy(&image);                                                 \
       return status;                                                          \
     }                                                                         \
     NAME##_swap(out, &image);                                                 \
     NAME##_destroy(&image);                                                   \
-    return jxl_ok_status();                                                   \
+    return jxl_enc_ok_status();                                                   \
   }
 
 JXL_DEFINE_PLANE(jxl_image_sb, int8_t)
@@ -266,33 +266,33 @@ static inline void jxl_image3_i_destroy(jxl_image3_i* self) {
   }
 }
 
-static inline jxl_status jxl_image3_i_create(jxl_context* ctx,
+static inline jxl_enc_status jxl_image3_i_create(jxl_context* ctx,
                                    const size_t xsize, const size_t ysize,
                                    jxl_image3_i* out) {
   jxl_image_i plane0;
   jxl_image_i plane1;
   jxl_image_i plane2;
   jxl_image3_i tmp;
-  jxl_status status;
+  jxl_enc_status status;
   jxl_image_i_construct_empty(&plane0);
   jxl_image_i_construct_empty(&plane1);
   jxl_image_i_construct_empty(&plane2);
   status = jxl_image_i_create(ctx, xsize, ysize, 0, &plane0);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_image_i_destroy(&plane0);
     jxl_image_i_destroy(&plane1);
     jxl_image_i_destroy(&plane2);
     return status;
   }
   status = jxl_image_i_create(ctx, xsize, ysize, 0, &plane1);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_image_i_destroy(&plane0);
     jxl_image_i_destroy(&plane1);
     jxl_image_i_destroy(&plane2);
     return status;
   }
   status = jxl_image_i_create(ctx, xsize, ysize, 0, &plane2);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_image_i_destroy(&plane0);
     jxl_image_i_destroy(&plane1);
     jxl_image_i_destroy(&plane2);
@@ -307,7 +307,7 @@ static inline jxl_status jxl_image3_i_create(jxl_context* ctx,
   jxl_image_i_destroy(&plane0);
   jxl_image_i_destroy(&plane1);
   jxl_image_i_destroy(&plane2);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // A bundle of 3 same-sized float planes (e.g. JPEG DC).
@@ -381,33 +381,33 @@ static inline void jxl_image3_f_destroy(jxl_image3_f* self) {
   }
 }
 
-static inline jxl_status jxl_image3_f_create(jxl_context* ctx,
+static inline jxl_enc_status jxl_image3_f_create(jxl_context* ctx,
                                    const size_t xsize, const size_t ysize,
                                    jxl_image3_f* out) {
   jxl_image_f plane0;
   jxl_image_f plane1;
   jxl_image_f plane2;
   jxl_image3_f tmp;
-  jxl_status status;
+  jxl_enc_status status;
   jxl_image_f_construct_empty(&plane0);
   jxl_image_f_construct_empty(&plane1);
   jxl_image_f_construct_empty(&plane2);
   status = jxl_image_f_create(ctx, xsize, ysize, 0, &plane0);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_image_f_destroy(&plane0);
     jxl_image_f_destroy(&plane1);
     jxl_image_f_destroy(&plane2);
     return status;
   }
   status = jxl_image_f_create(ctx, xsize, ysize, 0, &plane1);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_image_f_destroy(&plane0);
     jxl_image_f_destroy(&plane1);
     jxl_image_f_destroy(&plane2);
     return status;
   }
   status = jxl_image_f_create(ctx, xsize, ysize, 0, &plane2);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_image_f_destroy(&plane0);
     jxl_image_f_destroy(&plane1);
     jxl_image_f_destroy(&plane2);
@@ -422,7 +422,7 @@ static inline jxl_status jxl_image3_f_create(jxl_context* ctx,
   jxl_image_f_destroy(&plane0);
   jxl_image_f_destroy(&plane1);
   jxl_image_f_destroy(&plane2);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static inline uint8_t* jxl_rect_row_b(const jxl_rect* self, jxl_image_b* image, size_t y) {

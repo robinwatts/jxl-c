@@ -34,8 +34,8 @@ static void jxl_histogram_condition_in_place(jxl_histogram* a, jxl_array_i32* co
   if (nz_pos < 0) {
 jxl_array_clear(counts);
   } else {
-    if (!jxl_status_ok(jxl_array_resize_zero(counts, (size_t)(nz_pos) + kHistogramRounding))) {
-      // Clustering path has no jxl_status return; match prior OOM behavior.
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(counts, (size_t)(nz_pos) + kHistogramRounding))) {
+      // Clustering path has no jxl_enc_status return; match prior OOM behavior.
       JXL_CRASH();
     }
   }
@@ -101,13 +101,13 @@ static float jxl_histogram_kl_divergence(const jxl_histogram* actual,
 }
 
 // First step of a k-means clustering with a fancy distance metric.
-static jxl_status jxl_fast_cluster_histograms(
+static jxl_enc_status jxl_fast_cluster_histograms(
     const jxl_array_histogram* in,
     const jxl_hist_count_streams* in_counts, size_t max_histograms,
     jxl_array_histogram* out, jxl_hist_count_streams* out_counts,
     jxl_array_u32* histogram_symbols) {
   const size_t prev_histograms = jxl_array_len(out);
-if (!jxl_status_ok(jxl_array_reserve(out, max_histograms))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_reserve(out, max_histograms))) JXL_CRASH();
   JXL_RETURN_IF_ERROR(jxl_hist_count_streams_reserve(out_counts, max_histograms));
 jxl_array_clear(histogram_symbols);
   JXL_RETURN_IF_ERROR(jxl_array_u32_resize_fill(
@@ -116,8 +116,8 @@ jxl_array_clear(histogram_symbols);
   jxl_array_float dists;
   jxl_context* mm = in->ctx;
   jxl_array_construct_empty(&dists, mm);
-  jxl_status status = jxl_array_float_resize_fill(&dists, jxl_array_len(in), FLT_MAX);
-  if (!jxl_status_ok(status)) {
+  jxl_enc_status status = jxl_array_float_resize_fill(&dists, jxl_array_len(in), FLT_MAX);
+  if (!jxl_enc_status_ok(status)) {
     jxl_array_destroy(&dists);
     return status;
   }
@@ -162,10 +162,10 @@ jxl_array_clear(histogram_symbols);
   const float kMinDistanceForDistinct = 48.0f;
   while (jxl_array_len(out) < max_histograms) {
     *jxl_array_at(histogram_symbols, largest_idx) = jxl_array_len(out);
-    if (!jxl_status_ok(jxl_array_histogram_push_back(out, *jxl_array_at_const(in, largest_idx)))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_histogram_push_back(out, *jxl_array_at_const(in, largest_idx)))) JXL_CRASH();
     status = jxl_hist_count_streams_push_back(out_counts,
                                        jxl_hist_count_streams_at_const(in_counts, largest_idx));
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_array_destroy(&dists);
       return status;
     }
@@ -205,7 +205,7 @@ jxl_array_clear(histogram_symbols);
     *jxl_array_at(histogram_symbols, i) = best;
   }
   jxl_array_destroy(&dists);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Reorder histograms in *out so that the new symbols in *symbols come in
@@ -215,15 +215,15 @@ static void jxl_histogram_reindex(jxl_array_histogram* out, jxl_hist_count_strea
   jxl_array_histogram tmp;
   jxl_context* mm = out->ctx;
   jxl_array_construct_empty(&tmp, mm);
-  if (!jxl_status_ok(jxl_array_copy_from(&tmp, out))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_copy_from(&tmp, out))) JXL_CRASH();
   jxl_hist_count_streams tmp_counts;
   jxl_hist_count_streams_construct_empty(&tmp_counts);
   tmp_counts.ctx = out_counts->ctx;
   jxl_hist_count_streams_swap(&tmp_counts, out_counts);
-  if (!jxl_status_ok(jxl_hist_count_streams_resize(out_counts, jxl_hist_count_streams_size(&tmp_counts)))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_hist_count_streams_resize(out_counts, jxl_hist_count_streams_size(&tmp_counts)))) JXL_CRASH();
   jxl_array_i32 new_index;
   jxl_array_construct_empty(&new_index, mm);
-  if (!jxl_status_ok(jxl_array_i32_resize_fill(&new_index, jxl_array_len(&tmp), (int32_t)(-1)))) {
+  if (!jxl_enc_status_ok(jxl_array_i32_resize_fill(&new_index, jxl_array_len(&tmp), (int32_t)(-1)))) {
     jxl_array_destroy(&new_index);
     jxl_hist_count_streams_destroy(&tmp_counts);
     jxl_array_destroy(&tmp);
@@ -242,8 +242,8 @@ static void jxl_histogram_reindex(jxl_array_histogram* out, jxl_hist_count_strea
       ++next_index;
     }
   }
-  if (!jxl_status_ok(jxl_array_resize_zero(out, (size_t)(next_index)))) JXL_CRASH();
-  if (!jxl_status_ok(jxl_hist_count_streams_resize(out_counts, (size_t)(next_index)))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(out, (size_t)(next_index)))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_hist_count_streams_resize(out_counts, (size_t)(next_index)))) JXL_CRASH();
   for (size_t symbol_i = 0; symbol_i < jxl_array_len(symbols); ++symbol_i) {
     *jxl_array_at(symbols, symbol_i) = (uint32_t)(*jxl_array_at(&new_index, *jxl_array_at(symbols, symbol_i)));
   }
@@ -322,7 +322,7 @@ void jxl_histogram_pair_pop_heap(jxl_array_histogram_pair* pairs) {
 // Clusters similar histograms in 'in' together, the selected histograms are
 // placed in 'out', and for each index in 'in', *histogram_symbols will
 // indicate which of the 'out' histograms is the best approximation.
-jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
+jxl_enc_status jxl_cluster_histograms(const jxl_histogram_params* params,
                          const jxl_array_histogram* in,
                          const jxl_hist_count_streams* in_counts,
                          size_t max_histograms, jxl_array_histogram* out,
@@ -355,8 +355,8 @@ jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
     jxl_array_construct_empty(&pairs_to_merge, mm);
     jxl_array_u32 reverse_renumbering;
     jxl_array_construct_empty(&reverse_renumbering, mm);
-    jxl_status status = jxl_array_u32_resize_fill(&version, jxl_array_len(out), (uint32_t)(1));
-    if (!jxl_status_ok(status)) {
+    jxl_enc_status status = jxl_array_u32_resize_fill(&version, jxl_array_len(out), (uint32_t)(1));
+    if (!jxl_enc_status_ok(status)) {
       jxl_array_destroy(&version);
       jxl_array_destroy(&renumbering);
       jxl_array_destroy(&pairs_to_merge);
@@ -364,7 +364,7 @@ jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
       return status;
     }
     status = jxl_array_resize_zero(&renumbering, jxl_array_len(out));
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_array_destroy(&version);
       jxl_array_destroy(&renumbering);
       jxl_array_destroy(&pairs_to_merge);
@@ -386,7 +386,7 @@ jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
         jxl_histogram_add_histogram(&histo, &histo_counts, jxl_array_at(out, j), jxl_hist_count_streams_at(out_counts, j));
         float cost;
         status = jxl_histogram_ans_population_cost(&histo, &histo_counts, &cost);
-        if (!jxl_status_ok(status)) {
+        if (!jxl_enc_status_ok(status)) {
           jxl_array_destroy(&histo_counts);
           jxl_array_destroy(&version);
           jxl_array_destroy(&renumbering);
@@ -400,7 +400,7 @@ jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
           jxl_array_destroy(&histo_counts);
           continue;
         }
-        if (!jxl_status_ok(jxl_array_histogram_pair_push_back(&pairs_to_merge,
+        if (!jxl_enc_status_ok(jxl_array_histogram_pair_push_back(&pairs_to_merge,
                            (jxl_histogram_pair){cost, i, j,
                                          JXL_MAX(*jxl_array_at(&version, i), *jxl_array_at(&version, j))}))) {
           JXL_CRASH();
@@ -426,7 +426,7 @@ jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
       status = jxl_histogram_ans_population_cost(
           jxl_array_at(out, first), jxl_hist_count_streams_at(out_counts, first),
           &jxl_array_at(out, first)->entropy);
-      if (!jxl_status_ok(status)) {
+      if (!jxl_enc_status_ok(status)) {
         jxl_array_destroy(&version);
         jxl_array_destroy(&renumbering);
         jxl_array_destroy(&pairs_to_merge);
@@ -452,7 +452,7 @@ jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
         jxl_histogram_add_histogram(&histo, &histo_counts, jxl_array_at(out, j), jxl_hist_count_streams_at(out_counts, j));
         float merge_cost;
         status = jxl_histogram_ans_population_cost(&histo, &histo_counts, &merge_cost);
-        if (!jxl_status_ok(status)) {
+        if (!jxl_enc_status_ok(status)) {
           jxl_array_destroy(&histo_counts);
           jxl_array_destroy(&version);
           jxl_array_destroy(&renumbering);
@@ -466,7 +466,7 @@ jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
           jxl_array_destroy(&histo_counts);
           continue;
         }
-        if (!jxl_status_ok(jxl_array_histogram_pair_push_back(&pairs_to_merge,
+        if (!jxl_enc_status_ok(jxl_array_histogram_pair_push_back(&pairs_to_merge,
                            (jxl_histogram_pair){merge_cost, JXL_MIN(first, j),
                                          JXL_MAX(first, j),
                                          JXL_MAX(*jxl_array_at(&version, first),
@@ -479,7 +479,7 @@ jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
     }
     status = jxl_array_u32_resize_fill(&reverse_renumbering, jxl_array_len(out),
                              (uint32_t)(-1));
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_array_destroy(&version);
       jxl_array_destroy(&renumbering);
       jxl_array_destroy(&pairs_to_merge);
@@ -490,15 +490,15 @@ jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
     for (size_t i = 0; i < jxl_array_len(out); i++) {
       if (*jxl_array_at(&version, i) == 0) continue;
       *jxl_array_at(out, num_alive) = *jxl_array_at(out, i);
-      if (!jxl_status_ok(jxl_array_copy_from(jxl_hist_count_streams_at(out_counts, num_alive),
+      if (!jxl_enc_status_ok(jxl_array_copy_from(jxl_hist_count_streams_at(out_counts, num_alive),
                                   jxl_hist_count_streams_at(out_counts, i)))) {
         JXL_CRASH();
       }
       ++num_alive;
       *jxl_array_at(&reverse_renumbering, i) = num_alive - 1;
     }
-    if (!jxl_status_ok(jxl_array_resize_zero(out, num_alive))) JXL_CRASH();
-    if (!jxl_status_ok(jxl_hist_count_streams_resize(out_counts, num_alive))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(out, num_alive))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_hist_count_streams_resize(out_counts, num_alive))) JXL_CRASH();
     for (size_t item_i = 0; item_i < jxl_array_len(histogram_symbols); ++item_i) {
       *jxl_array_at(histogram_symbols, item_i) =
           *jxl_array_at(&reverse_renumbering, *jxl_array_at(&renumbering, *jxl_array_at(histogram_symbols, item_i)));
@@ -511,5 +511,5 @@ jxl_status jxl_cluster_histograms(const jxl_histogram_params* params,
 
   // Convert the context map to a canonical form.
   jxl_histogram_reindex(out, out_counts, prev_histograms, histogram_symbols);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }

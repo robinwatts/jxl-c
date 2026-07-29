@@ -2,6 +2,7 @@
 #ifndef JXL_BITSTREAM_BITSTREAM_H_
 #define JXL_BITSTREAM_BITSTREAM_H_
 
+#include "compiler.h"
 #include "error.h"
 
 #include <stddef.h>

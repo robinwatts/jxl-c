@@ -5,6 +5,7 @@
 #include "allocator.h"
 #include "bitstream/bitstream.h"
 #include "coding/decoder.h"
+#include "vardct/coeff_order.h"
 #include "vardct/error.h"
 #include "vardct/lf.h"
 
@@ -15,11 +16,6 @@ typedef struct jxl_context jxl_context;
 
 #define JXL_HF_PASS_ORDER_COUNT 13
 #define JXL_HF_PASS_CHANNELS 3
-
-typedef struct {
-    uint16_t x;
-    uint16_t y;
-} jxl_coeff_order;
 
 typedef struct {
     uint32_t used_orders;

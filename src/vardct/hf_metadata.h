@@ -2,6 +2,7 @@
 #ifndef JXL_VARDCT_HF_METADATA_H_
 #define JXL_VARDCT_HF_METADATA_H_
 
+#include "compiler.h"
 #include "vardct/dct_select.h"
 
 #include "jxl/decode_types.h"

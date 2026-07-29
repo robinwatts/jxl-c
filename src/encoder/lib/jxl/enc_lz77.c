@@ -81,7 +81,7 @@ static void jxl_symbol_cost_estimator_init(jxl_symbol_cost_estimator* self, size
   jxl_array_histogram builder;
   jxl_array_construct_empty(&builder, mm);
   jxl_histogram hist_empty = jxl_histogram_empty();
-  if (!jxl_status_ok(jxl_array_histogram_resize_fill(&builder, num_contexts, hist_empty))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_histogram_resize_fill(&builder, num_contexts, hist_empty))) JXL_CRASH();
   jxl_hist_count_streams builder_counts;
   jxl_hist_count_streams_create(&builder_counts, num_contexts, mm);
   // Build histograms for estimating lz77 savings.
@@ -104,13 +104,13 @@ static void jxl_symbol_cost_estimator_init(jxl_symbol_cost_estimator* self, size
     self->max_alphabet_size_ = JXL_MAX(
         self->max_alphabet_size_, jxl_array_len(jxl_hist_count_streams_at(&builder_counts, i)));
   }
-  if (!jxl_status_ok(jxl_array_resize_zero(&self->bits_,
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(&self->bits_,
                                 num_contexts * self->max_alphabet_size_))) {
     JXL_CRASH();
   }
   // TODO(veluca): SIMD?
   if (with_add_symbol_cost) {
-    if (!jxl_status_ok(jxl_array_resize_zero(&self->add_symbol_cost_, num_contexts))) {
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(&self->add_symbol_cost_, num_contexts))) {
       JXL_CRASH();
     }
   }
@@ -188,13 +188,13 @@ static void ApplyLZ77_RLE(size_t num_contexts, const jxl_token_streams* tokens,
     jxl_token_stream* out_stream = jxl_token_streams_at(out, stream);
     total_symbols += jxl_array_len(in);
     // Cumulative sum of bit costs.
-    if (!jxl_status_ok(jxl_array_resize_zero(&sym_cost, jxl_array_len(in) + 1))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(&sym_cost, jxl_array_len(in) + 1))) JXL_CRASH();
     for (size_t i = 0; i < jxl_array_len(in); i++) {
       uint32_t tok, nbits, unused_bits;
       jxl_hybrid_uint_config_encode(uint_config, jxl_array_at_const(in, i)->value, &tok, &nbits, &unused_bits);
       *jxl_array_at(&sym_cost, i + 1) = jxl_symbol_cost_estimator_bits(&sce, jxl_array_at_const(in, i)->context, tok) + nbits + *jxl_array_at(&sym_cost, i);
     }
-    if (!jxl_status_ok(jxl_array_reserve(out_stream, jxl_array_len(in)))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_reserve(out_stream, jxl_array_len(in)))) JXL_CRASH();
     for (size_t i = 0; i < jxl_array_len(in); i++) {
       size_t num_to_copy = 0;
       if (i > 0) {
@@ -205,7 +205,7 @@ static void ApplyLZ77_RLE(size_t num_contexts, const jxl_token_streams* tokens,
         }
       }
       if (num_to_copy == 0) {
-if (!jxl_status_ok(jxl_array_token_push_back(out_stream, *jxl_array_at_const(in, i)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_token_push_back(out_stream, *jxl_array_at_const(in, i)))) JXL_CRASH();
 continue;
       }
       float cost = *jxl_array_at(&sym_cost, i + num_to_copy) - *jxl_array_at(&sym_cost, i);
@@ -216,20 +216,20 @@ continue;
                             : 0;
       if (num_to_copy < lz77->min_length || cost <= lz77_cost) {
         for (size_t j = 0; j < num_to_copy; j++) {
-if (!jxl_status_ok(jxl_array_token_push_back(out_stream, *jxl_array_at_const(in, i + j)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_token_push_back(out_stream, *jxl_array_at_const(in, i + j)))) JXL_CRASH();
 }
         i += num_to_copy - 1;
         continue;
       }
       // Output the LZ77 length
-    if (!jxl_status_ok(jxl_array_token_push_back(out_stream, jxl_token_make(jxl_array_at_const(in, i)->context, (uint32_t)(lz77_len))))) {
+    if (!jxl_enc_status_ok(jxl_array_token_push_back(out_stream, jxl_token_make(jxl_array_at_const(in, i)->context, (uint32_t)(lz77_len))))) {
       JXL_CRASH();
     }
     jxl_array_back_ptr(out_stream)->is_lz77_length = true;
       i += num_to_copy - 1;
       bit_decrease += cost - lz77_cost;
       // Output the LZ77 copy distance (zero for RLE).
-      if (!jxl_status_ok(jxl_array_token_push_back(out_stream, jxl_token_make((uint32_t)(lz77->nonserialized_distance_context), 0)))) {
+      if (!jxl_enc_status_ok(jxl_array_token_push_back(out_stream, jxl_token_make((uint32_t)(lz77->nonserialized_distance_context), 0)))) {
         JXL_CRASH();
       }
     }
@@ -263,7 +263,7 @@ static void jxl_update_best_match(void* opaque, size_t len, size_t dist_symbol) 
 static void jxl_collect_dist_symbols(void* opaque, size_t len, size_t dist_symbol) {
   jxl_array_u32* dist_symbols = (jxl_array_u32*)(opaque);
   if (jxl_array_len(dist_symbols) <= len) {
-    if (!jxl_status_ok(jxl_array_u32_resize_fill(dist_symbols, len + 1,
+    if (!jxl_enc_status_ok(jxl_array_u32_resize_fill(dist_symbols, len + 1,
                          (uint32_t)(dist_symbol)))) {
       JXL_CRASH();
     }
@@ -353,29 +353,29 @@ static void jxl_hash_chain_init(jxl_hash_chain* self, const jxl_token* data, siz
   self->window_mask_ = window_size - 1;
   self->min_length_ = min_length;
   self->max_length_ = max_length;
-  if (!jxl_status_ok(jxl_array_resize_zero(&self->data_, size))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(&self->data_, size))) JXL_CRASH();
   for (size_t i = 0; i < size; i++) {
     *jxl_array_at(&self->data_, i) = data[i].value;
   }
 
-  if (!jxl_status_ok(jxl_array_int_resize_fill(&self->head, self->hash_num_values_, -1)))
+  if (!jxl_enc_status_ok(jxl_array_int_resize_fill(&self->head, self->hash_num_values_, -1)))
     JXL_CRASH();
-  if (!jxl_status_ok(jxl_array_int_resize_fill(&self->val, window_size, -1))) JXL_CRASH();
-  if (!jxl_status_ok(jxl_array_resize_zero(&self->chain, window_size))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_int_resize_fill(&self->val, window_size, -1))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(&self->chain, window_size))) JXL_CRASH();
   for (uint32_t i = 0; i < window_size; ++i) {
     *jxl_array_at(&self->chain, i) = i;  // same value as index indicates uninitialized
   }
 
-  if (!jxl_status_ok(jxl_array_resize_zero(&self->zeros, window_size))) JXL_CRASH();
-  if (!jxl_status_ok(jxl_array_int_resize_fill(&self->headz, window_size + 1, -1)))
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(&self->zeros, window_size))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_int_resize_fill(&self->headz, window_size + 1, -1)))
     JXL_CRASH();
-  if (!jxl_status_ok(jxl_array_resize_zero(&self->chainz, window_size))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(&self->chainz, window_size))) JXL_CRASH();
   for (uint32_t i = 0; i < window_size; ++i) {
     *jxl_array_at(&self->chainz, i) = i;
   }
   // Translate distance to special distance code.
   if (distance_multiplier) {
-    if (!jxl_status_ok(
+    if (!jxl_enc_status_ok(
             jxl_array_resize_zero(&self->special_dist_table_, kNumSpecialDistances)))
       JXL_CRASH();
     for (int i = 0; i < (int)(kNumSpecialDistances); ++i) {
@@ -392,7 +392,7 @@ static void jxl_hash_chain_init(jxl_hash_chain* self, const jxl_token* data, siz
         *jxl_array_at(&self->special_dist_table_, n++) = *jxl_array_at(&self->special_dist_table_, i);
       }
     }
-    if (!jxl_status_ok(jxl_array_resize_zero(&self->special_dist_table_, n))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(&self->special_dist_table_, n))) JXL_CRASH();
     self->num_special_distances_ = kNumSpecialDistances;
   }
 }
@@ -621,14 +621,14 @@ static void ApplyLZ77_LZ77(
     jxl_token_stream* out_stream = jxl_token_streams_at(out, stream);
     total_symbols += jxl_array_len(in);
     // Cumulative sum of bit costs.
-    if (!jxl_status_ok(jxl_array_resize_zero(&sym_cost, jxl_array_len(in) + 1))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(&sym_cost, jxl_array_len(in) + 1))) JXL_CRASH();
     for (size_t i = 0; i < jxl_array_len(in); i++) {
       uint32_t tok, nbits, unused_bits;
       jxl_hybrid_uint_config_encode(uint_config, jxl_array_at_const(in, i)->value, &tok, &nbits, &unused_bits);
       *jxl_array_at(&sym_cost, i + 1) = jxl_symbol_cost_estimator_bits(&sce, jxl_array_at_const(in, i)->context, tok) + nbits + *jxl_array_at(&sym_cost, i);
     }
 
-    if (!jxl_status_ok(jxl_array_reserve(out_stream, jxl_array_len(in)))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_reserve(out_stream, jxl_array_len(in)))) JXL_CRASH();
     size_t max_distance = jxl_array_len(in);
     size_t min_length = lz77->min_length;
     JXL_DASSERT(min_length >= 3);
@@ -651,7 +651,7 @@ static void ApplyLZ77_LZ77(
     // Whether the next symbol was already updated (to test lazy matching)
     bool already_updated = false;
     for (size_t i = 0; i < jxl_array_len(in); i++) {
-if (!jxl_status_ok(jxl_array_token_push_back(out_stream, *jxl_array_at_const(in, i)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_token_push_back(out_stream, *jxl_array_at_const(in, i)))) JXL_CRASH();
 if (!already_updated) jxl_hash_chain_update(&chain, i);
       already_updated = false;
       jxl_hash_chain_find_match(&chain, i, max_distance, &dist_symbol, &len);
@@ -669,7 +669,7 @@ if (!already_updated) jxl_hash_chain_update(&chain, i);
             already_updated = false;
             len = len2;
             dist_symbol = dist_symbol2;
-if (!jxl_status_ok(jxl_array_token_push_back(out_stream, *jxl_array_at_const(in, i)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_token_push_back(out_stream, *jxl_array_at_const(in, i)))) JXL_CRASH();
 }
         }
 
@@ -681,7 +681,7 @@ if (!jxl_status_ok(jxl_array_token_push_back(out_stream, *jxl_array_at_const(in,
         if (lz77_cost <= cost) {
           jxl_array_back_ptr(out_stream)->value = len - min_length;
           jxl_array_back_ptr(out_stream)->is_lz77_length = true;
-          if (!jxl_status_ok(jxl_array_token_push_back(
+          if (!jxl_enc_status_ok(jxl_array_token_push_back(
                   out_stream, jxl_token_make((uint32_t)(lz77->nonserialized_distance_context),
                              (uint32_t)(dist_symbol))))) {
             JXL_CRASH();
@@ -691,7 +691,7 @@ if (!jxl_status_ok(jxl_array_token_push_back(out_stream, *jxl_array_at_const(in,
           // LZ77 match ignored, and symbol already pushed. Push all other
           // symbols and skip.
           for (size_t j = 1; j < len; j++) {
-if (!jxl_status_ok(jxl_array_token_push_back(out_stream, *jxl_array_at_const(in, i + j)))) JXL_CRASH();
+if (!jxl_enc_status_ok(jxl_array_token_push_back(out_stream, *jxl_array_at_const(in, i + j)))) JXL_CRASH();
 }
         }
 
@@ -750,14 +750,14 @@ static void ApplyLZ77_Optimal(
     const jxl_token_stream* in = jxl_token_streams_at_const(tokens, stream);
     jxl_token_stream* out_stream = jxl_token_streams_at(out, stream);
     // Cumulative sum of bit costs.
-    if (!jxl_status_ok(jxl_array_resize_zero(&sym_cost, jxl_array_len(in) + 1))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(&sym_cost, jxl_array_len(in) + 1))) JXL_CRASH();
     for (size_t i = 0; i < jxl_array_len(in); i++) {
       uint32_t tok, nbits, unused_bits;
       jxl_hybrid_uint_config_encode(uint_config, jxl_array_at_const(in, i)->value, &tok, &nbits, &unused_bits);
       *jxl_array_at(&sym_cost, i + 1) = jxl_symbol_cost_estimator_bits(&sce, jxl_array_at_const(in, i)->context, tok) + nbits + *jxl_array_at(&sym_cost, i);
     }
 
-    if (!jxl_status_ok(jxl_array_reserve(out_stream, jxl_array_len(in)))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_reserve(out_stream, jxl_array_len(in)))) JXL_CRASH();
     size_t max_distance = jxl_array_len(in);
     size_t min_length = lz77->min_length;
     JXL_DASSERT(min_length >= 3);
@@ -781,7 +781,7 @@ static void ApplyLZ77_Optimal(
     match_init.dist_symbol = 0;
     match_init.ctx = 0;
     match_init.total_cost = FLT_MAX;
-    if (!jxl_status_ok(jxl_array_lz77_match_info_resize_fill(&prefix_costs, jxl_array_len(in) + 1, match_init))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_lz77_match_info_resize_fill(&prefix_costs, jxl_array_len(in) + 1, match_init))) JXL_CRASH();
     jxl_array_at(&prefix_costs, 0)->total_cost = 0;
 
     size_t rle_length = 0;
@@ -843,7 +843,7 @@ jxl_array_clear(&dist_symbols);
       bool is_lz77_length = jxl_array_at(&prefix_costs, pos)->dist_symbol != 0;
       if (is_lz77_length) {
         size_t dist_symbol = jxl_array_at(&prefix_costs, pos)->dist_symbol - 1;
-        if (!jxl_status_ok(jxl_array_token_push_back(out_stream, jxl_token_make((uint32_t)(lz77->nonserialized_distance_context),
+        if (!jxl_enc_status_ok(jxl_array_token_push_back(out_stream, jxl_token_make((uint32_t)(lz77->nonserialized_distance_context),
                            (uint32_t)(dist_symbol))))) {
           JXL_CRASH();
         }
@@ -852,7 +852,7 @@ jxl_array_clear(&dist_symbols);
           is_lz77_length
               ? (jxl_array_at(&prefix_costs, pos)->len - (uint32_t)(min_length))
               : jxl_array_at_const(in, pos - 1)->value;
-      if (!jxl_status_ok(jxl_array_token_push_back(out_stream, jxl_token_make(jxl_array_at(&prefix_costs, pos)->ctx, val)))) {
+      if (!jxl_enc_status_ok(jxl_array_token_push_back(out_stream, jxl_token_make(jxl_array_at(&prefix_costs, pos)->ctx, val)))) {
         JXL_CRASH();
       }
       jxl_array_back_ptr(out_stream)->is_lz77_length = is_lz77_length;

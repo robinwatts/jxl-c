@@ -23,9 +23,9 @@ void jxl_enc_color_encoding_create_c2(jxl_primaries pr, jxl_transfer_function tf
   c_rgb->storage_.white_point = kWhitePointD65;
   c_rgb->storage_.primaries = pr;
   jxl_cms_custom_transfer_function_set_transfer_function(&c_rgb->storage_.tf, tf);
-  jxl_status status = jxl_enc_color_encoding_create_icc(c_rgb);
+  jxl_enc_status status = jxl_enc_color_encoding_create_icc(c_rgb);
   (void)status;
-  JXL_DASSERT(jxl_status_ok(status));
+  JXL_DASSERT(jxl_enc_status_ok(status));
 
   jxl_enc_color_encoding* c_gray = &out[1];
   jxl_enc_color_encoding_construct_empty(c_gray, mm);
@@ -36,24 +36,24 @@ void jxl_enc_color_encoding_create_c2(jxl_primaries pr, jxl_transfer_function tf
   jxl_cms_custom_transfer_function_set_transfer_function(&c_gray->storage_.tf, tf);
   status = jxl_enc_color_encoding_create_icc(c_gray);
   (void)status;
-  JXL_DASSERT(jxl_status_ok(status));
+  JXL_DASSERT(jxl_enc_status_ok(status));
 }
 
-jxl_status jxl_customxy_visit_fields(jxl_customxy* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_enc_status jxl_customxy_visit_fields(jxl_customxy* self, jxl_visitor* JXL_RESTRICT visitor) {
   uint32_t ux = jxl_pack_signed(self->storage_.x);
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_bits(19), jxl_bits_offset(19, 524288), jxl_bits_offset(20, 1048576), jxl_bits_offset(21, 2097152)), 0, &ux));
   self->storage_.x = jxl_unpack_signed(ux);
   uint32_t uy = jxl_pack_signed(self->storage_.y);
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_bits(19), jxl_bits_offset(19, 524288), jxl_bits_offset(20, 1048576), jxl_bits_offset(21, 2097152)), 0, &uy));
   self->storage_.y = jxl_unpack_signed(uy);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_custom_transfer_function_visit_fields(jxl_custom_transfer_function* self, jxl_visitor* JXL_RESTRICT visitor) {
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, !jxl_custom_transfer_function_set_implicit(self)))) {
+jxl_enc_status jxl_custom_transfer_function_visit_fields(jxl_custom_transfer_function* self, jxl_visitor* JXL_RESTRICT visitor) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, !jxl_custom_transfer_function_set_implicit(self)))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->storage_.have_gamma));
 
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, self->storage_.have_gamma))) {
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->storage_.have_gamma))) {
       // Gamma is represented as a 24-bit int, the exponent used is
       // gamma_ / 1e7. Valid values are (0, 1]. On the low end side, we also
       // limit it to kMaxGamma/1e7.
@@ -67,7 +67,7 @@ jxl_status jxl_custom_transfer_function_visit_fields(jxl_custom_transfer_functio
       }
     }
 
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, !self->storage_.have_gamma))) {
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, !self->storage_.have_gamma))) {
       uint32_t transfer_function =
           (uint32_t)(self->storage_.transfer_function);
       JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_enum(visitor, 
@@ -78,14 +78,14 @@ jxl_status jxl_custom_transfer_function_visit_fields(jxl_custom_transfer_functio
     }
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_enc_color_encoding_visit_fields(jxl_enc_color_encoding* self, jxl_visitor* JXL_RESTRICT visitor) {
-  if (jxl_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
+jxl_enc_status jxl_enc_color_encoding_visit_fields(jxl_enc_color_encoding* self, jxl_visitor* JXL_RESTRICT visitor) {
+  if (jxl_enc_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
     // Overwrite all serialized fields, but not any nonserialized_*.
     jxl_visitor_set_default(visitor, &self->fields);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->want_icc_));
@@ -100,30 +100,30 @@ jxl_status jxl_enc_color_encoding_visit_fields(jxl_enc_color_encoding* self, jxl
     self->storage_.color_space = (jxl_color_space)(color_space);
   }
 
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, !jxl_enc_color_encoding_want_icc(self)))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, !jxl_enc_color_encoding_want_icc(self)))) {
     // Serialize enums. NOTE: we set the defaults to the most common values so
     // jxl_image_metadata.all_default is true in the common case.
 
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, !jxl_enc_color_encoding_implicit_white_point(self)))) {
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, !jxl_enc_color_encoding_implicit_white_point(self)))) {
       uint32_t white_point = (uint32_t)(self->storage_.white_point);
       JXL_QUIET_RETURN_IF_ERROR(
           jxl_visitor_enum(visitor, (uint32_t)(kWhitePointD65), &white_point,
                         jxl_enum_bits_white_point(), jxl_enum_name_white_point()));
       self->storage_.white_point = (jxl_white_point)(white_point);
-      if (jxl_status_ok(jxl_visitor_conditional(visitor, self->storage_.white_point == kWhitePointCustom))) {
+      if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->storage_.white_point == kWhitePointCustom))) {
         self->white_.storage_ = self->storage_.white;
         JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->white_.fields));
         self->storage_.white = self->white_.storage_;
       }
     }
 
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, jxl_enc_color_encoding_has_primaries(self)))) {
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, jxl_enc_color_encoding_has_primaries(self)))) {
       uint32_t primaries = (uint32_t)(self->storage_.primaries);
       JXL_QUIET_RETURN_IF_ERROR(
           jxl_visitor_enum(visitor, (uint32_t)(kPrimariesSRGB), &primaries,
                         jxl_enum_bits_primaries(), jxl_enum_name_primaries()));
       self->storage_.primaries = (jxl_primaries)(primaries);
-      if (jxl_status_ok(jxl_visitor_conditional(visitor, self->storage_.primaries == kPrimariesCustom))) {
+      if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->storage_.primaries == kPrimariesCustom))) {
         self->red_.storage_ = self->storage_.red;
         JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->red_.fields));
         self->storage_.red = self->red_.storage_;
@@ -172,6 +172,6 @@ jxl_status jxl_enc_color_encoding_visit_fields(jxl_enc_color_encoding* self, jxl
     if (jxl_array_empty(jxl_enc_color_encoding_icc(self))) return JXL_FAILURE("Empty ICC");
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 

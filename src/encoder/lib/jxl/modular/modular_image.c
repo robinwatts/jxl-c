@@ -15,12 +15,12 @@
 #include "lib/jxl/base/enc_status.h"
 
 
-jxl_status jxl_channel_create(jxl_context *ctx, size_t iw, size_t ih,
+jxl_enc_status jxl_channel_create(jxl_context *ctx, size_t iw, size_t ih,
                      int hsh, int vsh, jxl_channel *out) {
   jxl_image_i plane;
   jxl_image_i_construct_empty(&plane);
-  jxl_status status = jxl_image_i_create(ctx, iw, ih, 0, &plane);
-  if (!jxl_status_ok(status)) {
+  jxl_enc_status status = jxl_image_i_create(ctx, iw, ih, 0, &plane);
+  if (!jxl_enc_status_ok(status)) {
     jxl_image_i_destroy(&plane);
     return status;
   }
@@ -34,7 +34,7 @@ jxl_status jxl_channel_create(jxl_context *ctx, size_t iw, size_t ih,
   jxl_channel_swap(out, &tmp);
   jxl_channel_destroy(&tmp);
   jxl_image_i_destroy(&plane);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 void jxl_image_init(jxl_image *self, jxl_context *ctx) {
@@ -58,7 +58,7 @@ void jxl_image_init_dims(jxl_image *self, jxl_context *ctx, size_t iw,
   self->channel.ctx = ctx;
 }
 
-jxl_status jxl_image_create(jxl_context *ctx, size_t iw, size_t ih,
+jxl_enc_status jxl_image_create(jxl_context *ctx, size_t iw, size_t ih,
                    int bitdepth, int nb_chans, jxl_image *out) {
   jxl_image result;
   jxl_image_construct_empty(&result);
@@ -66,15 +66,15 @@ jxl_status jxl_image_create(jxl_context *ctx, size_t iw, size_t ih,
   for (int i = 0; i < nb_chans; i++) {
     jxl_channel c;
     jxl_channel_construct_empty(&c);
-    jxl_status status = jxl_channel_create(ctx, iw, ih, 0, 0, &c);
-    if (!jxl_status_ok(status)) {
+    jxl_enc_status status = jxl_channel_create(ctx, iw, ih, 0, 0, &c);
+    if (!jxl_enc_status_ok(status)) {
       jxl_channel_destroy(&c);
       jxl_image_destroy(&result);
       return status;
     }
     status = jxl_channels_emplace_back(&result.channel, &c);
     jxl_channel_destroy(&c);
-    if (!jxl_status_ok(status)) {
+    if (!jxl_enc_status_ok(status)) {
       jxl_image_destroy(&result);
       return status;
     }
@@ -82,6 +82,6 @@ jxl_status jxl_image_create(jxl_context *ctx, size_t iw, size_t ih,
   }
   jxl_image_swap(out, &result);
   jxl_image_destroy(&result);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 

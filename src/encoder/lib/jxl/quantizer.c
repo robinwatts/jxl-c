@@ -27,10 +27,10 @@ void jxl_enc_quantizer_init(jxl_enc_quantizer* self, const jxl_dequant_matrices*
                     kGlobalScaleDenom / kDefaultQuant);
 }
 
-jxl_status jxl_quantizer_params_visit_fields(jxl_quantizer_params* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_enc_status jxl_quantizer_params_visit_fields(jxl_quantizer_params* self, jxl_visitor* JXL_RESTRICT visitor) {
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_bits_offset(11, 1), jxl_bits_offset(11, 2049), jxl_bits_offset(12, 4097), jxl_bits_offset(16, 8193)), 1, &self->global_scale));
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(16), jxl_bits_offset(5, 1), jxl_bits_offset(8, 1), jxl_bits_offset(16, 1)), 1, &self->quant_dc));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 jxl_quantizer_params jxl_enc_quantizer_get_params(const jxl_enc_quantizer* self) {

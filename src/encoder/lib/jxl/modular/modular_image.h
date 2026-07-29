@@ -33,7 +33,7 @@ typedef struct jxl_channel {
   int component;
 } jxl_channel;
 
-jxl_status jxl_channel_create(jxl_context* ctx, size_t iw, size_t ih,
+jxl_enc_status jxl_channel_create(jxl_context* ctx, size_t iw, size_t ih,
                      int hsh, int vsh, jxl_channel* out);
 
 static inline void jxl_channel_construct_empty(jxl_channel* self) {
@@ -65,16 +65,16 @@ static inline const pixel_type* jxl_channel_row_const(const jxl_channel* self, s
 static inline jxl_context* jxl_channel_ctx(const jxl_channel* self) {
   return jxl_image_i_ctx(&self->plane);
 }
-static inline jxl_status jxl_channel_shrink(jxl_channel* self) {
+static inline jxl_enc_status jxl_channel_shrink(jxl_channel* self) {
   if (jxl_image_i_x_size(&self->plane) == self->w && jxl_image_i_y_size(&self->plane) == self->h) {
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   JXL_RETURN_IF_ERROR(
       jxl_image_i_create(jxl_channel_ctx(self), self->w, self->h, 0,
                      &self->plane));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static inline jxl_status jxl_channel_shrink_to(jxl_channel* self, int nw, int nh) {
+static inline jxl_enc_status jxl_channel_shrink_to(jxl_channel* self, int nw, int nh) {
   self->w = nw;
   self->h = nh;
   return jxl_channel_shrink(self);
@@ -129,8 +129,8 @@ static inline void jxl_channels_clear(jxl_channels* self) {
   self->len = 0;
 }
 
-static inline jxl_status jxl_channels_reserve(jxl_channels* self, size_t new_capacity) {
-  if (new_capacity <= self->capacity) return jxl_ok_status();
+static inline jxl_enc_status jxl_channels_reserve(jxl_channels* self, size_t new_capacity) {
+  if (new_capacity <= self->capacity) return jxl_enc_ok_status();
 
   size_t grown = self->capacity;
   if (grown == 0) grown = 16;
@@ -167,7 +167,7 @@ static inline jxl_status jxl_channels_reserve(jxl_channels* self, size_t new_cap
   }
   self->ptr = neu;
   self->capacity = grown;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static inline void jxl_channels_destroy(jxl_channels* self) {
@@ -184,7 +184,7 @@ static inline jxl_channel* jxl_channels_back(jxl_channels* self) {
   JXL_DASSERT(self != NULL && self->len > 0);
   return &self->ptr[self->len - 1];
 }
-static inline jxl_status jxl_channels_emplace_back(jxl_channels* self, jxl_channel* value) {
+static inline jxl_enc_status jxl_channels_emplace_back(jxl_channels* self, jxl_channel* value) {
   if (self->len == self->capacity) {
     size_t need;
     if (!jxl_safe_add(self->capacity, (size_t)(1), &need)) {
@@ -195,10 +195,10 @@ static inline jxl_status jxl_channels_emplace_back(jxl_channels* self, jxl_chann
   jxl_channel_construct_empty(self->ptr + self->len);
   jxl_channel_swap(self->ptr + self->len, value);
   ++self->len;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_channels_push_back(jxl_channels* self, jxl_channel* value) {
+static inline jxl_enc_status jxl_channels_push_back(jxl_channels* self, jxl_channel* value) {
   if (self->len == self->capacity) {
     size_t need;
     if (!jxl_safe_add(self->capacity, (size_t)(1), &need)) {
@@ -209,7 +209,7 @@ static inline jxl_status jxl_channels_push_back(jxl_channels* self, jxl_channel*
   jxl_channel_construct_empty(self->ptr + self->len);
   jxl_channel_swap(self->ptr + self->len, value);
   ++self->len;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static inline void jxl_channels_swap(jxl_channels* self, jxl_channels* other) {
@@ -248,7 +248,7 @@ typedef struct jxl_image {
 void jxl_image_init(jxl_image* self, jxl_context* ctx);
 void jxl_image_init_dims(jxl_image* self, jxl_context* ctx, size_t iw,
                    size_t ih, int bitdepth);
-jxl_status jxl_image_create(jxl_context* ctx, size_t iw, size_t ih,
+jxl_enc_status jxl_image_create(jxl_context* ctx, size_t iw, size_t ih,
                    int bitdepth, int nb_chans, jxl_image* out);
 
 static inline void jxl_image_construct_empty(jxl_image* self) {
@@ -325,8 +325,8 @@ static inline void jxl_images_construct_empty(jxl_images* self) {
   self->capacity = 0;
 }
 
-static inline jxl_status jxl_images_reserve(jxl_images* self, size_t new_capacity) {
-  if (new_capacity <= self->capacity) return jxl_ok_status();
+static inline jxl_enc_status jxl_images_reserve(jxl_images* self, size_t new_capacity) {
+  if (new_capacity <= self->capacity) return jxl_enc_ok_status();
 
   size_t grown = self->capacity;
   if (grown == 0) grown = 16;
@@ -364,7 +364,7 @@ static inline jxl_status jxl_images_reserve(jxl_images* self, size_t new_capacit
   }
   self->ptr = neu;
   self->capacity = grown;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static inline void jxl_images_destroy(jxl_images* self) {
@@ -380,7 +380,7 @@ static inline void jxl_images_destroy(jxl_images* self) {
   self->ptr = NULL;
   self->capacity = 0;
 }
-static inline jxl_status jxl_images_emplace_back(jxl_images* self, jxl_context* mm) {
+static inline jxl_enc_status jxl_images_emplace_back(jxl_images* self, jxl_context* mm) {
   if (self->len == self->capacity) {
     size_t need;
     if (!jxl_safe_add(self->capacity, (size_t)(1), &need)) {
@@ -391,7 +391,7 @@ static inline jxl_status jxl_images_emplace_back(jxl_images* self, jxl_context* 
   jxl_image_construct_empty(self->ptr + self->len);
   jxl_image_init(self->ptr + self->len, mm);
   ++self->len;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static inline void jxl_images_swap(jxl_images* self, jxl_images* other) {

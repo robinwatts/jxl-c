@@ -9,7 +9,7 @@
 #include "jxl/decode_types.h"
 
 typedef struct {
-    jxl_box_type ty;
+    jxl_container_box_type ty;
     uint64_t box_size;
     int has_box_size;
     int is_last;

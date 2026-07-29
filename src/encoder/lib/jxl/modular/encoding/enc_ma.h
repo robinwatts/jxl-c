@@ -66,9 +66,9 @@ typedef struct jxl_tree_samples {
 } jxl_tree_samples;
 
 // Defined in enc_ma.cc
-jxl_status jxl_tree_samples_set_predictor(jxl_tree_samples* self, jxl_enc_predictor predictor,
+jxl_enc_status jxl_tree_samples_set_predictor(jxl_tree_samples* self, jxl_enc_predictor predictor,
                                jxl_modular_tree_mode wp_tree_mode);
-jxl_status jxl_tree_samples_set_properties(jxl_tree_samples* self, const uint32_t* properties,
+jxl_enc_status jxl_tree_samples_set_properties(jxl_tree_samples* self, const uint32_t* properties,
                                 size_t num_properties,
                                 jxl_modular_tree_mode wp_tree_mode);
 void jxl_tree_samples_prepare_for_samples(jxl_tree_samples* self, size_t extra_num_samples);
@@ -220,7 +220,7 @@ static inline uint32_t jxl_tree_samples_quantize_static_property(const jxl_tree_
   return *jxl_array_at_const(&self->static_property_mapping[prop], v);
 }
 
-jxl_status jxl_tokenize_tree(const jxl_tree *tree, jxl_token_stream *tokens,
+jxl_enc_status jxl_tokenize_tree(const jxl_tree *tree, jxl_token_stream *tokens,
                     jxl_tree *decoder_tree);
 
 void jxl_collect_pixel_samples(const jxl_image *image, const jxl_modular_options *options,
@@ -228,7 +228,7 @@ void jxl_collect_pixel_samples(const jxl_image *image, const jxl_modular_options
                          jxl_array_u32 *channel_pixel_count,
                          jxl_array_i32 *pixel_samples, jxl_array_i32 *diff_samples);
 
-jxl_status jxl_compute_best_tree(jxl_tree_samples *tree_samples, float threshold,
+jxl_enc_status jxl_compute_best_tree(jxl_tree_samples *tree_samples, float threshold,
                        const jxl_array_modular_multiplier_info *mul_info,
                        jxl_static_prop_range static_prop_range,
                        float fast_decode_multiplier, jxl_tree *tree);

@@ -18,7 +18,7 @@
 
 #include "lib/jxl/layer_type.h"
 // Should still be called if `icc.empty()` - if so, writes only 1 bit.
-jxl_status jxl_write_icc(const jxl_bytes* icc, jxl_bit_writer* JXL_RESTRICT writer, jxl_layer_type layer);
+jxl_enc_status jxl_write_icc(const jxl_bytes* icc, jxl_bit_writer* JXL_RESTRICT writer, jxl_layer_type layer);
 
 
 #endif  // LIB_JXL_ENC_ICC_CODEC_H_

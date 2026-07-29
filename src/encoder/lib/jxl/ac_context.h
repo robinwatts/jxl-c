@@ -100,7 +100,7 @@ static inline void jxl_block_ctx_map_init(jxl_block_ctx_map* self,
   }
   jxl_array_construct_empty(&self->qf_thresholds, mm);
   jxl_array_construct_empty(&self->ctx_map, mm);
-  if (!jxl_status_ok(jxl_array_assign(&self->ctx_map, kBlockCtxMapDefault,
+  if (!jxl_enc_status_ok(jxl_array_assign(&self->ctx_map, kBlockCtxMapDefault,
                    sizeof(kBlockCtxMapDefault) / sizeof(kBlockCtxMapDefault[0])))) {
     JXL_CRASH();
   }

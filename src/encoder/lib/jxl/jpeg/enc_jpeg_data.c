@@ -33,7 +33,7 @@
 
 // See if there is a canonically chunked ICC profile and mark corresponding
 // app-tags with kAppMarkerICC.
-static jxl_status jxl_detect_icc_profile(jxl_jpeg_data* jpeg_data) {
+static jxl_enc_status jxl_detect_icc_profile(jxl_jpeg_data* jpeg_data) {
   JXL_ENSURE(jxl_byte_chunks_size(&jpeg_data->app_data) == jxl_array_len(&jpeg_data->app_marker_type));
   size_t num_icc = 0;
   size_t num_icc_jpeg = 0;
@@ -63,7 +63,7 @@ static jxl_status jxl_detect_icc_profile(jxl_jpeg_data* jpeg_data) {
   if (num_icc != num_icc_jpeg) {
     return JXL_FAILURE("Invalid ICC chunks");
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static bool jxl_get_marker_payload(const uint8_t* data, size_t size, jxl_bytes* payload) {
@@ -79,11 +79,11 @@ static bool jxl_get_marker_payload(const uint8_t* data, size_t size, jxl_bytes* 
   }
   // cut second marker byte and "length" from payload.
   *payload = jxl_bytes_make(data, size);
-  if (!jxl_status_ok(jxl_bytes_remove_prefix(payload, 3))) return false;
+  if (!jxl_enc_status_ok(jxl_bytes_remove_prefix(payload, 3))) return false;
   return true;
 }
 
-static jxl_status jxl_detect_blobs(jxl_jpeg_data* jpeg_data) {
+static jxl_enc_status jxl_detect_blobs(jxl_jpeg_data* jpeg_data) {
   JXL_ENSURE(jxl_byte_chunks_size(&jpeg_data->app_data) == jxl_array_len(&jpeg_data->app_marker_type));
   bool have_exif = false;
   bool have_xmp = false;
@@ -108,10 +108,10 @@ static jxl_status jxl_detect_blobs(jxl_jpeg_data* jpeg_data) {
       have_xmp = true;
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_parse_chunked_marker_body(const jxl_jpeg_data* src, uint8_t marker_type,
+static jxl_enc_status jxl_parse_chunked_marker_body(const jxl_jpeg_data* src, uint8_t marker_type,
                               const jxl_bytes* tag, jxl_icc_bytes* output,
                               jxl_array_bytes* chunks, jxl_array_u8* presence) {
   size_t expected_number_of_parts = 0;
@@ -142,7 +142,7 @@ static jxl_status jxl_parse_chunked_marker_body(const jxl_jpeg_data* src, uint8_
 
     JXL_RETURN_IF_ERROR(jxl_bytes_remove_prefix(&payload, 2));
 
-    JXL_RETURN_IF_ERROR(jxl_status_from_bool(total != 0));
+    JXL_RETURN_IF_ERROR(jxl_enc_status_from_bool(total != 0));
     if (is_first_chunk) {
       is_first_chunk = false;
       expected_number_of_parts = total;
@@ -151,7 +151,7 @@ static jxl_status jxl_parse_chunked_marker_body(const jxl_jpeg_data* src, uint8_
       JXL_RETURN_IF_ERROR(jxl_array_bytes_resize_fill(chunks, total + 1, jxl_bytes_empty()));
       JXL_RETURN_IF_ERROR(jxl_array_resize_zero(presence, total + 1));
     } else {
-      JXL_RETURN_IF_ERROR(jxl_status_from_bool(expected_number_of_parts == total));
+      JXL_RETURN_IF_ERROR(jxl_enc_status_from_bool(expected_number_of_parts == total));
     }
 
     if (index == 0 || index > total) {
@@ -171,16 +171,16 @@ static jxl_status jxl_parse_chunked_marker_body(const jxl_jpeg_data* src, uint8_
     if (!*jxl_array_at(presence, index)) {
       return JXL_FAILURE("Missing chunk.");
     }
-    if (!jxl_status_ok(jxl_array_append(output, jxl_bytes_data(jxl_array_at(chunks, index)),
+    if (!jxl_enc_status_ok(jxl_array_append(output, jxl_bytes_data(jxl_array_at(chunks, index)),
                               jxl_bytes_size(jxl_array_at(chunks, index))))) {
       return JXL_FAILURE("Failed to append ICC chunk");
     }
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_parse_chunked_marker(const jxl_jpeg_data* src, uint8_t marker_type,
+static jxl_enc_status jxl_parse_chunked_marker(const jxl_jpeg_data* src, uint8_t marker_type,
                           const jxl_bytes* tag, jxl_icc_bytes* output) {
   jxl_array_clear(output);
 
@@ -189,7 +189,7 @@ static jxl_status jxl_parse_chunked_marker(const jxl_jpeg_data* src, uint8_t mar
   jxl_array_construct_empty(&chunks, mm);
   jxl_array_u8 presence;
   jxl_array_construct_empty(&presence, mm);
-  jxl_status status =
+  jxl_enc_status status =
       jxl_parse_chunked_marker_body(src, marker_type, tag, output, &chunks, &presence);
   jxl_array_destroy(&chunks);
   jxl_array_destroy(&presence);
@@ -200,7 +200,7 @@ static inline bool jxl_is_jpg(const jxl_bytes* bytes) {
   return jxl_bytes_size(bytes) >= 2 && jxl_bytes_at(bytes, 0) == 0xFF && jxl_bytes_at(bytes, 1) == 0xD8;
 }
 
-jxl_status jxl_set_color_encoding_from_jpeg_data(jxl_context* ctx,
+jxl_enc_status jxl_set_color_encoding_from_jpeg_data(jxl_context* ctx,
                                     const jxl_cms_interface* cms,
                                     const jxl_jpeg_data* jpg,
                                     jxl_enc_color_encoding* color_encoding) {
@@ -208,12 +208,12 @@ jxl_status jxl_set_color_encoding_from_jpeg_data(jxl_context* ctx,
   jxl_array_construct_empty(&icc_profile,
                             color_encoding->storage_.icc.ctx);
   jxl_bytes icc_tag = jxl_bytes_make(kIccProfileTag, sizeof(kIccProfileTag));
-  if (!jxl_status_ok(jxl_parse_chunked_marker(jpg, kApp2, &icc_tag, &icc_profile))) {
+  if (!jxl_enc_status_ok(jxl_parse_chunked_marker(jpg, kApp2, &icc_tag, &icc_profile))) {
     JXL_WARNING("ReJPEG: corrupted ICC profile\n");
     jxl_array_clear(&icc_profile);
   }
 
-  jxl_status status = jxl_ok_status();
+  jxl_enc_status status = jxl_enc_ok_status();
   if (jxl_array_empty(&icc_profile)) {
     bool is_gray = (jxl_array_len(&jpg->components) == 1);
     const jxl_enc_color_encoding* srgb = jxl_context_srgb(ctx, is_gray);
@@ -229,7 +229,7 @@ jxl_status jxl_set_color_encoding_from_jpeg_data(jxl_context* ctx,
   return status;
 }
 
-jxl_status jxl_set_chroma_subsampling_from_jpeg_data(const jxl_jpeg_data* jpg,
+jxl_enc_status jxl_set_chroma_subsampling_from_jpeg_data(const jxl_jpeg_data* jpg,
                                         jxl_y_cb_cr_chroma_subsampling* cs) {
   size_t nbcomp = jxl_array_len(&jpg->components);
   if (nbcomp != 1 && nbcomp != 3) {
@@ -252,10 +252,10 @@ jxl_status jxl_set_chroma_subsampling_from_jpeg_data(const jxl_jpeg_data* jpg,
     }
     JXL_RETURN_IF_ERROR(jxl_y_cb_cr_chroma_subsampling_set(cs, hsample, vsample));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_set_color_transform_from_jpeg_data(const jxl_jpeg_data* jpg,
+jxl_enc_status jxl_set_color_transform_from_jpeg_data(const jxl_jpeg_data* jpg,
                                      jxl_color_transform* color_transform) {
   size_t nbcomp = jxl_array_len(&jpg->components);
   if (nbcomp != 1 && nbcomp != 3) {
@@ -299,10 +299,10 @@ jxl_status jxl_set_color_transform_from_jpeg_data(const jxl_jpeg_data* jpg,
   }
   *color_transform =
       (!is_rgb || nbcomp == 1) ? kColorTransformYCbCr : kColorTransformNone;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_append_brotli_chunk(BrotliEncoderState* brotli_enc, const jxl_bytes* data, bool last,
+jxl_enc_status jxl_append_brotli_chunk(BrotliEncoderState* brotli_enc, const jxl_bytes* data, bool last,
                          jxl_array_u8* bytes, size_t initial_size,
                          size_t* enc_size, size_t* brotli_capacity) {
   size_t available_in = jxl_bytes_size(data);
@@ -317,10 +317,10 @@ jxl_status jxl_append_brotli_chunk(BrotliEncoderState* brotli_enc, const jxl_byt
     jxl_msan_unpoison_memory(out_before, out - out_before);
   } while (FROM_JXL_BOOL(BrotliEncoderHasMoreOutput(brotli_enc)) ||
            available_in > 0);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_encode_jpeg_data(jxl_context* ctx, jxl_jpeg_data* jpeg_data,
+jxl_enc_status jxl_encode_jpeg_data(jxl_context* ctx, jxl_jpeg_data* jpeg_data,
                       jxl_array_u8* bytes, const jxl_compress_params* cparams){
   jxl_array_clear(bytes);
   jxl_array_clear(&jpeg_data->app_marker_type);
@@ -352,9 +352,9 @@ jxl_status jxl_encode_jpeg_data(jxl_context* ctx, jxl_jpeg_data* jpeg_data,
   jxl_bit_writer writer;
   jxl_bit_writer_make(ctx, &writer);
   {
-    jxl_status write_status =
+    jxl_enc_status write_status =
         jxl_bundle_write(&jpeg_data->fields, &writer, kLayerHeader);
-    if (!jxl_status_ok(write_status)) {
+    if (!jxl_enc_status_ok(write_status)) {
       jxl_bit_writer_destroy(&writer);
       return write_status;
     }
@@ -364,16 +364,16 @@ jxl_status jxl_encode_jpeg_data(jxl_context* ctx, jxl_jpeg_data* jpeg_data,
     jxl_padded_bytes serialized_jpeg_data;
     jxl_bit_writer_take_bytes(&writer, &serialized_jpeg_data);
     size_t need = jxl_padded_bytes_size(&serialized_jpeg_data) + brotli_capacity;
-    if (!jxl_status_ok(jxl_array_reserve(bytes, need))) {
+    if (!jxl_enc_status_ok(jxl_array_reserve(bytes, need))) {
       jxl_padded_bytes_destroy(&serialized_jpeg_data);
       jxl_bit_writer_destroy(&writer);
       return JXL_FAILURE("Failed to reserve JPEG metadata buffer");
     }
-    jxl_status append_status =
+    jxl_enc_status append_status =
         jxl_array_append(bytes, jxl_padded_bytes_data(&serialized_jpeg_data),
                     jxl_padded_bytes_size(&serialized_jpeg_data));
     jxl_padded_bytes_destroy(&serialized_jpeg_data);
-    if (!jxl_status_ok(append_status)) {
+    if (!jxl_enc_status_ok(append_status)) {
       jxl_bit_writer_destroy(&writer);
       return append_status;
     }
@@ -389,7 +389,7 @@ jxl_status jxl_encode_jpeg_data(jxl_context* ctx, jxl_jpeg_data* jpeg_data,
   BrotliEncoderSetParameter(brotli_enc, BROTLI_PARAM_QUALITY, effort);
   size_t initial_size = jxl_array_len(bytes);
   BrotliEncoderSetParameter(brotli_enc, BROTLI_PARAM_SIZE_HINT, total_data);
-  if (!jxl_status_ok(jxl_array_resize_zero(bytes, initial_size + brotli_capacity))) {
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(bytes, initial_size + brotli_capacity))) {
     BrotliEncoderDestroyInstance(brotli_enc);
     return JXL_FAILURE("Failed to grow JPEG metadata buffer");
   }
@@ -425,26 +425,26 @@ jxl_status jxl_encode_jpeg_data(jxl_context* ctx, jxl_jpeg_data* jpeg_data,
   }
   BrotliEncoderDestroyInstance(brotli_enc);
   JXL_RETURN_IF_ERROR(jxl_array_resize_zero(bytes, initial_size + enc_size));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_parse_jpg(jxl_context* ctx, const jxl_bytes* bytes,
+jxl_enc_status jxl_parse_jpg(jxl_context* ctx, const jxl_bytes* bytes,
                 jxl_jpeg_data* out) {
   if (ctx == NULL) return JXL_FAILURE("Missing memory manager");
   if (!jxl_is_jpg(bytes)) return JXL_FAILURE("Not JPEG");
   jxl_jpeg_data jpeg_data;
   jxl_jpeg_data_init(&jpeg_data, ctx);
-  jxl_status status = jxl_read_jpeg(jxl_bytes_data(bytes), jxl_bytes_size(bytes), &jpeg_data);
-  if (!jxl_status_ok(status)) {
+  jxl_enc_status status = jxl_read_jpeg(jxl_bytes_data(bytes), jxl_bytes_size(bytes), &jpeg_data);
+  if (!jxl_enc_status_ok(status)) {
     jxl_jpeg_data_destroy(&jpeg_data);
     return status;
   }
   jxl_jpeg_data_swap(out, &jpeg_data);
   jxl_jpeg_data_destroy(&jpeg_data);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_set_blobs_from_jpeg_data(const jxl_jpeg_data* jpeg_data, jxl_jpeg_blobs* blobs) {
+jxl_enc_status jxl_set_blobs_from_jpeg_data(const jxl_jpeg_data* jpeg_data, jxl_jpeg_blobs* blobs) {
   for (size_t i = 0; i < jxl_byte_chunks_size(&jpeg_data->app_data); ++i) {
     jxl_bytes marker = jxl_byte_chunks_at(&jpeg_data->app_data, i);
     if (jxl_bytes_is_empty(&marker) || jxl_bytes_at(&marker, 0) != kApp1) {
@@ -480,5 +480,5 @@ jxl_status jxl_set_blobs_from_jpeg_data(const jxl_jpeg_data* jpeg_data, jxl_jpeg
       }
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }

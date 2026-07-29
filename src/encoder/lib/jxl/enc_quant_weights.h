@@ -19,16 +19,16 @@
 #include "lib/jxl/layer_type.h"
 struct jxl_modular_frame_encoder;
 
-jxl_status jxl_dequant_matrices_encode(jxl_context* ctx,
+jxl_enc_status jxl_dequant_matrices_encode(jxl_context* ctx,
                              const jxl_dequant_matrices* matrices, jxl_bit_writer* writer,
                              jxl_layer_type layer,
                              jxl_modular_frame_encoder* modular_frame_encoder);
-jxl_status jxl_dequant_matrices_encode_dc(const jxl_dequant_matrices* matrices,
+jxl_enc_status jxl_dequant_matrices_encode_dc(const jxl_dequant_matrices* matrices,
                                jxl_bit_writer* writer, jxl_layer_type layer);
 // Applies F16 wire quantization to DC dequant (same as a decoder would).
-jxl_status jxl_dequant_matrices_set_custom_dc(jxl_dequant_matrices* matrices, const float* dc);
+jxl_enc_status jxl_dequant_matrices_set_custom_dc(jxl_dequant_matrices* matrices, const float* dc);
 
-jxl_status jxl_dequant_matrices_set_custom(
+jxl_enc_status jxl_dequant_matrices_set_custom(
     jxl_dequant_matrices* matrices, const jxl_array_quant_encoding* encodings,
     jxl_array_int* raw_qtables,
     jxl_modular_frame_encoder* encoder);

@@ -37,7 +37,7 @@ typedef struct jxl_quantizer_params {
   uint32_t quant_dc;
 } jxl_quantizer_params;
 
-jxl_status jxl_quantizer_params_visit_fields(jxl_quantizer_params* self,
+jxl_enc_status jxl_quantizer_params_visit_fields(jxl_quantizer_params* self,
                                   jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_quantizer_params)
 

@@ -27,12 +27,12 @@
 typedef struct jxl_bit_writer jxl_bit_writer;
 typedef struct jxl_bit_writer_allotment jxl_bit_writer_allotment;
 
-jxl_status jxl_bit_writer_append_byte_aligned(jxl_bit_writer* self, const jxl_bit_writer* others,
+jxl_enc_status jxl_bit_writer_append_byte_aligned(jxl_bit_writer* self, const jxl_bit_writer* others,
                                   size_t num);
 void jxl_bit_writer_write(jxl_bit_writer* self, size_t n_bits, uint64_t bits);
-jxl_status jxl_bit_writer_allotment_init(jxl_bit_writer_allotment* self,
+jxl_enc_status jxl_bit_writer_allotment_init(jxl_bit_writer_allotment* self,
                               jxl_bit_writer* JXL_RESTRICT writer);
-jxl_status jxl_bit_writer_allotment_reclaim(jxl_bit_writer_allotment* self,
+jxl_enc_status jxl_bit_writer_allotment_reclaim(jxl_bit_writer_allotment* self,
                                  jxl_bit_writer* JXL_RESTRICT writer);
 void jxl_bit_writer_allotment_destroy(jxl_bit_writer_allotment* self);
 
@@ -117,9 +117,9 @@ static inline jxl_bytes jxl_bit_writer_get_span(const jxl_bit_writer* self) {
 static inline void jxl_bit_writer_take_bytes(jxl_bit_writer* self, jxl_padded_bytes* out) {
   // Callers must ensure byte alignment to avoid uninitialized bits.
   JXL_DASSERT(self->bits_written_ % kBitsPerByte == 0);
-  jxl_status status = jxl_padded_bytes_resize(
+  jxl_enc_status status = jxl_padded_bytes_resize(
       &self->storage_, jxl_div_ceil(self->bits_written_, kBitsPerByte));
-  JXL_DASSERT(jxl_status_ok(status));
+  JXL_DASSERT(jxl_enc_status_ok(status));
   // Can never fail, because we are resizing to a lower size.
   (void)status;
   jxl_padded_bytes_make(jxl_padded_bytes_ctx(&self->storage_), out);
@@ -135,18 +135,18 @@ static inline void jxl_bit_writer_zero_pad_to_byte(jxl_bit_writer* self) {
   JXL_DASSERT(self->bits_written_ % kBitsPerByte == 0);
 }
 
-static inline jxl_status jxl_bit_writer_with_max_bits(jxl_bit_writer* self, size_t max_bits,
+static inline jxl_enc_status jxl_bit_writer_with_max_bits(jxl_bit_writer* self, size_t max_bits,
                                    jxl_layer_type layer,
-                                   jxl_status (*body)(void* opaque), void* opaque) {
+                                   jxl_enc_status (*body)(void* opaque), void* opaque) {
   (void)layer;
   jxl_bit_writer_allotment allotment;
   jxl_bit_writer_allotment_reset(&allotment, max_bits);
-  jxl_status status = jxl_bit_writer_allotment_init(&allotment, self);
-  if (!jxl_status_ok(status)) {
+  jxl_enc_status status = jxl_bit_writer_allotment_init(&allotment, self);
+  if (!jxl_enc_status_ok(status)) {
     jxl_bit_writer_allotment_destroy(&allotment);
     return status;
   }
-  const jxl_status result = body(opaque);
+  const jxl_enc_status result = body(opaque);
   status = jxl_bit_writer_allotment_reclaim(&allotment, self);
   jxl_bit_writer_allotment_destroy(&allotment);
   JXL_RETURN_IF_ERROR(status);
@@ -200,12 +200,12 @@ static inline void jxl_bit_writers_destroy(jxl_bit_writers* self) {
   self->capacity = 0;
 }
 
-static inline jxl_status jxl_bit_writers_reserve(jxl_bit_writers* self, size_t new_capacity) {
+static inline jxl_enc_status jxl_bit_writers_reserve(jxl_bit_writers* self, size_t new_capacity) {
   size_t grown;
   size_t bytes;
   jxl_bit_writer* neu;
   size_t i;
-  if (new_capacity <= self->capacity) return jxl_ok_status();
+  if (new_capacity <= self->capacity) return jxl_enc_ok_status();
 
   grown = self->capacity;
   if (grown == 0) grown = 16;
@@ -241,10 +241,10 @@ static inline jxl_status jxl_bit_writers_reserve(jxl_bit_writers* self, size_t n
   }
   self->ptr = neu;
   self->capacity = grown;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_bit_writers_emplace_back(jxl_bit_writers* self,
+static inline jxl_enc_status jxl_bit_writers_emplace_back(jxl_bit_writers* self,
                                            jxl_context* mm) {
   if (self->len == self->capacity) {
     size_t need;
@@ -256,7 +256,7 @@ static inline jxl_status jxl_bit_writers_emplace_back(jxl_bit_writers* self,
   jxl_bit_writer_construct_empty(self->ptr + self->len);
   jxl_bit_writer_init(self->ptr + self->len, mm);
   ++self->len;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 #endif  // LIB_JXL_ENC_BIT_WRITER_H_

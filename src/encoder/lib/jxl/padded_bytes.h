@@ -82,7 +82,7 @@ static inline void jxl_padded_bytes_swap(jxl_padded_bytes* self, jxl_padded_byte
   jxl_array_swap(&self->data_, &other->data_);
 }
 
-static inline jxl_status jxl_padded_bytes_change_capacity(jxl_padded_bytes* self,
+static inline jxl_enc_status jxl_padded_bytes_change_capacity(jxl_padded_bytes* self,
                                                size_t new_capacity) {
   jxl_array_u8 neu;
   size_t padded_capacity;
@@ -114,12 +114,12 @@ static inline jxl_status jxl_padded_bytes_change_capacity(jxl_padded_bytes* self
   self->capacity_ = new_capacity;
   jxl_array_swap(&self->data_, &neu);
   jxl_array_destroy(&neu);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_padded_bytes_reserve(jxl_padded_bytes* self, size_t capacity) {
+static inline jxl_enc_status jxl_padded_bytes_reserve(jxl_padded_bytes* self, size_t capacity) {
   size_t new_capacity;
-  if (capacity <= self->capacity_) return jxl_ok_status();
+  if (capacity <= self->capacity_) return jxl_enc_ok_status();
 
   if (!jxl_safe_add(self->capacity_, self->capacity_ / 2, &new_capacity)) {
     return JXL_FAILURE("jxl_padded_bytes reserve: capacity overflow");
@@ -129,27 +129,27 @@ static inline jxl_status jxl_padded_bytes_reserve(jxl_padded_bytes* self, size_t
   return jxl_padded_bytes_change_capacity(self, new_capacity);
 }
 
-static inline jxl_status jxl_padded_bytes_resize(jxl_padded_bytes* self, size_t size) {
+static inline jxl_enc_status jxl_padded_bytes_resize(jxl_padded_bytes* self, size_t size) {
   JXL_RETURN_IF_ERROR(jxl_padded_bytes_reserve(self, size));
   self->data_.len = size;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_padded_bytes_push_back(jxl_padded_bytes* self, uint8_t x) {
+static inline jxl_enc_status jxl_padded_bytes_push_back(jxl_padded_bytes* self, uint8_t x) {
   if (jxl_array_len(&self->data_) == self->capacity_) {
     JXL_RETURN_IF_ERROR(jxl_padded_bytes_reserve(self, self->capacity_ + 1));
   }
 
   self->data_.ptr[self->data_.len++] = x;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static inline void jxl_padded_bytes_clear(jxl_padded_bytes* self) {
-  // Not passing on the jxl_status, because resizing to 0 cannot fail.
+  // Not passing on the jxl_enc_status, because resizing to 0 cannot fail.
   (void)(jxl_padded_bytes_resize(self, 0));
 }
 
-static inline jxl_status jxl_padded_bytes_append(jxl_padded_bytes* self, const uint8_t* begin,
+static inline jxl_enc_status jxl_padded_bytes_append(jxl_padded_bytes* self, const uint8_t* begin,
                                        const uint8_t* end) {
   if (end > begin) {
     size_t old_size = jxl_padded_bytes_size(self);
@@ -160,13 +160,13 @@ static inline jxl_status jxl_padded_bytes_append(jxl_padded_bytes* self, const u
     JXL_RETURN_IF_ERROR(jxl_padded_bytes_resize(self, new_size));
     memcpy(jxl_padded_bytes_data(self) + old_size, begin, end - begin);
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_padded_bytes_init(jxl_padded_bytes* self, size_t size) {
+static inline jxl_enc_status jxl_padded_bytes_init(jxl_padded_bytes* self, size_t size) {
   JXL_RETURN_IF_ERROR(jxl_padded_bytes_reserve(self, size));
   self->data_.len = size;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static inline jxl_context* jxl_padded_bytes_ctx(
@@ -174,7 +174,7 @@ static inline jxl_context* jxl_padded_bytes_ctx(
   return self->data_.ctx;
 }
 
-static inline jxl_status jxl_padded_bytes_with_initial_space(
+static inline jxl_enc_status jxl_padded_bytes_with_initial_space(
     jxl_context* ctx, size_t size, jxl_padded_bytes* out) {
   jxl_padded_bytes_make(ctx, out);
   return jxl_padded_bytes_init(out, size);

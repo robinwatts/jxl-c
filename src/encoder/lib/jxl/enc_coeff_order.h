@@ -44,7 +44,7 @@ jxl_used_orders jxl_compute_used_orders(jxl_speed_tier speed,
 // Modify zig-zag order, so that DCT bands with more zeros go later.
 // Order of DCT bands with same number of zeros is untouched, so
 // permutation will be cheaper to encode.
-jxl_status jxl_compute_coeff_order(jxl_context* ctx,
+jxl_enc_status jxl_compute_coeff_order(jxl_context* ctx,
                               jxl_speed_tier speed, const jxl_ac_image* acs,
                          const jxl_ac_strategy_image* ac_strategy,
                          const jxl_frame_dimensions* frame_dim,
@@ -53,7 +53,7 @@ jxl_status jxl_compute_coeff_order(jxl_context* ctx,
                          uint32_t current_used_orders,
                          coeff_order_t* JXL_RESTRICT order);
 
-jxl_status jxl_encode_coeff_orders(uint16_t used_orders,
+jxl_enc_status jxl_encode_coeff_orders(uint16_t used_orders,
                          const coeff_order_t* JXL_RESTRICT order,
                          jxl_bit_writer* writer, jxl_layer_type layer);
 

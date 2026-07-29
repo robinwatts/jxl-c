@@ -18,7 +18,7 @@
 // the parsed information.
 // Returns false if the data is not valid JPEG, or if it contains an unsupported
 // JPEG feature.
-jxl_status jxl_read_jpeg(const uint8_t* data, size_t len,
+jxl_enc_status jxl_read_jpeg(const uint8_t* data, size_t len,
                 jxl_jpeg_data* jpg);
 
 

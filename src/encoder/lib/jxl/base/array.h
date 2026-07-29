@@ -84,20 +84,20 @@ static inline void jxl_array_swap_fields(jxl_context** mm_a, void** ptr_a,
   jxl_swap(cap_a, cap_b);
 }
 
-static inline jxl_status jxl_array_init_fields(jxl_context** mm, void** ptr,
+static inline jxl_enc_status jxl_array_init_fields(jxl_context** mm, void** ptr,
                                      size_t* len, size_t* capacity,
                                      jxl_context* ctx) {
   JXL_ENSURE(mm != NULL && ptr != NULL && len != NULL && capacity != NULL);
   jxl_array_destroy_fields(mm, ptr, len, capacity);
   *mm = ctx;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_array_reserve_fields(jxl_context** mm, void** ptr,
+static inline jxl_enc_status jxl_array_reserve_fields(jxl_context** mm, void** ptr,
                                         size_t* len, size_t* capacity,
                                         size_t want_capacity, size_t elem_size) {
   JXL_ENSURE(mm != NULL && ptr != NULL && len != NULL && capacity != NULL);
-  if (want_capacity <= *capacity) return jxl_ok_status();
+  if (want_capacity <= *capacity) return jxl_enc_ok_status();
   size_t new_capacity = *capacity;
   if (new_capacity == 0) new_capacity = 16;
   while (new_capacity < want_capacity) {
@@ -128,19 +128,19 @@ static inline jxl_status jxl_array_reserve_fields(jxl_context** mm, void** ptr,
   jxl_free((*mm), *ptr);
   *ptr = neu;
   *capacity = new_capacity;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_array_resize_fields(jxl_context** mm, void** ptr,
+static inline jxl_enc_status jxl_array_resize_fields(jxl_context** mm, void** ptr,
                                        size_t* len, size_t* capacity,
                                        size_t size, size_t elem_size) {
   JXL_RETURN_IF_ERROR(
       jxl_array_reserve_fields(mm, ptr, len, capacity, size, elem_size));
   *len = size;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_array_resize_zero_fields(jxl_context** mm, void** ptr,
+static inline jxl_enc_status jxl_array_resize_zero_fields(jxl_context** mm, void** ptr,
                                            size_t* len, size_t* capacity,
                                            size_t size, size_t elem_size) {
   size_t old = *len;
@@ -149,33 +149,33 @@ static inline jxl_status jxl_array_resize_zero_fields(jxl_context** mm, void** p
   if (size > old) {
     memset((char*)(*ptr) + old * elem_size, 0, (size - old) * elem_size);
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_array_copy_from_fields(jxl_context** mm_a, void** ptr_a,
+static inline jxl_enc_status jxl_array_copy_from_fields(jxl_context** mm_a, void** ptr_a,
                                          size_t* len_a, size_t* cap_a,
                                          jxl_context* const* mm_b,
                                          void* const* ptr_b, const size_t* len_b,
                                          size_t elem_size) {
   JXL_ENSURE(mm_a != NULL && ptr_a != NULL && len_a != NULL && cap_a != NULL);
   JXL_ENSURE(mm_b != NULL && ptr_b != NULL && len_b != NULL);
-  if (ptr_a == (void**)(void*)ptr_b) return jxl_ok_status();
+  if (ptr_a == (void**)(void*)ptr_b) return jxl_enc_ok_status();
   jxl_array_destroy_fields(mm_a, ptr_a, len_a, cap_a);
   *mm_a = *mm_b;
-  if (*len_b == 0) return jxl_ok_status();
-  if (!jxl_status_ok(jxl_array_reserve_fields(mm_a, ptr_a, len_a, cap_a, *len_b, elem_size))) {
+  if (*len_b == 0) return jxl_enc_ok_status();
+  if (!jxl_enc_status_ok(jxl_array_reserve_fields(mm_a, ptr_a, len_a, cap_a, *len_b, elem_size))) {
     JXL_CRASH();
   }
   memcpy(*ptr_a, *ptr_b, (*len_b) * elem_size);
   *len_a = *len_b;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_array_append_fields(jxl_context** mm, void** ptr,
+static inline jxl_enc_status jxl_array_append_fields(jxl_context** mm, void** ptr,
                                        size_t* len, size_t* capacity,
                                        const void* begin, size_t count,
                                        size_t elem_size) {
-  if (count == 0) return jxl_ok_status();
+  if (count == 0) return jxl_enc_ok_status();
   size_t new_size;
   if (!jxl_safe_add(*len, count, &new_size)) {
     return JXL_FAILURE("jxl_array_append: overflow");
@@ -184,10 +184,10 @@ static inline jxl_status jxl_array_append_fields(jxl_context** mm, void** ptr,
       jxl_array_reserve_fields(mm, ptr, len, capacity, new_size, elem_size));
   memcpy((char*)(*ptr) + (*len) * elem_size, begin, count * elem_size);
   *len = new_size;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_array_assign_fields(jxl_context** mm, void** ptr,
+static inline jxl_enc_status jxl_array_assign_fields(jxl_context** mm, void** ptr,
                                        size_t* len, size_t* capacity,
                                        const void* data, size_t count,
                                        size_t elem_size) {
@@ -213,7 +213,7 @@ static inline void jxl_array_erase_fields(void** ptr, size_t* len, void* first,
   *len -= n;
 }
 
-static inline jxl_status jxl_array_push_back_prep_fields(jxl_context** mm, void** ptr,
+static inline jxl_enc_status jxl_array_push_back_prep_fields(jxl_context** mm, void** ptr,
                                              size_t* len, size_t* capacity,
                                              size_t elem_size) {
   if (*len == *capacity) {
@@ -223,10 +223,10 @@ static inline jxl_status jxl_array_push_back_prep_fields(jxl_context** mm, void*
     }
     return jxl_array_reserve_fields(mm, ptr, len, capacity, need, elem_size);
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_array_resize_fill_fields(jxl_context** mm, void** ptr,
+static inline jxl_enc_status jxl_array_resize_fill_fields(jxl_context** mm, void** ptr,
                                            size_t* len, size_t* capacity,
                                            size_t size, const void* fill,
                                            size_t elem_size) {
@@ -236,18 +236,18 @@ static inline jxl_status jxl_array_resize_fill_fields(jxl_context** mm, void** p
   for (size_t i = old; i < size; ++i) {
     memcpy((char*)(*ptr) + i * elem_size, fill, elem_size);
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_array_push_back_copy_fields(jxl_context** mm, void** ptr,
+static inline jxl_enc_status jxl_array_push_back_copy_fields(jxl_context** mm, void** ptr,
                                              size_t* len, size_t* capacity,
                                              const void* value,
                                              size_t elem_size) {
-  jxl_status st = jxl_array_push_back_prep_fields(mm, ptr, len, capacity, elem_size);
-  if (!jxl_status_ok(st)) return st;
+  jxl_enc_status st = jxl_array_push_back_prep_fields(mm, ptr, len, capacity, elem_size);
+  if (!jxl_enc_status_ok(st)) return st;
   memcpy((char*)(*ptr) + (*len) * elem_size, value, elem_size);
   (*len) += 1;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 /* void** of TYPE* field: cast through void* to avoid pedantic alias warnings. */
@@ -291,11 +291,11 @@ static inline jxl_status jxl_array_push_back_copy_fields(jxl_context** mm, void*
 
 #ifdef __cplusplus
 #define JXL_ARRAY_PUSHBACK_OVERLOAD(NAME, TYPE)                                \
-  static inline jxl_status jxl_array_push_back(NAME* a, TYPE value) {                    \
+  static inline jxl_enc_status jxl_array_push_back(NAME* a, TYPE value) {                    \
     return NAME##_push_back(a, value);                                           \
   }
 #define JXL_ARRAY_RESIZEFILL_OVERLOAD(NAME, TYPE)                              \
-  static inline jxl_status jxl_array_resize_fill(NAME* a, size_t size, TYPE fill) {      \
+  static inline jxl_enc_status jxl_array_resize_fill(NAME* a, size_t size, TYPE fill) {      \
     return NAME##_resize_fill(a, size, fill);                                    \
   }
 #else
@@ -311,12 +311,12 @@ static inline jxl_status jxl_array_push_back_copy_fields(jxl_context** mm, void*
     size_t len;                                                                \
     size_t capacity;                                                           \
   } NAME;                                                                      \
-  static inline jxl_status NAME##_push_back(NAME* a, TYPE value) {                   \
+  static inline jxl_enc_status NAME##_push_back(NAME* a, TYPE value) {                   \
     return jxl_array_push_back_copy_fields(&(a)->ctx, JXL_ARRAY_PTR_SLOT(a),\
                                    &(a)->len, &(a)->capacity, &value,          \
                                    sizeof(TYPE));                              \
   }                                                                            \
-  static inline jxl_status NAME##_resize_fill(NAME* a, size_t size, TYPE fill) {     \
+  static inline jxl_enc_status NAME##_resize_fill(NAME* a, size_t size, TYPE fill) {     \
     return jxl_array_resize_fill_fields(&(a)->ctx, JXL_ARRAY_PTR_SLOT(a),  \
                                  &(a)->len, &(a)->capacity, size, &fill,       \
                                  sizeof(TYPE));                                \

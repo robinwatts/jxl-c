@@ -118,7 +118,7 @@ typedef struct jxl_color_correlation_map {
   jxl_color_correlation base_;
 } jxl_color_correlation_map;
 
-jxl_status jxl_color_correlation_map_create(jxl_context* ctx, size_t xsize,
+jxl_enc_status jxl_color_correlation_map_create(jxl_context* ctx, size_t xsize,
                                  size_t ysize, jxl_color_correlation_map* out);
 
 static inline const jxl_color_correlation* jxl_color_correlation_map_base(

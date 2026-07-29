@@ -12,19 +12,19 @@
 #include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/fields.h"
 
-jxl_status jxl_loop_filter_visit_fields(jxl_loop_filter* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_enc_status jxl_loop_filter_visit_fields(jxl_loop_filter* self, jxl_visitor* JXL_RESTRICT visitor) {
   // Must come before AllDefault.
 
-  if (jxl_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
+  if (jxl_enc_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
     // Overwrite all serialized fields, but not any nonserialized_*.
     jxl_visitor_set_default(visitor, &self->fields);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, true, &self->gab));
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->gab))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->gab))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->gab_custom));
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, self->gab_custom))) {
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->gab_custom))) {
       JXL_QUIET_RETURN_IF_ERROR(
           jxl_visitor_f16(visitor, 1.1 * 0.104699568f, &self->gab_x_weight1));
       JXL_QUIET_RETURN_IF_ERROR(
@@ -53,10 +53,10 @@ jxl_status jxl_loop_filter_visit_fields(jxl_loop_filter* self, jxl_visitor* JXL_
   }
 
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 2, 2, &self->epf_iters));
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->epf_iters > 0))) {
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, !self->nonserialized_is_modular))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->epf_iters > 0))) {
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, !self->nonserialized_is_modular))) {
       JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->epf_sharp_custom));
-      if (jxl_status_ok(jxl_visitor_conditional(visitor, self->epf_sharp_custom))) {
+      if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->epf_sharp_custom))) {
         for (size_t i = 0; i < kEpfSharpEntries; ++i) {
           JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_f16(visitor, 
               (float)(i) / (float)(kEpfSharpEntries - 1), &self->epf_sharp_lut[i]));
@@ -65,7 +65,7 @@ jxl_status jxl_loop_filter_visit_fields(jxl_loop_filter* self, jxl_visitor* JXL_
     }
 
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->epf_weight_custom));
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, self->epf_weight_custom))) {
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->epf_weight_custom))) {
       JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_f16(visitor, 40.0f, &self->epf_channel_scale[0]));
       JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_f16(visitor, 5.0f, &self->epf_channel_scale[1]));
       JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_f16(visitor, 3.5f, &self->epf_channel_scale[2]));
@@ -74,8 +74,8 @@ jxl_status jxl_loop_filter_visit_fields(jxl_loop_filter* self, jxl_visitor* JXL_
     }
 
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->epf_sigma_custom));
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, self->epf_sigma_custom))) {
-      if (jxl_status_ok(jxl_visitor_conditional(visitor, !self->nonserialized_is_modular))) {
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->epf_sigma_custom))) {
+      if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, !self->nonserialized_is_modular))) {
         JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_f16(visitor, 0.46f, &self->epf_quant_mul));
       }
       JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_f16(visitor, 0.9f, &self->epf_pass0_sigma_scale));
@@ -83,7 +83,7 @@ jxl_status jxl_loop_filter_visit_fields(jxl_loop_filter* self, jxl_visitor* JXL_
       JXL_QUIET_RETURN_IF_ERROR(
           jxl_visitor_f16(visitor, 0.6666666666666666f, &self->epf_border_sad_mul));
     }
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, self->nonserialized_is_modular))) {
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->nonserialized_is_modular))) {
       JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_f16(visitor, 1.0f, &self->epf_sigma_for_modular));
       if (self->epf_sigma_for_modular < 1e-8) {
         return JXL_FAILURE("EPF: sigma for modular is too small");

@@ -24,7 +24,7 @@
 // Generate DCT NxN quantized AC values tokens.
 // Only the subset "rect" [in units of blocks] within all images.
 // See also DecodeACVarBlock.
-jxl_status jxl_tokenize_coefficients(const coeff_order_t* JXL_RESTRICT orders,
+jxl_enc_status jxl_tokenize_coefficients(const coeff_order_t* JXL_RESTRICT orders,
                             const jxl_rect* rect,
                             const int32_t* JXL_RESTRICT* JXL_RESTRICT ac_rows,
                             const jxl_ac_strategy_image* ac_strategy,

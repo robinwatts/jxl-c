@@ -21,7 +21,7 @@
 const uint8_t kYCbCrChromaHShift[] = {0, 1, 1, 0};
 const uint8_t kYCbCrChromaVShift[] = {0, 1, 0, 1};
 
-static jxl_status jxl_visit_blend_mode(jxl_visitor* JXL_RESTRICT visitor,
+static jxl_enc_status jxl_visit_blend_mode(jxl_visitor* JXL_RESTRICT visitor,
                              jxl_enc_blend_mode default_value, jxl_enc_blend_mode* blend_mode) {
   uint32_t encoded = (uint32_t)(*blend_mode);
 
@@ -30,23 +30,23 @@ static jxl_status jxl_visit_blend_mode(jxl_visitor* JXL_RESTRICT visitor,
     return JXL_FAILURE("Invalid blend_mode");
   }
   *blend_mode = (jxl_enc_blend_mode)(encoded);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_visit_frame_type(jxl_visitor* JXL_RESTRICT visitor,
+static jxl_enc_status jxl_visit_frame_type(jxl_visitor* JXL_RESTRICT visitor,
                              jxl_enc_frame_type default_value, jxl_enc_frame_type* frame_type) {
   uint32_t encoded = (uint32_t)(*frame_type);
 
   JXL_QUIET_RETURN_IF_ERROR(
       jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val((uint32_t)(kRegularFrame)), jxl_val((uint32_t)(kDCFrame)), jxl_val((uint32_t)(kReferenceOnly)), jxl_val((uint32_t)(kSkipProgressive))), (uint32_t)(default_value), &encoded));
   *frame_type = (jxl_enc_frame_type)(encoded);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_enc_blending_info_visit_fields(jxl_enc_blending_info* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_enc_status jxl_enc_blending_info_visit_fields(jxl_enc_blending_info* self, jxl_visitor* JXL_RESTRICT visitor) {
   JXL_QUIET_RETURN_IF_ERROR(
       jxl_visit_blend_mode(visitor, kReplace, &self->mode));
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->nonserialized_num_extra_channels > 0 &&
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->nonserialized_num_extra_channels > 0 &&
                            (self->mode == kBlend ||
                             self->mode == kAlphaWeightedAdd)))) {
     // Up to 11 alpha channels for blending.
@@ -56,7 +56,7 @@ jxl_status jxl_enc_blending_info_visit_fields(jxl_enc_blending_info* self, jxl_v
       return JXL_FAILURE("Invalid alpha channel for blending");
     }
   }
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, (self->nonserialized_num_extra_channels > 0 &&
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, (self->nonserialized_num_extra_channels > 0 &&
                             (self->mode == kBlend ||
                              self->mode == kAlphaWeightedAdd)) ||
                            self->mode == kMul))) {
@@ -64,36 +64,36 @@ jxl_status jxl_enc_blending_info_visit_fields(jxl_enc_blending_info* self, jxl_v
   }
   // 'old' frame for blending. Only necessary if self is not a full frame, or
   // blending is not kReplace.
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->mode != kReplace ||
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->mode != kReplace ||
                            self->nonserialized_is_partial_frame))) {
     JXL_QUIET_RETURN_IF_ERROR(
         jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(0), jxl_val(1), jxl_val(2), jxl_val(3)), 0, &self->source));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 
-jxl_status jxl_animation_frame_visit_fields(jxl_animation_frame* self, jxl_visitor* JXL_RESTRICT visitor) {
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->nonserialized_metadata != NULL &&
+jxl_enc_status jxl_animation_frame_visit_fields(jxl_animation_frame* self, jxl_visitor* JXL_RESTRICT visitor) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->nonserialized_metadata != NULL &&
                            self->nonserialized_metadata->m.have_animation))) {
     JXL_QUIET_RETURN_IF_ERROR(
         jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(0), jxl_val(1), jxl_bits(8), jxl_bits(32)), 0, &self->duration));
   }
 
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, 
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, 
           self->nonserialized_metadata != NULL &&
           self->nonserialized_metadata->m.animation.have_timecodes))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 32, 0, &self->timecode));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_passes_visit_fields(jxl_passes* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_enc_status jxl_passes_visit_fields(jxl_passes* self, jxl_visitor* JXL_RESTRICT visitor) {
   JXL_QUIET_RETURN_IF_ERROR(
       jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(1), jxl_val(2), jxl_val(3), jxl_bits_offset(3, 4)), 1, &self->num_passes));
   JXL_ENSURE(self->num_passes <= kMaxNumPasses);  // Cannot happen when reading
 
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->num_passes != 1))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->num_passes != 1))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(0), jxl_val(1), jxl_val(2), jxl_bits_offset(1, 3)), 0, &self->num_downsample));
     JXL_ENSURE(self->num_downsample <= 4);  // 1,2,4,8
     if (self->num_downsample > self->num_passes) {
@@ -126,18 +126,18 @@ jxl_status jxl_passes_visit_fields(jxl_passes* self, jxl_visitor* JXL_RESTRICT v
     }
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 
 
 
 
-jxl_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_visitor* JXL_RESTRICT visitor) {
-  if (jxl_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
+jxl_enc_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_visitor* JXL_RESTRICT visitor) {
+  if (jxl_enc_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
     // Overwrite all serialized fields, but not any nonserialized_*.
     jxl_visitor_set_default(visitor, &self->fields);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   JXL_QUIET_RETURN_IF_ERROR(
@@ -170,7 +170,7 @@ jxl_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_vis
   }
 
   // Chroma subsampling for YCbCr, if no DC frame is used.
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->color_transform == kColorTransformYCbCr &&
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->color_transform == kColorTransformYCbCr &&
                            ((self->flags & kUseDcFrame) == 0)))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->chroma_subsampling.fields));
   }
@@ -181,11 +181,11 @@ jxl_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_vis
           : 0;
 
   // Upsampling
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, (self->flags & kUseDcFrame) == 0))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, (self->flags & kUseDcFrame) == 0))) {
     JXL_QUIET_RETURN_IF_ERROR(
         jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(1), jxl_val(2), jxl_val(4), jxl_val(8)), 1, &self->upsampling));
     if (self->nonserialized_metadata != NULL &&
-        jxl_status_ok(jxl_visitor_conditional(visitor, num_extra_channels != 0))) {
+        jxl_enc_status_ok(jxl_visitor_conditional(visitor, num_extra_channels != 0))) {
       const jxl_extra_channel_infos* extra_channels =
           &self->nonserialized_metadata->m.extra_channel_info;
       JXL_RETURN_IF_ERROR(
@@ -214,10 +214,10 @@ jxl_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_vis
   }
 
   // Modular- or VarDCT-specific data.
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->encoding == kModular))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->encoding == kModular))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 2, 1, &self->group_size_shift));
   }
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->encoding == kVarDCT &&
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->encoding == kVarDCT &&
                            self->color_transform == kColorTransformXYB))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 3, 3, &self->x_qm_scale));
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 3, 2, &self->b_qm_scale));
@@ -226,11 +226,11 @@ jxl_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_vis
   }
 
   // Not useful for kPatchSource
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->frame_type != kReferenceOnly))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->frame_type != kReferenceOnly))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->passes.fields));
   }
 
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->frame_type == kDCFrame))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->frame_type == kDCFrame))) {
     // Up to 4 pyramid levels - for up to 16384x downsampling.
     JXL_QUIET_RETURN_IF_ERROR(
         jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(1), jxl_val(2), jxl_val(3), jxl_val(4)), 1, &self->dc_level));
@@ -240,12 +240,12 @@ jxl_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_vis
   }
 
   bool is_partial_frame = false;
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->frame_type != kDCFrame))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->frame_type != kDCFrame))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->custom_size_or_origin));
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, self->custom_size_or_origin))) {
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->custom_size_or_origin))) {
       const jxl_u32_enc enc = jxl_u32_enc_make(jxl_bits(8), jxl_bits_offset(11, 256), jxl_bits_offset(14, 2304), jxl_bits_offset(30, 18688));
       // Frame offset, only if kRegularFrame or kSkipProgressive.
-      if (jxl_status_ok(jxl_visitor_conditional(visitor, self->frame_type == kRegularFrame ||
+      if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->frame_type == kRegularFrame ||
                                self->frame_type == kSkipProgressive))) {
         uint32_t ux0 = jxl_pack_signed(self->frame_origin.x0);
         uint32_t uy0 = jxl_pack_signed(self->frame_origin.y0);
@@ -277,13 +277,13 @@ jxl_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_vis
   }
 
   // Blending info, animation info and whether self is the last frame or not.
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->frame_type == kRegularFrame ||
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->frame_type == kRegularFrame ||
                            self->frame_type == kSkipProgressive))) {
     self->blending_info.nonserialized_num_extra_channels = num_extra_channels;
     self->blending_info.nonserialized_is_partial_frame = is_partial_frame;
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->blending_info.fields));
     bool replace_all = (self->blending_info.mode == kReplace);
-    if (!jxl_status_ok(jxl_blending_infos_resize(&self->extra_channel_blending_info, num_extra_channels))) {
+    if (!jxl_enc_status_ok(jxl_blending_infos_resize(&self->extra_channel_blending_info, num_extra_channels))) {
       return JXL_FAILURE("Failed to allocate extra_channel_blending_info");
     }
     for (size_t i = 0; i < num_extra_channels; i++) {
@@ -299,7 +299,7 @@ jxl_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_vis
         return JXL_FAILURE("Preview is not compatible with blending");
       }
     }
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, self->nonserialized_metadata != NULL &&
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->nonserialized_metadata != NULL &&
                              self->nonserialized_metadata->m.have_animation))) {
       self->animation_frame.nonserialized_metadata = self->nonserialized_metadata;
       JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->animation_frame.fields));
@@ -312,7 +312,7 @@ jxl_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_vis
   // ID of that can be used to refer to self frame. 0 for a non-zero-duration
   // frame means that it will not be referenced. Not necessary for the last
   // frame.
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->frame_type != kDCFrame && !self->is_last))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->frame_type != kDCFrame && !self->is_last))) {
     JXL_QUIET_RETURN_IF_ERROR(
         jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(0), jxl_val(1), jxl_val(2), jxl_val(3)), 0, &self->save_as_reference));
   }
@@ -324,14 +324,14 @@ jxl_status jxl_enc_frame_header_visit_fields(jxl_enc_frame_header* self, jxl_vis
   // full frame, as samples outside the partial region are from a
   // post-color-transform frame.
   if (self->frame_type != kDCFrame) {
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, jxl_enc_frame_header_can_be_referenced(self) &&
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, jxl_enc_frame_header_can_be_referenced(self) &&
                              self->blending_info.mode == kReplace &&
                              !is_partial_frame &&
                              (self->frame_type == kRegularFrame ||
                               self->frame_type == kSkipProgressive)))) {
       JXL_QUIET_RETURN_IF_ERROR(
           jxl_visitor_bool(visitor, false, &self->save_before_color_transform));
-    } else if (jxl_status_ok(jxl_visitor_conditional(visitor, self->frame_type == kReferenceOnly))) {
+    } else if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->frame_type == kReferenceOnly))) {
       JXL_QUIET_RETURN_IF_ERROR(
           jxl_visitor_bool(visitor, true, &self->save_before_color_transform));
       size_t xsize = self->custom_size_or_origin

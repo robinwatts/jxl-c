@@ -15,12 +15,12 @@
 #include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/simd_util.h"
 
-jxl_status jxl_bytes_per_row(const size_t xsize, const size_t sizeof_t,
+jxl_enc_status jxl_bytes_per_row(const size_t xsize, const size_t sizeof_t,
                              size_t* out) {
   // Special case: we don't allow any ops -> don't need extra padding/
   if (xsize == 0) {
     *out = 0;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   const size_t vec_size = jxl_max_vector_size();
@@ -61,10 +61,10 @@ jxl_status jxl_bytes_per_row(const size_t xsize, const size_t sizeof_t,
 
   JXL_DASSERT(bytes_per_row % align == 0);
   *out = bytes_per_row;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_aligned_memory_create(jxl_context* ctx, size_t size,
+jxl_enc_status jxl_aligned_memory_create(jxl_context* ctx, size_t size,
                                      size_t pre_padding,
                                      jxl_aligned_memory* out) {
   JXL_ENSURE(pre_padding <= kMemoryAlias);
@@ -83,7 +83,7 @@ jxl_status jxl_aligned_memory_create(jxl_context* ctx, size_t size,
   jxl_aligned_memory_init(&mem, ctx, allocated, pre_padding);
   jxl_aligned_memory_swap(out, &mem);
   jxl_aligned_memory_destroy(&mem);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 void jxl_aligned_memory_init(jxl_aligned_memory* self, jxl_context* ctx,

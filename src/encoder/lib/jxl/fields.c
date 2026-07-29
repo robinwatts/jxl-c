@@ -18,78 +18,78 @@
 #include "lib/jxl/base/enc_status.h"
 #include "lib/jxl/field_encodings.h"
 
-jxl_status jxl_visitor_default_bool(jxl_visitor* self, bool default_value,
+jxl_enc_status jxl_visitor_default_bool(jxl_visitor* self, bool default_value,
                           bool* JXL_RESTRICT value) {
   uint32_t bits = *value ? 1 : 0;
   JXL_RETURN_IF_ERROR(
       jxl_visitor_bits(self, 1, (uint32_t)(default_value), &bits));
   JXL_DASSERT(bits <= 1);
   *value = bits == 1;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_visitor_default_conditional(jxl_visitor* /*self*/, bool condition) {
-  return jxl_status_from_bool(condition);
+jxl_enc_status jxl_visitor_default_conditional(jxl_visitor* /*self*/, bool condition) {
+  return jxl_enc_status_from_bool(condition);
 }
 
-jxl_status jxl_visitor_default_all_default(jxl_visitor* self, const jxl_fields* /*fields*/,
+jxl_enc_status jxl_visitor_default_all_default(jxl_visitor* self, const jxl_fields* /*fields*/,
                                 bool* JXL_RESTRICT all_default) {
   JXL_RETURN_IF_ERROR(jxl_visitor_bool(self, true, all_default));
-  return jxl_status_from_bool(*all_default);
+  return jxl_enc_status_from_bool(*all_default);
 }
 
 void jxl_visitor_default_set_default(jxl_visitor* /*self*/, jxl_fields* /*fields*/) {}
 
-jxl_status jxl_visitor_default_visit_nested(jxl_visitor* self, jxl_fields* fields) {
+jxl_enc_status jxl_visitor_default_visit_nested(jxl_visitor* self, jxl_fields* fields) {
   return jxl_visitor_visit(self, fields);
 }
 
 bool jxl_visitor_default_is_reading(const jxl_visitor* /*self*/) { return false; }
 
-jxl_status jxl_visitor_default_begin_extensions(jxl_visitor* self,
+jxl_enc_status jxl_visitor_default_begin_extensions(jxl_visitor* self,
                                      uint64_t* JXL_RESTRICT extensions) {
   JXL_RETURN_IF_ERROR(jxl_visitor_u64(self, 0, extensions));
   jxl_extension_states_begin(&self->extension_states);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_visitor_default_end_extensions(jxl_visitor* self) {
+jxl_enc_status jxl_visitor_default_end_extensions(jxl_visitor* self) {
   jxl_extension_states_end(&self->extension_states);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_init_bits(jxl_visitor* /*self*/, size_t /*bits*/, uint32_t default_value,
+static jxl_enc_status jxl_init_bits(jxl_visitor* /*self*/, size_t /*bits*/, uint32_t default_value,
                 uint32_t* JXL_RESTRICT value) {
   *value = default_value;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_init_u32(jxl_visitor* /*self*/, jxl_u32_enc /*enc*/, uint32_t default_value,
+static jxl_enc_status jxl_init_u32(jxl_visitor* /*self*/, jxl_u32_enc /*enc*/, uint32_t default_value,
                uint32_t* JXL_RESTRICT value) {
   *value = default_value;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_init_u64(jxl_visitor* /*self*/, uint64_t default_value,
+static jxl_enc_status jxl_init_u64(jxl_visitor* /*self*/, uint64_t default_value,
                uint64_t* JXL_RESTRICT value) {
   *value = default_value;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_init_f16(jxl_visitor* /*self*/, float default_value,
+static jxl_enc_status jxl_init_f16(jxl_visitor* /*self*/, float default_value,
                float* JXL_RESTRICT value) {
   *value = default_value;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_init_bool(jxl_visitor* /*self*/, bool default_value,
+static jxl_enc_status jxl_init_bool(jxl_visitor* /*self*/, bool default_value,
                 bool* JXL_RESTRICT value) {
   *value = default_value;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_init_conditional(jxl_visitor* /*self*/, bool /*condition*/) { return jxl_ok_status(); }
-static jxl_status jxl_init_all_default(jxl_visitor* self, const jxl_fields* /*fields*/,
+static jxl_enc_status jxl_init_conditional(jxl_visitor* /*self*/, bool /*condition*/) { return jxl_enc_ok_status(); }
+static jxl_enc_status jxl_init_all_default(jxl_visitor* self, const jxl_fields* /*fields*/,
                       bool* JXL_RESTRICT all_default) {
   JXL_RETURN_IF_ERROR(jxl_visitor_bool(self, true, all_default));
-  return jxl_error_status();
+  return jxl_enc_error_status();
 }
-static jxl_status jxl_init_visit_nested(jxl_visitor* /*self*/, jxl_fields* /*fields*/) { return jxl_ok_status(); }
+static jxl_enc_status jxl_init_visit_nested(jxl_visitor* /*self*/, jxl_fields* /*fields*/) { return jxl_enc_ok_status(); }
 
 static const jxl_visitor_ops kInitOps = {
     jxl_init_bits,
@@ -106,7 +106,7 @@ static const jxl_visitor_ops kInitOps = {
     jxl_visitor_default_end_extensions,
 };
 
-static jxl_status jxl_set_default_visit_nested(jxl_visitor* self, jxl_fields* fields) {
+static jxl_enc_status jxl_set_default_visit_nested(jxl_visitor* self, jxl_fields* fields) {
   return jxl_visitor_visit(self, fields);
 }
 
@@ -134,33 +134,33 @@ static bool jxl_all_default_visitor_all_default(const jxl_all_default_visitor* s
   return self->all_default;
 }
 
-static jxl_status jxl_all_default_bits(jxl_visitor* self, size_t /*bits*/, uint32_t default_value,
+static jxl_enc_status jxl_all_default_bits(jxl_visitor* self, size_t /*bits*/, uint32_t default_value,
                       uint32_t* JXL_RESTRICT value) {
   jxl_all_default_visitor* v = (jxl_all_default_visitor*)(self);
   v->all_default &= *value == default_value;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_all_default_u32(jxl_visitor* self, jxl_u32_enc /*enc*/, uint32_t default_value,
+static jxl_enc_status jxl_all_default_u32(jxl_visitor* self, jxl_u32_enc /*enc*/, uint32_t default_value,
                      uint32_t* JXL_RESTRICT value) {
   jxl_all_default_visitor* v = (jxl_all_default_visitor*)(self);
   v->all_default &= *value == default_value;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_all_default_u64(jxl_visitor* self, uint64_t default_value,
+static jxl_enc_status jxl_all_default_u64(jxl_visitor* self, uint64_t default_value,
                      uint64_t* JXL_RESTRICT value) {
   jxl_all_default_visitor* v = (jxl_all_default_visitor*)(self);
   v->all_default &= *value == default_value;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_all_default_f16(jxl_visitor* self, float default_value,
+static jxl_enc_status jxl_all_default_f16(jxl_visitor* self, float default_value,
                      float* JXL_RESTRICT value) {
   jxl_all_default_visitor* v = (jxl_all_default_visitor*)(self);
   v->all_default &= fabs(*value - default_value) < 1E-6f;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_all_default_all_default(jxl_visitor* /*self*/, const jxl_fields* /*fields*/,
+static jxl_enc_status jxl_all_default_all_default(jxl_visitor* /*self*/, const jxl_fields* /*fields*/,
                             bool* JXL_RESTRICT /*all_default*/) {
-  return jxl_error_status();
+  return jxl_enc_error_status();
 }
 
 static const jxl_visitor_ops kAllDefaultOps = {
@@ -192,10 +192,10 @@ typedef struct jxl_can_encode_visitor {
   uint64_t pos_after_ext;
 } jxl_can_encode_visitor;
 
-static jxl_status jxl_can_encode_visitor_get_sizes(jxl_can_encode_visitor* self,
+static jxl_enc_status jxl_can_encode_visitor_get_sizes(jxl_can_encode_visitor* self,
                                 size_t* JXL_RESTRICT extension_bits,
                                 size_t* JXL_RESTRICT total_bits) {
-  JXL_RETURN_IF_ERROR(jxl_status_from_bool(self->ok));
+  JXL_RETURN_IF_ERROR(jxl_enc_status_from_bool(self->ok));
   *extension_bits = 0;
   *total_bits = self->encoded_bits;
   if (self->pos_after_ext != 0) {
@@ -203,56 +203,56 @@ static jxl_status jxl_can_encode_visitor_get_sizes(jxl_can_encode_visitor* self,
     *extension_bits = self->encoded_bits - self->pos_after_ext;
     size_t encoded = 0;
     self->ok =
-        self->ok && jxl_status_ok(jxl_u64_coder_can_encode(*extension_bits, &encoded));
+        self->ok && jxl_enc_status_ok(jxl_u64_coder_can_encode(*extension_bits, &encoded));
     *total_bits += encoded;
     for (size_t i = 1; i < jxl_pop_count(self->extensions); ++i) {
       encoded = 0;
-      self->ok = self->ok && jxl_status_ok(jxl_u64_coder_can_encode(0, &encoded));
+      self->ok = self->ok && jxl_enc_status_ok(jxl_u64_coder_can_encode(0, &encoded));
       *total_bits += encoded;
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_can_encode_bits(jxl_visitor* self, size_t bits, uint32_t /*default_value*/,
+static jxl_enc_status jxl_can_encode_bits(jxl_visitor* self, size_t bits, uint32_t /*default_value*/,
                      uint32_t* JXL_RESTRICT value) {
   jxl_can_encode_visitor* v = (jxl_can_encode_visitor*)(self);
   size_t encoded_bits = 0;
-  v->ok = v->ok && jxl_status_ok(jxl_bits_coder_can_encode(bits, *value, &encoded_bits));
+  v->ok = v->ok && jxl_enc_status_ok(jxl_bits_coder_can_encode(bits, *value, &encoded_bits));
   v->encoded_bits += encoded_bits;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_can_encode_u32(jxl_visitor* self, jxl_u32_enc enc, uint32_t /*default_value*/,
+static jxl_enc_status jxl_can_encode_u32(jxl_visitor* self, jxl_u32_enc enc, uint32_t /*default_value*/,
                     uint32_t* JXL_RESTRICT value) {
   jxl_can_encode_visitor* v = (jxl_can_encode_visitor*)(self);
   size_t encoded_bits = 0;
-  v->ok = v->ok && jxl_status_ok(jxl_u32_coder_can_encode(enc, *value, &encoded_bits));
+  v->ok = v->ok && jxl_enc_status_ok(jxl_u32_coder_can_encode(enc, *value, &encoded_bits));
   v->encoded_bits += encoded_bits;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_can_encode_u64(jxl_visitor* self, uint64_t /*default_value*/,
+static jxl_enc_status jxl_can_encode_u64(jxl_visitor* self, uint64_t /*default_value*/,
                     uint64_t* JXL_RESTRICT value) {
   jxl_can_encode_visitor* v = (jxl_can_encode_visitor*)(self);
   size_t encoded_bits = 0;
-  v->ok = v->ok && jxl_status_ok(jxl_u64_coder_can_encode(*value, &encoded_bits));
+  v->ok = v->ok && jxl_enc_status_ok(jxl_u64_coder_can_encode(*value, &encoded_bits));
   v->encoded_bits += encoded_bits;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_can_encode_f16(jxl_visitor* self, float /*default_value*/,
+static jxl_enc_status jxl_can_encode_f16(jxl_visitor* self, float /*default_value*/,
                     float* JXL_RESTRICT value) {
   jxl_can_encode_visitor* v = (jxl_can_encode_visitor*)(self);
   size_t encoded_bits = 0;
-  v->ok = v->ok && jxl_status_ok(jxl_f16_coder_can_encode(*value, &encoded_bits));
+  v->ok = v->ok && jxl_enc_status_ok(jxl_f16_coder_can_encode(*value, &encoded_bits));
   v->encoded_bits += encoded_bits;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-static jxl_status jxl_can_encode_all_default(jxl_visitor* self, const jxl_fields* fields,
+static jxl_enc_status jxl_can_encode_all_default(jxl_visitor* self, const jxl_fields* fields,
                            bool* JXL_RESTRICT all_default) {
   *all_default = jxl_bundle_all_default(fields);
   JXL_RETURN_IF_ERROR(jxl_visitor_bool(self, true, all_default));
-  return jxl_status_from_bool(*all_default);
+  return jxl_enc_status_from_bool(*all_default);
 }
-static jxl_status jxl_can_encode_begin_extensions(jxl_visitor* self,
+static jxl_enc_status jxl_can_encode_begin_extensions(jxl_visitor* self,
                                 uint64_t* JXL_RESTRICT extensions) {
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_default_begin_extensions(self, extensions));
   jxl_can_encode_visitor* v = (jxl_can_encode_visitor*)(self);
@@ -262,7 +262,7 @@ static jxl_status jxl_can_encode_begin_extensions(jxl_visitor* self,
     v->pos_after_ext = v->encoded_bits;
     JXL_ENSURE(v->pos_after_ext != 0);
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static const jxl_visitor_ops kCanEncodeOps = {
@@ -293,7 +293,7 @@ void jxl_bundle_init(jxl_fields* fields) {
   jxl_visitor visitor;
   jxl_visitor_construct_empty(&visitor);
   visitor.ops = &kInitOps;
-  if (!jxl_status_ok(jxl_visitor_visit(&visitor, fields))) {
+  if (!jxl_enc_status_ok(jxl_visitor_visit(&visitor, fields))) {
     JXL_DEBUG_ABORT("Init should never fail");
   }
 }
@@ -301,35 +301,35 @@ void jxl_bundle_set_default(jxl_fields* fields) {
   jxl_visitor visitor;
   jxl_visitor_construct_empty(&visitor);
   visitor.ops = &kSetDefaultOps;
-  if (!jxl_status_ok(jxl_visitor_visit(&visitor, fields))) {
+  if (!jxl_enc_status_ok(jxl_visitor_visit(&visitor, fields))) {
     JXL_DEBUG_ABORT("SetDefault should never fail");
   }
 }
 bool jxl_bundle_all_default(const jxl_fields* fields) {
   jxl_all_default_visitor visitor;
   jxl_all_default_visitor_init(&visitor);
-  if (!jxl_status_ok(jxl_visitor_visit_const(&visitor.visitor, fields))) {
+  if (!jxl_enc_status_ok(jxl_visitor_visit_const(&visitor.visitor, fields))) {
     JXL_DEBUG_ABORT("AllDefault should never fail");
   }
   return jxl_all_default_visitor_all_default(&visitor);
 }
-jxl_status jxl_bundle_can_encode(const jxl_fields* fields, size_t* extension_bits,
+jxl_enc_status jxl_bundle_can_encode(const jxl_fields* fields, size_t* extension_bits,
                        size_t* total_bits) {
   jxl_can_encode_visitor visitor;
   jxl_can_encode_visitor_init(&visitor);
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_const(&visitor.visitor, fields));
   JXL_QUIET_RETURN_IF_ERROR(
       jxl_can_encode_visitor_get_sizes(&visitor, extension_bits, total_bits));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
-jxl_status jxl_bits_coder_can_encode(const size_t bits, const uint32_t value,
+jxl_enc_status jxl_bits_coder_can_encode(const size_t bits, const uint32_t value,
                             size_t* JXL_RESTRICT encoded_bits) {
   *encoded_bits = bits;
   if (value >= (1ULL << bits)) {
     return JXL_FAILURE("Value %u too large for %" PRIu64 " bits", value,
                        (uint64_t)(bits));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 size_t jxl_u32_coder_max_encoded_bits(const jxl_u32_enc enc) {
@@ -345,16 +345,16 @@ size_t jxl_u32_coder_max_encoded_bits(const jxl_u32_enc enc) {
   return 2 + extra_bits;
 }
 
-jxl_status jxl_u32_coder_can_encode(const jxl_u32_enc enc, const uint32_t value,
+jxl_enc_status jxl_u32_coder_can_encode(const jxl_u32_enc enc, const uint32_t value,
                            size_t* JXL_RESTRICT encoded_bits) {
   uint32_t selector;
   size_t total_bits;
-  const jxl_status ok = jxl_u32_coder_choose_selector(enc, value, &selector, &total_bits);
-  *encoded_bits = jxl_status_ok(ok) ? total_bits : 0;
+  const jxl_enc_status ok = jxl_u32_coder_choose_selector(enc, value, &selector, &total_bits);
+  *encoded_bits = jxl_enc_status_ok(ok) ? total_bits : 0;
   return ok;
 }
 
-jxl_status jxl_u32_coder_choose_selector(const jxl_u32_enc enc, const uint32_t value,
+jxl_enc_status jxl_u32_coder_choose_selector(const jxl_u32_enc enc, const uint32_t value,
                                 uint32_t* JXL_RESTRICT selector,
                                 size_t* JXL_RESTRICT total_bits) {
   const size_t bits_required = 32 - jxl_num0_bits_above_ms1_bit32(value);
@@ -372,7 +372,7 @@ jxl_status jxl_u32_coder_choose_selector(const jxl_u32_enc enc, const uint32_t v
       if (jxl_u32_distr_direct(d) == value) {
         *selector = s;
         *total_bits = 2;
-        return jxl_ok_status();  // Done, direct is always the best possible.
+        return jxl_enc_ok_status();  // Done, direct is always the best possible.
       }
       continue;
     }
@@ -391,11 +391,11 @@ jxl_status jxl_u32_coder_choose_selector(const jxl_u32_enc enc, const uint32_t v
     return JXL_FAILURE("No feasible selector for %u", value);
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Can always encode, but useful because it also returns bit size.
-jxl_status jxl_u64_coder_can_encode(uint64_t value, size_t* JXL_RESTRICT encoded_bits) {
+jxl_enc_status jxl_u64_coder_can_encode(uint64_t value, size_t* JXL_RESTRICT encoded_bits) {
   if (value == 0) {
     *encoded_bits = 2;  // 2 selector bits
   } else if (value <= 16) {
@@ -419,10 +419,10 @@ jxl_status jxl_u64_coder_can_encode(uint64_t value, size_t* JXL_RESTRICT encoded
     }
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_f16_coder_project(float value, float* JXL_RESTRICT out) {
+jxl_enc_status jxl_f16_coder_project(float value, float* JXL_RESTRICT out) {
   uint32_t bits32;
   memcpy(&bits32, &value, sizeof(bits32));
   const uint32_t sign = bits32 >> 31;
@@ -469,7 +469,7 @@ jxl_status jxl_f16_coder_project(float value, float* JXL_RESTRICT out) {
   if (JXL_UNLIKELY(biased_exp == 0)) {
     *out = (1.0f / 16384) * (mantissa * (1.0f / 1024));
     if (sign_out) *out = -*out;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   // Normalized: convert the representation directly (faster than ldexp/tables).
@@ -478,14 +478,14 @@ jxl_status jxl_f16_coder_project(float value, float* JXL_RESTRICT out) {
   const uint32_t bits32_out =
       (sign_out << 31) | (biased_exp32_out << 23) | mantissa32_out;
   memcpy(out, &bits32_out, sizeof(bits32_out));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_f16_coder_can_encode(float value, size_t* JXL_RESTRICT encoded_bits) {
+jxl_enc_status jxl_f16_coder_can_encode(float value, size_t* JXL_RESTRICT encoded_bits) {
   *encoded_bits = jxl_f16_coder_max_encoded_bits();
   if (isnan(value) || isinf(value)) {
     return JXL_FAILURE("Should not attempt to store NaN and infinity");
   }
-  return jxl_status_from_bool(fabs(value) <= 65504.0f);
+  return jxl_enc_status_from_bool(fabs(value) <= 65504.0f);
 }
 

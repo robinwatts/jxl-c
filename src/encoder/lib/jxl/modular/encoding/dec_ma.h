@@ -101,8 +101,8 @@ static inline void jxl_trees_construct_empty(jxl_trees* self) {
   self->capacity = 0;
 }
 
-static inline jxl_status jxl_trees_reserve(jxl_trees* self, size_t new_capacity) {
-    if (new_capacity <= self->capacity) return jxl_ok_status();
+static inline jxl_enc_status jxl_trees_reserve(jxl_trees* self, size_t new_capacity) {
+    if (new_capacity <= self->capacity) return jxl_enc_ok_status();
 
     size_t grown = self->capacity;
     if (grown == 0) grown = 16;
@@ -139,30 +139,30 @@ static inline jxl_status jxl_trees_reserve(jxl_trees* self, size_t new_capacity)
     }
     self->ptr = neu;
     self->capacity = grown;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
-static inline jxl_status jxl_trees_resize(jxl_trees* self, size_t n) {
+static inline jxl_enc_status jxl_trees_resize(jxl_trees* self, size_t n) {
     if (n < self->len) {
       for (size_t i = n; i < self->len; ++i) {
         jxl_array_destroy(self->ptr + i);
       }
       self->len = n;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     }
     JXL_RETURN_IF_ERROR(jxl_trees_reserve(self, n));
     while (self->len < n) {
       jxl_array_construct_empty(self->ptr + self->len, self->ctx);
       ++self->len;
     }
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
 static inline void jxl_trees_create(jxl_trees* self, size_t n,
                                     jxl_context* mm) {
   jxl_trees_construct_empty(self);
   self->ctx = mm;
-  if (!jxl_status_ok(jxl_trees_resize(self, n))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_trees_resize(self, n))) JXL_CRASH();
 }
 
 static inline void jxl_trees_destroy(jxl_trees* self) {

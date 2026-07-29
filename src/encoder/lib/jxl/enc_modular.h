@@ -53,33 +53,33 @@ typedef struct jxl_modular_frame_encoder {
 
 } jxl_modular_frame_encoder;
 
-jxl_status jxl_modular_frame_encoder_create(jxl_context* ctx,
+jxl_enc_status jxl_modular_frame_encoder_create(jxl_context* ctx,
                                  const jxl_enc_frame_header* frame_header,
                                  const jxl_compress_params* cparams_orig,
                                  jxl_modular_frame_encoder* out);
-jxl_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self,
+jxl_enc_status jxl_modular_frame_encoder_init(jxl_modular_frame_encoder* self,
                                const jxl_enc_frame_header* frame_header,
                                const jxl_compress_params* cparams_orig);
-jxl_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* self);
-jxl_status jxl_modular_frame_encoder_compute_tokens(jxl_modular_frame_encoder* self);
-jxl_status jxl_modular_frame_encoder_encode_global_info(jxl_modular_frame_encoder* self,
+jxl_enc_status jxl_modular_frame_encoder_compute_tree(jxl_modular_frame_encoder* self);
+jxl_enc_status jxl_modular_frame_encoder_compute_tokens(jxl_modular_frame_encoder* self);
+jxl_enc_status jxl_modular_frame_encoder_encode_global_info(jxl_modular_frame_encoder* self,
                                            jxl_bit_writer* writer);
-jxl_status jxl_modular_frame_encoder_encode_stream(jxl_modular_frame_encoder* self,
+jxl_enc_status jxl_modular_frame_encoder_encode_stream(jxl_modular_frame_encoder* self,
                                        jxl_bit_writer* writer, jxl_layer_type layer,
                                        const jxl_modular_stream_id* stream);
-jxl_status jxl_modular_frame_encoder_add_var_dctdc(jxl_modular_frame_encoder* self,
+jxl_enc_status jxl_modular_frame_encoder_add_var_dctdc(jxl_modular_frame_encoder* self,
                                       const jxl_enc_frame_header* frame_header,
                                       const jxl_image3_f* dc, const jxl_rect* r,
                                       size_t group_index,
                                       jxl_passes_encoder_state* enc_state);
-jxl_status jxl_modular_frame_encoder_add_ac_metadata(jxl_modular_frame_encoder* self,
+jxl_enc_status jxl_modular_frame_encoder_add_ac_metadata(jxl_modular_frame_encoder* self,
                                         const jxl_rect* r, size_t group_index,
                                         jxl_passes_encoder_state* enc_state);
-jxl_status jxl_modular_frame_encoder_encode_quant_table(
+jxl_enc_status jxl_modular_frame_encoder_encode_quant_table(
     jxl_context* ctx, size_t size_x, size_t size_y,
     jxl_bit_writer* writer, const jxl_quant_encoding* encoding, size_t idx,
     jxl_modular_frame_encoder* modular_frame_encoder);
-jxl_status jxl_modular_frame_encoder_add_quant_table(jxl_modular_frame_encoder* self,
+jxl_enc_status jxl_modular_frame_encoder_add_quant_table(jxl_modular_frame_encoder* self,
                                         size_t size_x, size_t size_y,
                                         const jxl_quant_encoding* encoding,
                                         const jxl_array_int* qtable, size_t idx);

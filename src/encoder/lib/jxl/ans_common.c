@@ -37,7 +37,7 @@
 // underfull nor overfull, and represents exactly two symbols. The overfull
 // entry might be either overfull or underfull, and is pushed into the
 // corresponding stack.
-jxl_status jxl_init_alias_table_body(const int32_t* counts, size_t counts_size,
+jxl_enc_status jxl_init_alias_table_body(const int32_t* counts, size_t counts_size,
                           uint32_t log_range, size_t log_alpha_size,
                           jxl_alias_table_entry* JXL_RESTRICT a,
                           jxl_array_i32* distribution, jxl_array_u32* underfull_posn,
@@ -84,7 +84,7 @@ jxl_status jxl_init_alias_table_body(const int32_t* counts, size_t counts_size,
       a[i].freq0 = 0;
       a[i].freq1_xor_freq0 = ANS_TAB_SIZE;
     }
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   JXL_RETURN_IF_ERROR(jxl_array_init(underfull_posn, underfull_posn->ctx));
@@ -147,10 +147,10 @@ jxl_status jxl_init_alias_table_body(const int32_t* counts, size_t counts_size,
     a[i].freq0 = (uint16_t)(freq0);
     a[i].freq1_xor_freq0 = (uint16_t)(freq1 ^ freq0);
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_init_alias_table(jxl_context* mm, const int32_t* counts,
+jxl_enc_status jxl_init_alias_table(jxl_context* mm, const int32_t* counts,
                       size_t counts_size, uint32_t log_range,
                       size_t log_alpha_size,
                       jxl_alias_table_entry* JXL_RESTRICT a) {
@@ -162,7 +162,7 @@ jxl_status jxl_init_alias_table(jxl_context* mm, const int32_t* counts,
   jxl_array_construct_empty(&overfull_posn, mm);
   jxl_array_u32 cutoffs;
   jxl_array_construct_empty(&cutoffs, mm);
-  jxl_status status =
+  jxl_enc_status status =
       jxl_init_alias_table_body(counts, counts_size, log_range, log_alpha_size, a,
                          &distribution, &underfull_posn, &overfull_posn,
                          &cutoffs);

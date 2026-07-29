@@ -2,6 +2,7 @@
 #ifndef JXL_CODING_DECODER_H_
 #define JXL_CODING_DECODER_H_
 
+#include "compiler.h"
 #include "allocator.h"
 #include "bitstream/bitstream.h"
 #include "coding/error.h"

@@ -107,14 +107,14 @@ static inline void jxl_transform_init_with(jxl_transform* self, void* ptr) {
   jxl_cms_owned_init(self, ptr, jxl_destroy_cms_transform);
 }
 
-static jxl_status jxl_create_profile_xyz(const cmsContext context,
+static jxl_enc_status jxl_create_profile_xyz(const cmsContext context,
                         jxl_profile* JXL_RESTRICT profile) {
   jxl_profile_reset(profile, cmsCreateXYZProfileTHR(context));
   if (jxl_cms_owned_get(profile) == NULL) return JXL_FAILURE("Failed to create XYZ");
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_decode_profile(const cmsContext context, const jxl_bytes* icc, jxl_profile* profile) {
+static jxl_enc_status jxl_decode_profile(const cmsContext context, const jxl_bytes* icc, jxl_profile* profile) {
   jxl_profile_reset(profile, cmsOpenProfileFromMemTHR(context, jxl_bytes_data(icc), jxl_bytes_size(icc)));
   if (jxl_cms_owned_get(profile) == NULL) {
     return JXL_FAILURE("Failed to decode profile");
@@ -124,7 +124,7 @@ static jxl_status jxl_decode_profile(const cmsContext context, const jxl_bytes* 
   // profiles have incorrect MD5, so do not even bother checking them nor
   // generating warning clutter.
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static uint32_t jxl_type64(const jxl_cms_color_encoding* c) {
@@ -145,7 +145,7 @@ static jxl_color_space jxl_color_space_from_profile(const jxl_profile* profile) 
 }
 
 // "profile1" is pre-decoded to save time in jxl_detect_transfer_function.
-static jxl_status jxl_profile_equivalent_to_icc(const cmsContext context, const jxl_profile* profile1,
+static jxl_enc_status jxl_profile_equivalent_to_icc(const cmsContext context, const jxl_profile* profile1,
                               const jxl_icc_bytes* icc, const jxl_cms_color_encoding* c) {
   const uint32_t type_src = jxl_type64(c);
 
@@ -153,8 +153,8 @@ static jxl_status jxl_profile_equivalent_to_icc(const cmsContext context, const 
   jxl_profile_init(&profile2);
   {
     jxl_bytes icc_bytes = jxl_bytes_make(jxl_array_data_const(icc), jxl_array_len(icc));
-    jxl_status status = jxl_decode_profile(context, &icc_bytes, &profile2);
-    if (!jxl_status_ok(status)) {
+    jxl_enc_status status = jxl_decode_profile(context, &icc_bytes, &profile2);
+    if (!jxl_enc_status_ok(status)) {
       jxl_cms_owned_destroy(&profile2);
       return status;
     }
@@ -162,8 +162,8 @@ static jxl_status jxl_profile_equivalent_to_icc(const cmsContext context, const 
 
   jxl_profile profile_xyz;
   jxl_profile_init(&profile_xyz);
-  jxl_status status = jxl_create_profile_xyz(context, &profile_xyz);
-  if (!jxl_status_ok(status)) {
+  jxl_enc_status status = jxl_create_profile_xyz(context, &profile_xyz);
+  if (!jxl_enc_status_ok(status)) {
     jxl_cms_owned_destroy(&profile2);
     jxl_cms_owned_destroy(&profile_xyz);
     return status;
@@ -205,7 +205,7 @@ static jxl_status jxl_profile_equivalent_to_icc(const cmsContext context, const 
       cmsDoTransform(jxl_cms_owned_get(&xform1), in, out1, 1);
       cmsDoTransform(jxl_cms_owned_get(&xform2), in, out2, 1);
       if (!jxl_cms_approx_eq(out1[0], out2[0], 2E-4)) {
-        status = jxl_error_status();
+        status = jxl_enc_error_status();
         jxl_cms_owned_destroy(&xform2);
         jxl_cms_owned_destroy(&xform1);
         jxl_cms_owned_destroy(&profile_xyz);
@@ -221,7 +221,7 @@ static jxl_status jxl_profile_equivalent_to_icc(const cmsContext context, const 
           cmsDoTransform(jxl_cms_owned_get(&xform2), in, out2, 1);
           for (size_t i = 0; i < 3; ++i) {
             if (!jxl_cms_approx_eq(out1[i], out2[i], 2E-4)) {
-              status = jxl_error_status();
+              status = jxl_enc_error_status();
               jxl_cms_owned_destroy(&xform2);
               jxl_cms_owned_destroy(&xform1);
               jxl_cms_owned_destroy(&profile_xyz);
@@ -238,7 +238,7 @@ static jxl_status jxl_profile_equivalent_to_icc(const cmsContext context, const 
   jxl_cms_owned_destroy(&xform1);
   jxl_cms_owned_destroy(&profile_xyz);
   jxl_cms_owned_destroy(&profile2);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // Returns white point that was specified when creating the profile.
@@ -258,7 +258,7 @@ JXL_MUST_USE_RESULT static cmsCIEXYZ jxl_unadapted_white_point(const cmsContext 
   cmsCIEXYZ XYZ = {1.0, 1.0, 1.0};
   jxl_profile profile_xyz;
   jxl_profile_init(&profile_xyz);
-  if (!jxl_status_ok(jxl_create_profile_xyz(context, &profile_xyz))) {
+  if (!jxl_enc_status_ok(jxl_create_profile_xyz(context, &profile_xyz))) {
     jxl_cms_owned_destroy(&profile_xyz);
     return XYZ;
   }
@@ -290,10 +290,10 @@ JXL_MUST_USE_RESULT static cmsCIEXYZ jxl_unadapted_white_point(const cmsContext 
   return XYZ;
 }
 
-static jxl_status jxl_identify_primaries(const cmsContext context, const jxl_profile* profile,
+static jxl_enc_status jxl_identify_primaries(const cmsContext context, const jxl_profile* profile,
                          const cmsCIEXYZ* wp_unadapted, jxl_cms_color_encoding* c) {
-  if (!jxl_cms_color_encoding_has_primaries(c)) return jxl_ok_status();
-  if (jxl_color_space_from_profile(profile) == kColorSpaceUnknown) return jxl_ok_status();
+  if (!jxl_cms_color_encoding_has_primaries(c)) return jxl_enc_ok_status();
+  if (jxl_color_space_from_profile(profile) == kColorSpaceUnknown) return jxl_enc_ok_status();
 
   // These were adapted to the profile illuminant before storing in the profile->
   const cmsCIEXYZ* adapted_r = (const cmsCIEXYZ*)(
@@ -309,7 +309,7 @@ static jxl_status jxl_identify_primaries(const cmsContext context, const jxl_pro
     // converting from the colorspace.
     jxl_profile profile_xyz;
     jxl_profile_init(&profile_xyz);
-    if (!jxl_status_ok(jxl_create_profile_xyz(context, &profile_xyz))) {
+    if (!jxl_enc_status_ok(jxl_create_profile_xyz(context, &profile_xyz))) {
       jxl_cms_owned_destroy(&profile_xyz);
       return JXL_FAILURE("Failed to retrieve colorants");
     }
@@ -356,7 +356,7 @@ static jxl_status jxl_identify_primaries(const cmsContext context, const jxl_pro
   return jxl_cms_color_encoding_set_primaries(c, &rgb);
 }
 
-static jxl_status jxl_detect_transfer_function(const cmsContext context, const jxl_profile* profile,
+static jxl_enc_status jxl_detect_transfer_function(const cmsContext context, const jxl_profile* profile,
                               jxl_cms_color_encoding* JXL_RESTRICT c) {
   JXL_ENSURE(c->color_space != kXYB);
 
@@ -396,13 +396,13 @@ static jxl_status jxl_detect_transfer_function(const cmsContext context, const j
     }
   }
 
-  if (gamma != 0 && jxl_status_ok(jxl_cms_custom_transfer_function_set_gamma(&c->tf, gamma))) {
+  if (gamma != 0 && jxl_enc_status_ok(jxl_cms_custom_transfer_function_set_gamma(&c->tf, gamma))) {
     jxl_icc_bytes icc_test;
     jxl_array_construct_empty(&icc_test, (jxl_context*)cmsGetContextUserData(context));
     jxl_color_encoding external = jxl_cms_color_encoding_to_external(c);
-    if (jxl_status_ok(jxl_maybe_create_profile(&external, &icc_test)) &&
-        jxl_status_ok(jxl_profile_equivalent_to_icc(context, profile, &icc_test, c))) {
-      return jxl_ok_status();
+    if (jxl_enc_status_ok(jxl_maybe_create_profile(&external, &icc_test)) &&
+        jxl_enc_status_ok(jxl_profile_equivalent_to_icc(context, profile, &icc_test, c))) {
+      return jxl_enc_ok_status();
     }
   }
 
@@ -417,14 +417,14 @@ static jxl_status jxl_detect_transfer_function(const cmsContext context, const j
     jxl_icc_bytes icc_test;
     jxl_array_construct_empty(&icc_test, (jxl_context*)cmsGetContextUserData(context));
     jxl_color_encoding external = jxl_cms_color_encoding_to_external(c);
-    if (jxl_status_ok(jxl_maybe_create_profile(&external, &icc_test)) &&
-        jxl_status_ok(jxl_profile_equivalent_to_icc(context, profile, &icc_test, c))) {
-      return jxl_ok_status();
+    if (jxl_enc_status_ok(jxl_maybe_create_profile(&external, &icc_test)) &&
+        jxl_enc_status_ok(jxl_profile_equivalent_to_icc(context, profile, &icc_test, c))) {
+      return jxl_enc_ok_status();
     }
   }
 
   jxl_cms_custom_transfer_function_set_transfer_function(&c->tf, kTFUnknown);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static void jxl_error_handler(cmsContext context, cmsUInt32Number code, const char* text) {
@@ -503,7 +503,7 @@ static JXL_BOOL jxl_cms_set_fields_from_icc(void* user_data, const uint8_t* icc_
   jxl_profile_init(&profile);
   {
     jxl_bytes icc_bytes = jxl_bytes_make(icc_data, icc_size);
-    if (!jxl_status_ok(jxl_decode_profile(context, &icc_bytes, &profile))) {
+    if (!jxl_enc_status_ok(jxl_decode_profile(context, &icc_bytes, &profile))) {
       jxl_cms_owned_destroy(&profile);
       return JXL_FALSE;
     }
@@ -543,20 +543,20 @@ static JXL_BOOL jxl_cms_set_fields_from_icc(void* user_data, const uint8_t* icc_
   const cmsCIEXYZ wp_unadapted = jxl_unadapted_white_point(context, &profile, &c_enc);
   {
     jxl_ci_exy wp = jxl_ci_exy_from_xyz(&wp_unadapted);
-    if (!jxl_status_ok(jxl_cms_color_encoding_set_white_point(&c_enc, &wp))) {
+    if (!jxl_enc_status_ok(jxl_cms_color_encoding_set_white_point(&c_enc, &wp))) {
       jxl_cms_owned_destroy(&profile);
       return JXL_FALSE;
     }
   }
 
   // Relies on color_space.
-  if (!jxl_status_ok(jxl_identify_primaries(context, &profile, &wp_unadapted, &c_enc))) {
+  if (!jxl_enc_status_ok(jxl_identify_primaries(context, &profile, &wp_unadapted, &c_enc))) {
     jxl_cms_owned_destroy(&profile);
     return JXL_FALSE;
   }
 
   // Relies on color_space/white point/primaries being set already.
-  if (!jxl_status_ok(jxl_detect_transfer_function(context, &profile, &c_enc))) {
+  if (!jxl_enc_status_ok(jxl_detect_transfer_function(context, &profile, &c_enc))) {
     jxl_cms_owned_destroy(&profile);
     return JXL_FALSE;
   }

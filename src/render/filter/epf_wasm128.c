@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#include "compiler.h"
 #include "render/filter/epf_wasm128.h"
 
 #include <string.h>

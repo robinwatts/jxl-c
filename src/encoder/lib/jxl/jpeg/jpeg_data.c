@@ -39,7 +39,7 @@ static inline void jxl_jpeg_info_init(jxl_jpeg_info* self) {
   self->has_dri = false;
 }
 
-static jxl_status jxl_visit_marker(uint8_t* marker, jxl_visitor* visitor, jxl_jpeg_info* info) {
+static jxl_enc_status jxl_visit_marker(uint8_t* marker, jxl_visitor* visitor, jxl_jpeg_info* info) {
   uint32_t marker32 = *marker - 0xc0;
   JXL_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 6, 0x00, &marker32));
   *marker = marker32 + 0xc0;
@@ -59,10 +59,10 @@ static jxl_status jxl_visit_marker(uint8_t* marker, jxl_visitor* visitor, jxl_jp
   if (*marker == 0xdd) {
     info->has_dri = true;
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_visit_known_app_marker_type(jxl_visitor* visitor, jxl_app_marker_type* type) {
+static jxl_enc_status jxl_visit_known_app_marker_type(jxl_visitor* visitor, jxl_app_marker_type* type) {
   JXL_RETURN_IF_ERROR(
       jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(0), jxl_val(1), jxl_bits_offset(1, 2), jxl_bits_offset(2, 4)), 0, (uint32_t*)(type)));
   if (*type != kAppMarkerUnknown && *type != kAppMarkerICC &&
@@ -70,10 +70,10 @@ static jxl_status jxl_visit_known_app_marker_type(jxl_visitor* visitor, jxl_app_
     return JXL_FAILURE("Unknown app marker type %u",
                        (uint32_t)(*type));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_jpeg_data_visit_fields(jxl_jpeg_data* self, jxl_visitor* visitor) {
+jxl_enc_status jxl_jpeg_data_visit_fields(jxl_jpeg_data* self, jxl_visitor* visitor) {
   bool is_gray = jxl_array_len(&self->components) == 1;
   JXL_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &is_gray));
   jxl_jpeg_info info;
@@ -380,6 +380,6 @@ jxl_status jxl_jpeg_data_visit_fields(jxl_jpeg_data* self, jxl_visitor* visitor)
     }
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 

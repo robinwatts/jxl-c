@@ -16,7 +16,7 @@
 // Builds a Huffman tree for the given histogram, and encodes it into writer
 // in a format suitable for Huffman bitstream decoding.
 // An allotment for `writer` must already have been created by the caller.
-jxl_status jxl_build_and_store_huffman_tree(const uint32_t* histogram, size_t length,
+jxl_enc_status jxl_build_and_store_huffman_tree(const uint32_t* histogram, size_t length,
                                 uint8_t* depth, uint16_t* bits,
                                 jxl_bit_writer* writer);
 

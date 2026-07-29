@@ -41,7 +41,7 @@ void jxl_filter_tree(const jxl_tree *global_tree,
   jxl_array_size nodes;
   jxl_array_construct_empty(&nodes, mm);
   size_t nodes_head = 0;
-  if (!jxl_status_ok(jxl_array_size_push_back(&nodes, 0))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_size_push_back(&nodes, 0))) JXL_CRASH();
   // Produces a trimmed and flattened tree by doing a BFS visit of the original
   // tree, ignoring branches that are known to be false and proceeding two
   // levels at a time to collapse nodes in a flatter tree; if an inner parent
@@ -68,7 +68,7 @@ void jxl_filter_tree(const jxl_tree *global_tree,
       flat.children.multiplier = jxl_array_at_const(global_tree, cur)->multiplier;
       *gradient_only &= flat.top.predictor == kPredictorGradient;
       has_wp |= flat.top.predictor == kPredictorWeighted;
-      if (!jxl_status_ok(jxl_array_flat_decision_node_push_back(&output, flat))) JXL_CRASH();
+      if (!jxl_enc_status_ok(jxl_array_flat_decision_node_push_back(&output, flat))) JXL_CRASH();
       continue;
     }
     flat.childID = jxl_array_len(&output) + (jxl_array_len(&nodes) - nodes_head) + 1;
@@ -95,15 +95,15 @@ void jxl_filter_tree(const jxl_tree *global_tree,
       if (jxl_array_at_const(global_tree, cur_child)->property == -1) {
         flat.meta.properties[i] = 0;
         flat.children.splitvals[i] = 0;
-        if (!jxl_status_ok(jxl_array_size_push_back(&nodes, cur_child))) JXL_CRASH();
-        if (!jxl_status_ok(jxl_array_size_push_back(&nodes, cur_child))) JXL_CRASH();
+        if (!jxl_enc_status_ok(jxl_array_size_push_back(&nodes, cur_child))) JXL_CRASH();
+        if (!jxl_enc_status_ok(jxl_array_size_push_back(&nodes, cur_child))) JXL_CRASH();
       } else {
         flat.meta.properties[i] = jxl_array_at_const(global_tree, cur_child)->property;
         flat.children.splitvals[i] = jxl_array_at_const(global_tree, cur_child)->splitval;
-        if (!jxl_status_ok(jxl_array_size_push_back(&nodes, jxl_array_at_const(global_tree, cur_child)->lchild))) {
+        if (!jxl_enc_status_ok(jxl_array_size_push_back(&nodes, jxl_array_at_const(global_tree, cur_child)->lchild))) {
           JXL_CRASH();
         }
-        if (!jxl_status_ok(jxl_array_size_push_back(&nodes, jxl_array_at_const(global_tree, cur_child)->rchild))) {
+        if (!jxl_enc_status_ok(jxl_array_size_push_back(&nodes, jxl_array_at_const(global_tree, cur_child)->rchild))) {
           JXL_CRASH();
         }
         *num_props =
@@ -116,7 +116,7 @@ void jxl_filter_tree(const jxl_tree *global_tree,
       jxl_mark_tree_property(property, &has_wp, gradient_only);
     }
     jxl_mark_tree_property(flat.property0, &has_wp, gradient_only);
-    if (!jxl_status_ok(jxl_array_flat_decision_node_push_back(&output, flat))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_flat_decision_node_push_back(&output, flat))) JXL_CRASH();
   }
   if (*num_props > kNumNonrefProperties) {
     *num_props =

@@ -3,8 +3,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 //
-// Encoder-facing context accessors. Do NOT include src/context.h here — it
-// pulls decoder modular/vardct types that collide with encoder symbols.
+// Encoder-facing context accessors. src/context.h is the shared thin layout
+// (allocator + opaque decoder caches); prefer these accessors for CMS/sRGB.
 
 #ifndef LIB_JXL_CONTEXT_INTERNAL_H_
 #define LIB_JXL_CONTEXT_INTERNAL_H_

@@ -61,14 +61,14 @@ static inline void jxl_byte_chunks_swap(jxl_byte_chunks* self, jxl_byte_chunks* 
   jxl_array_swap(&self->starts, &other->starts);
 }
 
-static inline jxl_status jxl_byte_chunks_push_empty(jxl_byte_chunks* self) {
+static inline jxl_enc_status jxl_byte_chunks_push_empty(jxl_byte_chunks* self) {
   if (jxl_array_empty(&self->starts)) {
     JXL_RETURN_IF_ERROR(jxl_array_u32_push_back(&self->starts, (uint32_t)(0)));
   }
   return jxl_array_u32_push_back(&self->starts, (uint32_t)(jxl_array_len(&self->data)));
 }
 
-static inline jxl_status jxl_byte_chunks_push_back(jxl_byte_chunks* self, const uint8_t* items,
+static inline jxl_enc_status jxl_byte_chunks_push_back(jxl_byte_chunks* self, const uint8_t* items,
                                         size_t len) {
   if (jxl_array_empty(&self->starts)) {
     JXL_RETURN_IF_ERROR(jxl_array_u32_push_back(&self->starts, (uint32_t)(0)));
@@ -77,17 +77,17 @@ static inline jxl_status jxl_byte_chunks_push_back(jxl_byte_chunks* self, const 
   return jxl_array_u32_push_back(&self->starts, (uint32_t)(jxl_array_len(&self->data)));
 }
 
-static inline jxl_status jxl_byte_chunks_push_back_u8(jxl_byte_chunks* self,
+static inline jxl_enc_status jxl_byte_chunks_push_back_u8(jxl_byte_chunks* self,
                                           const jxl_array_u8* chunk) {
   return jxl_byte_chunks_push_back(self, jxl_array_data_const(chunk), jxl_array_len(chunk));
 }
 
-static inline jxl_status jxl_byte_chunks_push_to_last(jxl_byte_chunks* self, uint8_t value) {
+static inline jxl_enc_status jxl_byte_chunks_push_to_last(jxl_byte_chunks* self, uint8_t value) {
   JXL_DASSERT(jxl_byte_chunks_size(self) > 0);
   JXL_RETURN_IF_ERROR(jxl_array_u8_push_back(&self->data, value));
   *jxl_array_at(&self->starts, jxl_array_len(&self->starts) - 1) =
       (uint32_t)(jxl_array_len(&self->data));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 // JPEG scan reset-point sidecars.
@@ -130,19 +130,19 @@ static inline void jxl_u32_chunks_swap(jxl_u32_chunks* self, jxl_u32_chunks* oth
   jxl_array_swap(&self->starts, &other->starts);
 }
 
-static inline jxl_status jxl_u32_chunks_push_empty(jxl_u32_chunks* self) {
+static inline jxl_enc_status jxl_u32_chunks_push_empty(jxl_u32_chunks* self) {
   if (jxl_array_empty(&self->starts)) {
     JXL_RETURN_IF_ERROR(jxl_array_u32_push_back(&self->starts, (uint32_t)(0)));
   }
   return jxl_array_u32_push_back(&self->starts, (uint32_t)(jxl_array_len(&self->data)));
 }
 
-static inline jxl_status jxl_u32_chunks_push_to_last(jxl_u32_chunks* self, uint32_t value) {
+static inline jxl_enc_status jxl_u32_chunks_push_to_last(jxl_u32_chunks* self, uint32_t value) {
   JXL_DASSERT(jxl_u32_chunks_size(self) > 0);
   JXL_RETURN_IF_ERROR(jxl_array_u32_push_back(&self->data, value));
   *jxl_array_at(&self->starts, jxl_array_len(&self->starts) - 1) =
       (uint32_t)(jxl_array_len(&self->data));
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 #endif  // LIB_JXL_BASE_CHUNKED_ARRAY_H_

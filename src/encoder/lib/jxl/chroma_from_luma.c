@@ -15,22 +15,22 @@
 #include "lib/jxl/enc_image.h"
 #include "lib/jxl/image_ops.h"
 
-jxl_status jxl_color_correlation_map_create(jxl_context* ctx,
+jxl_enc_status jxl_color_correlation_map_create(jxl_context* ctx,
                                  size_t xsize, size_t ysize,
                                  jxl_color_correlation_map* out) {
   jxl_color_correlation_map result;
   jxl_color_correlation_map_construct_empty(&result);
   size_t xblocks = jxl_div_ceil(xsize, kColorTileDim);
   size_t yblocks = jxl_div_ceil(ysize, kColorTileDim);
-  jxl_status status =
+  jxl_enc_status status =
       jxl_image_sb_create(ctx, xblocks, yblocks, 0, &result.ytox_map);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_color_correlation_map_destroy(&result);
     return status;
   }
   status =
       jxl_image_sb_create(ctx, xblocks, yblocks, 0, &result.ytob_map);
-  if (!jxl_status_ok(status)) {
+  if (!jxl_enc_status_ok(status)) {
     jxl_color_correlation_map_destroy(&result);
     return status;
   }
@@ -41,6 +41,6 @@ jxl_status jxl_color_correlation_map_create(jxl_context* ctx,
   jxl_color_correlation_recompute_dc_factors(&result.base_);
   jxl_color_correlation_map_swap(out, &result);
   jxl_color_correlation_map_destroy(&result);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 

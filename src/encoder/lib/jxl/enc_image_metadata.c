@@ -17,7 +17,7 @@
 #include "lib/jxl/enc_frame_header.h"
 #include "lib/jxl/quantizer.h"
 
-jxl_status jxl_enc_bit_depth_visit_fields(jxl_enc_bit_depth* self, jxl_visitor* JXL_RESTRICT visitor) {
+jxl_enc_status jxl_enc_bit_depth_visit_fields(jxl_enc_bit_depth* self, jxl_visitor* JXL_RESTRICT visitor) {
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->floating_point_sample));
   // The same self->fields (self->bits_per_sample and self->exponent_bits_per_sample) are read
   // in a different way depending on self->floating_point_sample's value. It's still
@@ -53,21 +53,21 @@ jxl_status jxl_enc_bit_depth_visit_fields(jxl_enc_bit_depth* self, jxl_visitor* 
       return JXL_FAILURE("Invalid bits_per_sample: %u", self->bits_per_sample);
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 
-jxl_status jxl_custom_transform_data_visit_fields(jxl_custom_transform_data* self, jxl_visitor* JXL_RESTRICT visitor) {
-  if (jxl_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
+jxl_enc_status jxl_custom_transform_data_visit_fields(jxl_custom_transform_data* self, jxl_visitor* JXL_RESTRICT visitor) {
+  if (jxl_enc_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
     // Overwrite all serialized fields, but not any nonserialized_*.
     jxl_visitor_set_default(visitor, &self->fields);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->nonserialized_xyb_encoded))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->nonserialized_xyb_encoded))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->opsin_inverse_matrix.fields));
   }
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 3, 0, &self->custom_weights_mask));
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, (self->custom_weights_mask & 0x1) != 0))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, (self->custom_weights_mask & 0x1) != 0))) {
     // 4 5x5 kernels, but all of them can be obtained by symmetry from one,
     // which is symmetric along its main diagonal. The top-left kernel is
     // defined by
@@ -86,7 +86,7 @@ jxl_status jxl_custom_transform_data_visit_fields(jxl_custom_transform_data* sel
           jxl_visitor_f16(visitor, kWeights2[i], &self->upsampling2_weights[i]));
     }
   }
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, (self->custom_weights_mask & 0x2) != 0))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, (self->custom_weights_mask & 0x2) != 0))) {
     // 16 5x5 kernels, but all of them can be obtained by symmetry from
     // three, two of which are symmetric along their main diagonals. The top
     // left 4 kernels are defined by
@@ -119,7 +119,7 @@ jxl_status jxl_custom_transform_data_visit_fields(jxl_custom_transform_data* sel
           jxl_visitor_f16(visitor, kWeights4[i], &self->upsampling4_weights[i]));
     }
   }
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, (self->custom_weights_mask & 0x4) != 0))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, (self->custom_weights_mask & 0x4) != 0))) {
     // typo:off
     // 64 5x5 kernels, all of them can be obtained by symmetry from
     // 10, 4 of which are symmetric along their main diagonals. The top
@@ -196,14 +196,14 @@ jxl_status jxl_custom_transform_data_visit_fields(jxl_custom_transform_data* sel
           jxl_visitor_f16(visitor, kWeights8[i], &self->upsampling8_weights[i]));
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_extra_channel_info_visit_fields(jxl_extra_channel_info* self, jxl_visitor* JXL_RESTRICT visitor) {
-  if (jxl_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
+jxl_enc_status jxl_extra_channel_info_visit_fields(jxl_extra_channel_info* self, jxl_visitor* JXL_RESTRICT visitor) {
+  if (jxl_enc_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
     // Overwrite all serialized fields, but not any nonserialized_*.
     jxl_visitor_set_default(visitor, &self->fields);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   // General
@@ -226,16 +226,16 @@ jxl_status jxl_extra_channel_info_visit_fields(jxl_extra_channel_info* self, jxl
   JXL_QUIET_RETURN_IF_ERROR(jxl_visit_name_string(visitor, &self->name));
 
   // Conditional
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->type == kAlpha))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->type == kAlpha))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->alpha_associated));
   }
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->type == kSpotColor))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->type == kSpotColor))) {
     for (size_t c_i = 0; c_i < 4; ++c_i) {
       float* c = &self->spot_color[c_i];
       JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_f16(visitor, 0, c));
     }
   }
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->type == kCFA))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->type == kCFA))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(1), jxl_bits(2), jxl_bits_offset(4, 3), jxl_bits_offset(8, 19)), 1, &self->cfa_channel));
   }
 
@@ -246,15 +246,15 @@ jxl_status jxl_extra_channel_info_visit_fields(jxl_extra_channel_info* self, jxl
                        self->bit_depth.bits_per_sample, self->dim_shift,
                        (int)(jxl_array_len(&self->name)), jxl_array_data(&self->name));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 
-jxl_status jxl_image_metadata_visit_fields(jxl_image_metadata* self, jxl_visitor* JXL_RESTRICT visitor) {
-  if (jxl_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
+jxl_enc_status jxl_image_metadata_visit_fields(jxl_image_metadata* self, jxl_visitor* JXL_RESTRICT visitor) {
+  if (jxl_enc_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
     // Overwrite all serialized fields, but not any nonserialized_*.
     jxl_visitor_set_default(visitor, &self->fields);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   // jxl_bundle_all_default does not allow usage when reading (it may abort the
@@ -266,22 +266,22 @@ jxl_status jxl_image_metadata_visit_fields(jxl_image_metadata* self, jxl_visitor
   bool extra_fields = (self->orientation != 1 || self->have_preview || self->have_animation ||
                        self->have_intrinsic_size || !tone_mapping_default);
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &extra_fields));
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, extra_fields))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, extra_fields))) {
     self->orientation--;
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bits(visitor, 3, 0, &self->orientation));
     self->orientation++;
     // (No need for bounds checking because we read exactly 3 bits)
 
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->have_intrinsic_size));
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, self->have_intrinsic_size))) {
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->have_intrinsic_size))) {
       JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->intrinsic_size.fields));
     }
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->have_preview));
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, self->have_preview))) {
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->have_preview))) {
       JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->preview_size.fields));
     }
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->have_animation));
-    if (jxl_status_ok(jxl_visitor_conditional(visitor, self->have_animation))) {
+    if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->have_animation))) {
       JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->animation.fields));
     }
   } else {
@@ -298,9 +298,9 @@ jxl_status jxl_image_metadata_visit_fields(jxl_image_metadata* self, jxl_visitor
   self->num_extra_channels = jxl_extra_channel_infos_size(&self->extra_channel_info);
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_u32(visitor, jxl_u32_enc_make(jxl_val(0), jxl_val(1), jxl_bits_offset(4, 2), jxl_bits_offset(12, 1)), 0, &self->num_extra_channels));
 
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, self->num_extra_channels != 0))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->num_extra_channels != 0))) {
     if (jxl_visitor_is_reading(visitor)) {
-      if (!jxl_status_ok(jxl_extra_channel_infos_resize(&self->extra_channel_info, self->num_extra_channels))) {
+      if (!jxl_enc_status_ok(jxl_extra_channel_infos_resize(&self->extra_channel_info, self->num_extra_channels))) {
         return JXL_FAILURE("Failed to allocate extra_channel_info");
       }
     }
@@ -312,7 +312,7 @@ jxl_status jxl_image_metadata_visit_fields(jxl_image_metadata* self, jxl_visitor
 
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, true, &self->xyb_encoded));
   JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->color_encoding.fields));
-  if (jxl_status_ok(jxl_visitor_conditional(visitor, extra_fields))) {
+  if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, extra_fields))) {
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_visit_nested(visitor, &self->tone_mapping.fields));
   }
 
@@ -321,11 +321,11 @@ jxl_status jxl_image_metadata_visit_fields(jxl_image_metadata* self, jxl_visitor
   return jxl_visitor_end_extensions(visitor);
 }
 
-jxl_status jxl_enc_opsin_inverse_matrix_visit_fields(jxl_enc_opsin_inverse_matrix* self, jxl_visitor* JXL_RESTRICT visitor) {
-  if (jxl_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
+jxl_enc_status jxl_enc_opsin_inverse_matrix_visit_fields(jxl_enc_opsin_inverse_matrix* self, jxl_visitor* JXL_RESTRICT visitor) {
+  if (jxl_enc_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
     // Overwrite all serialized fields, but not any nonserialized_*.
     jxl_visitor_set_default(visitor, &self->fields);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   const jxl_matrix3x3* default_inverse =
       &kDefaultInverseOpsinAbsorbanceMatrix;
@@ -343,14 +343,14 @@ jxl_status jxl_enc_opsin_inverse_matrix_visit_fields(jxl_enc_opsin_inverse_matri
     JXL_QUIET_RETURN_IF_ERROR(
         jxl_visitor_f16(visitor, kDefaultQuantBias[i], &self->quant_biases[i]));
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_tone_mapping_visit_fields(jxl_tone_mapping* self, jxl_visitor* JXL_RESTRICT visitor) {
-  if (jxl_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
+jxl_enc_status jxl_tone_mapping_visit_fields(jxl_tone_mapping* self, jxl_visitor* JXL_RESTRICT visitor) {
+  if (jxl_enc_status_ok(jxl_visitor_all_default(visitor, &self->fields, &self->all_default))) {
     // Overwrite all serialized fields, but not any nonserialized_*.
     jxl_visitor_set_default(visitor, &self->fields);
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
   JXL_QUIET_RETURN_IF_ERROR(
@@ -372,7 +372,7 @@ jxl_status jxl_tone_mapping_visit_fields(jxl_tone_mapping* self, jxl_visitor* JX
                        self->relative_to_max_display ? "relative" : "absolute");
   }
 
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 

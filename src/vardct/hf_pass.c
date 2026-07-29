@@ -3,6 +3,7 @@
 
 #include "coding/decoder.h"
 #include "context.h"
+#include "context_caches.h"
 #include "vardct/dct_select.h"
 #include "vardct/util.h"
 
@@ -57,10 +58,10 @@ static void fill_natural_order(size_t bw, size_t bh, jxl_coeff_order *out, size_
 
 static void ensure_natural_orders(jxl_context *ctx) {
     jxl_context_hf_orders *orders;
-    if (ctx == NULL || ctx->hf_orders.initialized) {
+    if (ctx == NULL || ctx->hf_orders == NULL || ctx->hf_orders->initialized) {
         return;
     }
-    orders = &ctx->hf_orders;
+    orders = ctx->hf_orders;
     fill_natural_order(8, 8, orders->natural_8x8, 64);
     fill_natural_order(16, 16, orders->natural_16x16, 256);
     fill_natural_order(32, 32, orders->natural_32x32, 1024);
@@ -77,7 +78,7 @@ static const jxl_coeff_order *natural_order_lazy(jxl_context *ctx, size_t order_
                                                  size_t *len_out) {
     const jxl_context_hf_orders *orders;
     ensure_natural_orders(ctx);
-    if (ctx == NULL) {
+    if (ctx == NULL || ctx->hf_orders == NULL) {
         if (len_out != NULL) {
             *len_out = 0;
         }
@@ -86,7 +87,7 @@ static const jxl_coeff_order *natural_order_lazy(jxl_context *ctx, size_t order_
     if (len_out != NULL) {
         *len_out = k_block_sizes[order_id][0] * k_block_sizes[order_id][1];
     }
-    orders = &ctx->hf_orders;
+    orders = ctx->hf_orders;
     switch (order_id) {
     case 0:
     case 1:

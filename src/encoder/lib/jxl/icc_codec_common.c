@@ -72,18 +72,18 @@ jxl_tag jxl_decode_keyword(const uint8_t* data, size_t size, size_t pos) {
   return tag;
 }
 
-jxl_status jxl_append_keyword(const jxl_tag* keyword, jxl_padded_bytes* data){
+jxl_enc_status jxl_append_keyword(const jxl_tag* keyword, jxl_padded_bytes* data){
   JXL_STATIC_ASSERT(sizeof(jxl_tag) == kTagSize, "jxl_tag should be 4-bytes");
   return jxl_padded_bytes_append(data, jxl_tag_data(keyword),
                            jxl_tag_data(keyword) + kTagSize);
 }
 
 // Checks if a + b > size, taking possible integer overflow into account.
-jxl_status jxl_check_out_of_bounds(uint64_t a, uint64_t b, uint64_t size) {
+jxl_enc_status jxl_check_out_of_bounds(uint64_t a, uint64_t b, uint64_t size) {
   uint64_t pos = a + b;
   if (pos > size) return JXL_FAILURE("Out of bounds");
   if (pos < a) return JXL_FAILURE("Out of bounds");  // overflow happened
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 static const uint8_t kIccInitialHeaderPredictionBytes[kICCHeaderSize] = {

@@ -24,7 +24,7 @@ typedef struct jxl_fields jxl_fields;
 // before jxl_bundle_init.
 #if (JXL_IS_DEBUG_BUILD)
 #define JXL_FIELDS_NAME(Type)                                                 \
-  static inline jxl_status Type##_visit_fields_thunk(                         \
+  static inline jxl_enc_status Type##_visit_fields_thunk(                         \
       jxl_fields* self, jxl_visitor* JXL_RESTRICT visitor) {                  \
     return Type##_visit_fields((Type*)(self), visitor);                       \
   }                                                                           \
@@ -43,7 +43,7 @@ typedef struct jxl_fields jxl_fields;
   } while (0)
 #else
 #define JXL_FIELDS_NAME(Type)                                                 \
-  static inline jxl_status Type##_visit_fields_thunk(                         \
+  static inline jxl_enc_status Type##_visit_fields_thunk(                         \
       jxl_fields* self, jxl_visitor* JXL_RESTRICT visitor) {                  \
     return Type##_visit_fields((Type*)(self), visitor);                       \
   }
@@ -63,7 +63,7 @@ typedef struct jxl_fields jxl_fields;
 // type. Call jxl_fields_construct_empty before Register if the member is not
 // otherwise zeroed.
 typedef struct jxl_fields {
-  jxl_status (*visit_fields_fn)(jxl_fields*, jxl_visitor*);
+  jxl_enc_status (*visit_fields_fn)(jxl_fields*, jxl_visitor*);
 #if (JXL_IS_DEBUG_BUILD)
   const char* (*name_fn)(const jxl_fields*);
 #endif  // JXL_IS_DEBUG_BUILD
@@ -76,7 +76,7 @@ static inline void jxl_fields_construct_empty(jxl_fields* self) {
 #endif
 }
 
-static inline jxl_status jxl_fields_visit_fields(jxl_fields* self,
+static inline jxl_enc_status jxl_fields_visit_fields(jxl_fields* self,
                                        jxl_visitor* JXL_RESTRICT visitor) {
   return self->visit_fields_fn(self, visitor);
 }
@@ -157,7 +157,7 @@ static inline jxl_u32_distr jxl_u32_enc_get_distr(jxl_u32_enc self, const uint32
 static inline uint64_t jxl_make_bit(uint32_t index) { return 1ULL << index; }
 
 // Returns true if `value` is listed in `allowed_bits`.
-static inline jxl_status jxl_enum_valid(uint32_t value, uint64_t allowed_bits,
+static inline jxl_enc_status jxl_enum_valid(uint32_t value, uint64_t allowed_bits,
                                const char* name) {
   if (value >= 64) {
     return JXL_FAILURE("Value %u too large for %s\n", value, name);
@@ -166,7 +166,7 @@ static inline jxl_status jxl_enum_valid(uint32_t value, uint64_t allowed_bits,
   if ((allowed_bits & bit) == 0) {
     return JXL_FAILURE("Invalid value %u for %s\n", value, name);
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 #endif  // LIB_JXL_FIELD_ENCODINGS_H_

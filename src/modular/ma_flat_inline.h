@@ -2,6 +2,7 @@
 #ifndef JXL_MODULAR_MA_FLAT_INLINE_H_
 #define JXL_MODULAR_MA_FLAT_INLINE_H_
 
+#include "compiler.h"
 #include "ma_flat.h"
 #include "modular/predictor_state.h"
 

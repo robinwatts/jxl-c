@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#include "compiler.h"
 #include "inverse.h"
 
 #include "modular/channel.h"

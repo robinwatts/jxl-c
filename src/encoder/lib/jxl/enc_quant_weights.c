@@ -31,7 +31,7 @@ typedef struct jxl_encode_dc_ctx {
   bool all_default;
 } jxl_encode_dc_ctx;
 
-static jxl_status jxl_encode_dc_body(void* opaque) {
+static jxl_enc_status jxl_encode_dc_body(void* opaque) {
   jxl_encode_dc_ctx* c = (jxl_encode_dc_ctx*)(opaque);
   jxl_bit_writer_write(c->writer, 1, TO_JXL_BOOL(c->all_default));
   if (!c->all_default) {
@@ -39,10 +39,10 @@ static jxl_status jxl_encode_dc_body(void* opaque) {
       JXL_RETURN_IF_ERROR(jxl_f16_coder_write(c->dc_quant[ch] * 128.0f, c->writer));
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_encode_quant(jxl_context* ctx,
+static jxl_enc_status jxl_encode_quant(jxl_context* ctx,
                    const jxl_quant_encoding* encoding, size_t idx, size_t size_x,
                    size_t size_y, jxl_bit_writer* writer,
                    jxl_modular_frame_encoder* modular_frame_encoder) {
@@ -64,10 +64,10 @@ static jxl_status jxl_encode_quant(jxl_context* ctx,
     default:
       return JXL_FAILURE("Unsupported quant encoding mode for JPEG encoder");
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static jxl_status jxl_encode_mats_body(void* opaque) {
+static jxl_enc_status jxl_encode_mats_body(void* opaque) {
   jxl_encode_mats_ctx* c = (jxl_encode_mats_ctx*)(opaque);
   jxl_bit_writer_write(c->writer, 1, TO_JXL_BOOL(c->all_default));
   if (!c->all_default) {
@@ -79,10 +79,10 @@ static jxl_status jxl_encode_mats_body(void* opaque) {
           c->modular_frame_encoder));
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_dequant_matrices_encode(jxl_context* ctx,
+jxl_enc_status jxl_dequant_matrices_encode(jxl_context* ctx,
                              const jxl_dequant_matrices* matrices, jxl_bit_writer* writer,
                              jxl_layer_type layer,
                              jxl_modular_frame_encoder* modular_frame_encoder){
@@ -102,7 +102,7 @@ jxl_status jxl_dequant_matrices_encode(jxl_context* ctx,
   return jxl_bit_writer_with_max_bits(writer, 512 * 1024, layer, jxl_encode_mats_body, &mats_ctx);
 }
 
-jxl_status jxl_dequant_matrices_encode_dc(const jxl_dequant_matrices* matrices,
+jxl_enc_status jxl_dequant_matrices_encode_dc(const jxl_dequant_matrices* matrices,
                                jxl_bit_writer* writer, jxl_layer_type layer){
   bool all_default = true;
   const float* dc_quant = jxl_dequant_matrices_dc_quants(matrices);
@@ -116,7 +116,7 @@ jxl_status jxl_dequant_matrices_encode_dc(const jxl_dequant_matrices* matrices,
                              jxl_encode_dc_body, &dc_ctx);
 }
 
-jxl_status jxl_dequant_matrices_set_custom_dc(jxl_dequant_matrices* matrices, const float* dc) {
+jxl_enc_status jxl_dequant_matrices_set_custom_dc(jxl_dequant_matrices* matrices, const float* dc) {
   // Match decoder F16 wire quantization without BitReader roundtrip:
   // Write(dc_quant*128) then Read then *1/128.
   float dc_quant[3];
@@ -129,10 +129,10 @@ jxl_status jxl_dequant_matrices_set_custom_dc(jxl_dequant_matrices* matrices, co
     }
   }
   jxl_dequant_matrices_set_dc_quant_decoded(matrices, dc_quant);
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-jxl_status jxl_dequant_matrices_set_custom(
+jxl_enc_status jxl_dequant_matrices_set_custom(
     jxl_dequant_matrices* matrices, const jxl_array_quant_encoding* encodings,
     jxl_array_int* raw_qtables,
     jxl_modular_frame_encoder* encoder){
@@ -147,5 +147,5 @@ jxl_status jxl_dequant_matrices_set_custom(
           jxl_dequant_matrices_raw_q_table(matrices, i), i));
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }

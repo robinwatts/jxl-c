@@ -62,7 +62,7 @@ typedef struct jxl_loop_filter {
   bool nonserialized_is_modular;
 } jxl_loop_filter;
 
-jxl_status jxl_loop_filter_visit_fields(jxl_loop_filter* self, jxl_visitor* JXL_RESTRICT visitor);
+jxl_enc_status jxl_loop_filter_visit_fields(jxl_loop_filter* self, jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_loop_filter)
 
 static inline void jxl_loop_filter_init(jxl_loop_filter* self) {

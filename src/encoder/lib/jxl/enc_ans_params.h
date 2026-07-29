@@ -103,7 +103,7 @@ JXL_DEFINE_POD_ARRAY(jxl_array_histogram, jxl_histogram)
 static inline void jxl_histogram_ensure_capacity(jxl_array_i32* counts, size_t length) {
   size_t need = jxl_div_ceil(length, kHistogramRounding) * kHistogramRounding;
   if (jxl_array_len(counts) >= need) return;
-  if (!jxl_status_ok(jxl_array_resize_zero(counts, need))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_array_resize_zero(counts, need))) JXL_CRASH();
 }
 
 static inline void jxl_histogram_add(jxl_histogram* h, jxl_array_i32* counts,
@@ -123,7 +123,7 @@ static inline void jxl_histogram_add_histogram(jxl_histogram* h, jxl_array_i32* 
                                   const jxl_histogram* other,
                                   const jxl_array_i32* other_counts) {
   if (jxl_array_len(other_counts) > jxl_array_len(counts)) {
-    if (!jxl_status_ok(jxl_array_resize_zero(counts, jxl_array_len(other_counts)))) JXL_CRASH();
+    if (!jxl_enc_status_ok(jxl_array_resize_zero(counts, jxl_array_len(other_counts)))) JXL_CRASH();
   }
   for (size_t i = 0; i < jxl_array_len(other_counts); ++i) {
     *jxl_array_at(counts, i) += *jxl_array_at_const(other_counts, i);
@@ -158,7 +158,7 @@ void jxl_histogram_condition(jxl_histogram* h, jxl_array_i32* counts);
 
 // Returns an estimate of the number of bits required to encode the given
 // histogram (header bits plus data bits).
-jxl_status jxl_histogram_ans_population_cost(const jxl_histogram* h, const jxl_array_i32* counts,
+jxl_enc_status jxl_histogram_ans_population_cost(const jxl_histogram* h, const jxl_array_i32* counts,
                                   float* out);
 
 float jxl_histogram_shannon_entropy(jxl_histogram* h, const jxl_array_i32* counts);
@@ -202,8 +202,8 @@ static inline void jxl_hist_count_streams_clear(jxl_hist_count_streams* self) {
     self->len = 0;
   }
 
-static inline jxl_status jxl_hist_count_streams_reserve(jxl_hist_count_streams* self, size_t new_capacity) {
-    if (new_capacity <= self->capacity) return jxl_ok_status();
+static inline jxl_enc_status jxl_hist_count_streams_reserve(jxl_hist_count_streams* self, size_t new_capacity) {
+    if (new_capacity <= self->capacity) return jxl_enc_ok_status();
 
     size_t grown = self->capacity;
     if (grown == 0) grown = 16;
@@ -240,23 +240,23 @@ static inline jxl_status jxl_hist_count_streams_reserve(jxl_hist_count_streams* 
     }
     self->ptr = neu;
     self->capacity = grown;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
-static inline jxl_status jxl_hist_count_streams_resize(jxl_hist_count_streams* self, size_t n) {
+static inline jxl_enc_status jxl_hist_count_streams_resize(jxl_hist_count_streams* self, size_t n) {
     if (n < self->len) {
       for (size_t i = n; i < self->len; ++i) {
         jxl_array_destroy(self->ptr + i);
       }
       self->len = n;
-      return jxl_ok_status();
+      return jxl_enc_ok_status();
     }
     JXL_RETURN_IF_ERROR(jxl_hist_count_streams_reserve(self, n));
     while (self->len < n) {
       jxl_array_construct_empty(self->ptr + self->len, self->ctx);
       ++self->len;
     }
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
 static inline void jxl_hist_count_streams_destroy(jxl_hist_count_streams* self) {
@@ -275,7 +275,7 @@ static inline void jxl_hist_count_streams_create(jxl_hist_count_streams* self,
                                                  jxl_context* mm) {
   jxl_hist_count_streams_construct_empty(self);
   self->ctx = mm;
-  if (!jxl_status_ok(jxl_hist_count_streams_resize(self, n))) JXL_CRASH();
+  if (!jxl_enc_status_ok(jxl_hist_count_streams_resize(self, n))) JXL_CRASH();
 }
 
 static inline jxl_array_i32* jxl_hist_count_streams_back(jxl_hist_count_streams* self) {
@@ -283,7 +283,7 @@ static inline jxl_array_i32* jxl_hist_count_streams_back(jxl_hist_count_streams*
   return &self->ptr[self->len - 1];
 }
 
-static inline jxl_status jxl_hist_count_streams_emplace_back(jxl_hist_count_streams* self, jxl_array_i32* value) {
+static inline jxl_enc_status jxl_hist_count_streams_emplace_back(jxl_hist_count_streams* self, jxl_array_i32* value) {
     if (self->len == self->capacity) {
       size_t need;
       if (!jxl_safe_add(self->capacity, (size_t)(1), &need)) {
@@ -294,10 +294,10 @@ static inline jxl_status jxl_hist_count_streams_emplace_back(jxl_hist_count_stre
     jxl_array_construct_empty(self->ptr + self->len, self->ctx);
     jxl_array_swap(self->ptr + self->len, value);
     ++self->len;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
-static inline jxl_status jxl_hist_count_streams_push_back(jxl_hist_count_streams* self,
+static inline jxl_enc_status jxl_hist_count_streams_push_back(jxl_hist_count_streams* self,
                                          const jxl_array_i32* value) {
     if (self->len == self->capacity) {
       size_t need;
@@ -309,7 +309,7 @@ static inline jxl_status jxl_hist_count_streams_push_back(jxl_hist_count_streams
     jxl_array_construct_empty(self->ptr + self->len, self->ctx);
     JXL_RETURN_IF_ERROR(jxl_array_copy_from(self->ptr + self->len, value));
     ++self->len;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
 
 static inline void jxl_hist_count_streams_swap(jxl_hist_count_streams* self, jxl_hist_count_streams* other) {

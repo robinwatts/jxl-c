@@ -3,6 +3,8 @@
 
 #include "context.h"
 
+#include "context_caches.h"
+
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -129,6 +131,8 @@ void jxl_context_init_inplace(jxl_context *ctx, const jxl_context_options *opts)
     jxl_allocator_init(&ctx->alloc, opts != NULL ? &opts->alloc : NULL);
     ctx->cms = opts != NULL ? opts->cms : NULL;
     jxl_debug_flags_read(&ctx->debug);
+    ctx->dequant = jxl_calloc_state(&ctx->alloc, 1, sizeof(*ctx->dequant));
+    ctx->hf_orders = jxl_calloc_state(&ctx->alloc, 1, sizeof(*ctx->hf_orders));
 }
 
 void jxl_context_fini_inplace(jxl_context *ctx) {
@@ -139,8 +143,11 @@ void jxl_context_fini_inplace(jxl_context *ctx) {
     jxl_jpeg_encoder_context_fini(ctx);
 #endif
     jxl_context_dequant_free(ctx);
+    jxl_free_state(&ctx->alloc, ctx->dequant);
+    ctx->dequant = NULL;
+    jxl_free_state(&ctx->alloc, ctx->hf_orders);
+    ctx->hf_orders = NULL;
     memset(&ctx->cpu_features, 0, sizeof(ctx->cpu_features));
-    memset(&ctx->hf_orders, 0, sizeof(ctx->hf_orders));
 }
 
 jxl_status_t jxl_context_create(const jxl_context_options *opts, jxl_context **out) {

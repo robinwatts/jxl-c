@@ -23,7 +23,7 @@ static inline uint32_t jxl_value_of_lowest1_bit(uint32_t t) { return t & -t; }
 // Computes the Lehmer (factorial basis) code of permutation, an array of n
 // unique indices in [0..n), and stores it in code[0..len). N*logN time.
 // temp must have n + 1 elements but need not be initialized.
-static inline jxl_status jxl_compute_lehmer_code(const coeff_order_t* JXL_RESTRICT permutation,
+static inline jxl_enc_status jxl_compute_lehmer_code(const coeff_order_t* JXL_RESTRICT permutation,
                                 uint32_t* JXL_RESTRICT temp, const size_t n,
                                 jxl_lehmer_t* JXL_RESTRICT code) {
   for (size_t idx = 0; idx < n + 1; ++idx) temp[idx] = 0;
@@ -47,7 +47,7 @@ static inline jxl_status jxl_compute_lehmer_code(const coeff_order_t* JXL_RESTRI
       i += jxl_value_of_lowest1_bit(i);
     }
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 

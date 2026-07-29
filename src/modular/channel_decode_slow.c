@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#include "compiler.h"
 #include "channel_decode_internal.h"
 
 #include "coding/cdecoder_hoisted_inline.h"

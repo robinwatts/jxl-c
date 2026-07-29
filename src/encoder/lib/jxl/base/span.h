@@ -37,11 +37,11 @@ static inline jxl_bytes jxl_bytes_make(const uint8_t* array, size_t length) {
 
 static inline jxl_bytes jxl_bytes_empty(void) { return jxl_bytes_make(NULL, 0); }
 
-static inline jxl_status jxl_bytes_remove_prefix(jxl_bytes* self, size_t n) {
+static inline jxl_enc_status jxl_bytes_remove_prefix(jxl_bytes* self, size_t n) {
   JXL_ENSURE(jxl_bytes_size(self) >= n);
   self->ptr_ += n;
   self->len_ -= n;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 typedef struct jxl_u32_span {

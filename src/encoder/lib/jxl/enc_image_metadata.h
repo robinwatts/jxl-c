@@ -87,7 +87,7 @@ typedef struct jxl_enc_bit_depth {
   uint32_t exponent_bits_per_sample;
 } jxl_enc_bit_depth;
 
-jxl_status jxl_enc_bit_depth_visit_fields(jxl_enc_bit_depth* self, jxl_visitor* JXL_RESTRICT visitor);
+jxl_enc_status jxl_enc_bit_depth_visit_fields(jxl_enc_bit_depth* self, jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_enc_bit_depth)
 
 static inline void jxl_enc_bit_depth_init(jxl_enc_bit_depth* self) {
@@ -113,7 +113,7 @@ typedef struct jxl_extra_channel_info {
   uint32_t cfa_channel;
 } jxl_extra_channel_info;
 
-jxl_status jxl_extra_channel_info_visit_fields(jxl_extra_channel_info* self,
+jxl_enc_status jxl_extra_channel_info_visit_fields(jxl_extra_channel_info* self,
                                    jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_extra_channel_info)
 
@@ -230,13 +230,13 @@ static inline void jxl_extra_channel_infos_destroy(jxl_extra_channel_infos* self
   self->capacity = 0;
 }
 
-static inline jxl_status jxl_extra_channel_infos_reserve(jxl_extra_channel_infos* self,
+static inline jxl_enc_status jxl_extra_channel_infos_reserve(jxl_extra_channel_infos* self,
                                               size_t new_capacity) {
   size_t grown;
   size_t bytes;
   jxl_extra_channel_info* neu;
   size_t i;
-  if (new_capacity <= self->capacity) return jxl_ok_status();
+  if (new_capacity <= self->capacity) return jxl_enc_ok_status();
 
   grown = self->capacity;
   if (grown == 0) grown = 16;
@@ -272,17 +272,17 @@ static inline jxl_status jxl_extra_channel_infos_reserve(jxl_extra_channel_infos
   }
   self->ptr = neu;
   self->capacity = grown;
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
-static inline jxl_status jxl_extra_channel_infos_resize(jxl_extra_channel_infos* self, size_t n) {
+static inline jxl_enc_status jxl_extra_channel_infos_resize(jxl_extra_channel_infos* self, size_t n) {
   size_t i;
   if (n < self->len) {
     for (i = n; i < self->len; ++i) {
       jxl_extra_channel_info_destroy(self->ptr + i);
     }
     self->len = n;
-    return jxl_ok_status();
+    return jxl_enc_ok_status();
   }
   JXL_RETURN_IF_ERROR(jxl_extra_channel_infos_reserve(self, n));
   while (self->len < n) {
@@ -291,7 +291,7 @@ static inline jxl_status jxl_extra_channel_infos_resize(jxl_extra_channel_infos*
     jxl_extra_channel_info_init(self->ptr + self->len);
     ++self->len;
   }
-  return jxl_ok_status();
+  return jxl_enc_ok_status();
 }
 
 typedef struct jxl_enc_opsin_inverse_matrix {
@@ -304,7 +304,7 @@ typedef struct jxl_enc_opsin_inverse_matrix {
   float quant_biases[4];
 } jxl_enc_opsin_inverse_matrix;
 
-jxl_status jxl_enc_opsin_inverse_matrix_visit_fields(jxl_enc_opsin_inverse_matrix* self,
+jxl_enc_status jxl_enc_opsin_inverse_matrix_visit_fields(jxl_enc_opsin_inverse_matrix* self,
                                      jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_enc_opsin_inverse_matrix)
 
@@ -339,7 +339,7 @@ typedef struct jxl_tone_mapping {
   float linear_below;
 } jxl_tone_mapping;
 
-jxl_status jxl_tone_mapping_visit_fields(jxl_tone_mapping* self, jxl_visitor* JXL_RESTRICT visitor);
+jxl_enc_status jxl_tone_mapping_visit_fields(jxl_tone_mapping* self, jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_tone_mapping)
 
 static inline void jxl_tone_mapping_init(jxl_tone_mapping* self) {
@@ -366,7 +366,7 @@ typedef struct jxl_custom_transform_data {
   float upsampling8_weights[210];
 } jxl_custom_transform_data;
 
-jxl_status jxl_custom_transform_data_visit_fields(jxl_custom_transform_data* self,
+jxl_enc_status jxl_custom_transform_data_visit_fields(jxl_custom_transform_data* self,
                                       jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_custom_transform_data)
 
@@ -457,11 +457,11 @@ typedef struct jxl_image_metadata {
   uint64_t extensions;
 } jxl_image_metadata;
 
-jxl_status jxl_image_metadata_visit_fields(jxl_image_metadata* self,
+jxl_enc_status jxl_image_metadata_visit_fields(jxl_image_metadata* self,
                                 jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_image_metadata)
 
-jxl_status jxl_write_image_metadata(const jxl_image_metadata* metadata,
+jxl_enc_status jxl_write_image_metadata(const jxl_image_metadata* metadata,
                           jxl_bit_writer* JXL_RESTRICT writer, jxl_layer_type layer);
 
 static inline void jxl_image_metadata_set_intensity_target(jxl_image_metadata* self,
