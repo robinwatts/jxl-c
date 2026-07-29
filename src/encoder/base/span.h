@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_BASE_SPAN_H_
-#define LIB_JXL_BASE_SPAN_H_
+#ifndef JXL_ENC_BASE_SPAN_H_
+#define JXL_ENC_BASE_SPAN_H_
 
 // Non-owning pointer+length views. Layout is C-friendly.
 // jxl_bytes is the const-byte view used by the encoder/API surface.
@@ -69,4 +69,4 @@ static inline jxl_u32_span jxl_u32_span_empty(void) { return jxl_u32_span_make(N
 
 JXL_DEFINE_POD_ARRAY(jxl_array_bytes, jxl_bytes)
 
-#endif  // LIB_JXL_BASE_SPAN_H_
+#endif  // JXL_ENC_BASE_SPAN_H_

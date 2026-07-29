@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_CACHE_H_
-#define LIB_JXL_ENC_CACHE_H_
+#ifndef JXL_ENC_ENC_CACHE_H_
+#define JXL_ENC_ENC_CACHE_H_
 
 #include <jxl/context.h>
 #include "enc_allocator.h"
@@ -60,4 +60,4 @@ static inline jxl_context* jxl_passes_encoder_state_ctx(
 }
 
 
-#endif  // LIB_JXL_ENC_CACHE_H_
+#endif  // JXL_ENC_ENC_CACHE_H_

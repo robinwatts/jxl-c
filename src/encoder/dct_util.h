@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_DCT_UTIL_H_
-#define LIB_JXL_DCT_UTIL_H_
+#ifndef JXL_ENC_DCT_UTIL_H_
+#define JXL_ENC_DCT_UTIL_H_
 
 #include <jxl/context.h>
 #include "enc_allocator.h"
@@ -83,4 +83,4 @@ static inline jxl_enc_status jxl_ac_image_make(jxl_context* ctx, size_t xsize,
   return jxl_enc_ok_status();
 }
 
-#endif  // LIB_JXL_DCT_UTIL_H_
+#endif  // JXL_ENC_DCT_UTIL_H_

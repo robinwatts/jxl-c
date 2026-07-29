@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_IMAGE_OPS_H_
-#define LIB_JXL_IMAGE_OPS_H_
+#ifndef JXL_ENC_IMAGE_OPS_H_
+#define JXL_ENC_IMAGE_OPS_H_
 
 // Operations on images.
 
@@ -120,4 +120,4 @@ static inline void jxl_zero_fill_image3_f(jxl_image3_f* image) {
 }
 
 
-#endif  // LIB_JXL_IMAGE_OPS_H_
+#endif  // JXL_ENC_IMAGE_OPS_H_

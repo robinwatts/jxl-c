@@ -1,12 +1,12 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
 // Functions for clustering similar histograms together.
 
-#ifndef LIB_JXL_ENC_CLUSTER_H_
-#define LIB_JXL_ENC_CLUSTER_H_
+#ifndef JXL_ENC_ENC_CLUSTER_H_
+#define JXL_ENC_ENC_CLUSTER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -23,4 +23,4 @@ jxl_enc_status jxl_cluster_histograms(const jxl_histogram_params* params,
                          jxl_hist_count_streams* out_counts,
                          jxl_array_u32* histogram_symbols);
 
-#endif  // LIB_JXL_ENC_CLUSTER_H_
+#endif  // JXL_ENC_ENC_CLUSTER_H_

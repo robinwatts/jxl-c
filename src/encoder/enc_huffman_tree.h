@@ -1,12 +1,12 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
 // Library for creating Huffman codes from population counts.
 
-#ifndef LIB_JXL_HUFFMAN_TREE_H_
-#define LIB_JXL_HUFFMAN_TREE_H_
+#ifndef JXL_ENC_HUFFMAN_TREE_H_
+#define JXL_ENC_HUFFMAN_TREE_H_
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -54,4 +54,4 @@ void jxl_convert_bit_depths_to_symbols(const uint8_t* depth, size_t len,
                                uint16_t* bits);
 
 
-#endif  // LIB_JXL_HUFFMAN_TREE_H_
+#endif  // JXL_ENC_HUFFMAN_TREE_H_

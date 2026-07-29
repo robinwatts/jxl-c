@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_CMS_JXL_CMS_INTERNAL_H_
-#define LIB_JXL_CMS_JXL_CMS_INTERNAL_H_
+#ifndef JXL_ENC_CMS_JXL_CMS_INTERNAL_H_
+#define JXL_ENC_CMS_JXL_CMS_INTERNAL_H_
 
 // ICC profiles and color space conversions.
 
@@ -990,4 +990,4 @@ static JXL_MAYBE_UNUSED jxl_enc_status jxl_maybe_create_profile(const jxl_color_
 }
 
 
-#endif  // LIB_JXL_CMS_JXL_CMS_INTERNAL_H_
+#endif  // JXL_ENC_CMS_JXL_CMS_INTERNAL_H_

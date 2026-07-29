@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_LUMINANCE_H_
-#define LIB_JXL_LUMINANCE_H_
+#ifndef JXL_ENC_LUMINANCE_H_
+#define JXL_ENC_LUMINANCE_H_
 
 #include "enc_image_metadata.h"
 
@@ -16,4 +16,4 @@
 void jxl_set_intensity_target(jxl_image_metadata* m);
 
 
-#endif  // LIB_JXL_LUMINANCE_H_
+#endif  // JXL_ENC_LUMINANCE_H_

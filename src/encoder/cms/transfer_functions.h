@@ -1,12 +1,12 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
 // Transfer functions for color encodings.
 
-#ifndef LIB_JXL_CMS_TRANSFER_FUNCTIONS_H_
-#define LIB_JXL_CMS_TRANSFER_FUNCTIONS_H_
+#ifndef JXL_ENC_CMS_TRANSFER_FUNCTIONS_H_
+#define JXL_ENC_CMS_TRANSFER_FUNCTIONS_H_
 
 #include <math.h>
 
@@ -74,4 +74,4 @@ static inline double TF_PQ_BaseDisplayFromEncoded(float display_intensity_target
   return copysignf(d * (10000.0f / display_intensity_target), original_sign);
 }
 
-#endif  // LIB_JXL_CMS_TRANSFER_FUNCTIONS_H_
+#endif  // JXL_ENC_CMS_TRANSFER_FUNCTIONS_H_

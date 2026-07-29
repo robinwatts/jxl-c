@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_HUFFMAN_H_
-#define LIB_JXL_ENC_HUFFMAN_H_
+#ifndef JXL_ENC_ENC_HUFFMAN_H_
+#define JXL_ENC_ENC_HUFFMAN_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -21,4 +21,4 @@ jxl_enc_status jxl_build_and_store_huffman_tree(const uint32_t* histogram, size_
                                 jxl_bit_writer* writer);
 
 
-#endif  // LIB_JXL_ENC_HUFFMAN_H_
+#endif  // JXL_ENC_ENC_HUFFMAN_H_

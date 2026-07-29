@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_HEADERS_H_
-#define LIB_JXL_HEADERS_H_
+#ifndef JXL_ENC_HEADERS_H_
+#define JXL_ENC_HEADERS_H_
 
 // Codestream headers.
 
@@ -101,4 +101,4 @@ static inline void jxl_enc_animation_header_init(jxl_enc_animation_header* self)
   jxl_bundle_init(&self->fields);
 }
 
-#endif  // LIB_JXL_HEADERS_H_
+#endif  // JXL_ENC_HEADERS_H_

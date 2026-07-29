@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_LOOP_FILTER_H_
-#define LIB_JXL_LOOP_FILTER_H_
+#ifndef JXL_ENC_LOOP_FILTER_H_
+#define JXL_ENC_LOOP_FILTER_H_
 
 // Parameters for loop filter(s), stored in each frame.
 
@@ -71,4 +71,4 @@ static inline void jxl_loop_filter_init(jxl_loop_filter* self) {
   jxl_bundle_init(&self->fields);
 }
 
-#endif  // LIB_JXL_LOOP_FILTER_H_
+#endif  // JXL_ENC_LOOP_FILTER_H_

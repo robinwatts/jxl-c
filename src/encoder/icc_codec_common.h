@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ICC_CODEC_COMMON_H_
-#define LIB_JXL_ICC_CODEC_COMMON_H_
+#ifndef JXL_ENC_ICC_CODEC_COMMON_H_
+#define JXL_ENC_ICC_CODEC_COMMON_H_
 
 // Compressed representation of ICC profiles.
 
@@ -140,4 +140,4 @@ uint8_t jxl_linear_predict_icc_value(const uint8_t* data, size_t start, size_t i
 size_t jxl_iccans_context(size_t i, size_t b1, size_t b2);
 
 
-#endif  // LIB_JXL_ICC_CODEC_COMMON_H_
+#endif  // JXL_ENC_ICC_CODEC_COMMON_H_

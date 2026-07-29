@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_BASE_EXIF_H_
-#define LIB_JXL_BASE_EXIF_H_
+#ifndef JXL_ENC_BASE_EXIF_H_
+#define JXL_ENC_BASE_EXIF_H_
 
 // Basic parsing of Exif (just enough for the render-impacting things
 // like orientation)
@@ -85,4 +85,4 @@ static JXL_INLINE void jxl_interpret_exif(const jxl_bytes* exif,
 }
 
 
-#endif  // LIB_JXL_BASE_EXIF_H_
+#endif  // JXL_ENC_BASE_EXIF_H_

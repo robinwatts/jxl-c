@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_MODULAR_ENCODING_MA_COMMON_H_
-#define LIB_JXL_MODULAR_ENCODING_MA_COMMON_H_
+#ifndef JXL_ENC_MODULAR_ENCODING_MA_COMMON_H_
+#define JXL_ENC_MODULAR_ENCODING_MA_COMMON_H_
 
 #include <stddef.h>
 
@@ -23,4 +23,4 @@ enum jxl_ma_tree_context {
 static const size_t kMaxTreeSize = 1 << 22;
 
 
-#endif  // LIB_JXL_MODULAR_ENCODING_MA_COMMON_H_
+#endif  // JXL_ENC_MODULAR_ENCODING_MA_COMMON_H_

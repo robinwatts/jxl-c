@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_DEC_ANS_H_
-#define LIB_JXL_DEC_ANS_H_
+#ifndef JXL_ENC_DEC_ANS_H_
+#define JXL_ENC_DEC_ANS_H_
 
 // ANS / hybrid-uint / LZ77 parameter types shared with the encoder.
 
@@ -134,4 +134,4 @@ static JXL_INLINE int jxl_special_distance(size_t index, int multiplier) {
 }
 
 
-#endif  // LIB_JXL_DEC_ANS_H_
+#endif  // JXL_ENC_DEC_ANS_H_

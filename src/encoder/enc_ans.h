@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_ANS_H_
-#define LIB_JXL_ENC_ANS_H_
+#ifndef JXL_ENC_ENC_ANS_H_
+#define JXL_ENC_ENC_ANS_H_
 
 // Library to encode the ANS population counts to the bit-stream and encode
 // symbols based on the respective distributions.
@@ -407,4 +407,4 @@ size_t jxl_write_tokens_with_allotment(const jxl_token_stream* tokens,
 void jxl_encode_uint_configs(const jxl_array_hybrid_uint_config* uint_config, jxl_bit_sink* sink,
                        size_t log_alpha_size);
 
-#endif  // LIB_JXL_ENC_ANS_H_
+#endif  // JXL_ENC_ENC_ANS_H_

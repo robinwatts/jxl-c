@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_QUANT_WEIGHTS_H_
-#define LIB_JXL_ENC_QUANT_WEIGHTS_H_
+#ifndef JXL_ENC_ENC_QUANT_WEIGHTS_H_
+#define JXL_ENC_ENC_QUANT_WEIGHTS_H_
 
 #include <jxl/context.h>
 #include "enc_allocator.h"
@@ -34,4 +34,4 @@ jxl_enc_status jxl_dequant_matrices_set_custom(
     jxl_modular_frame_encoder* encoder);
 
 
-#endif  // LIB_JXL_ENC_QUANT_WEIGHTS_H_
+#endif  // JXL_ENC_ENC_QUANT_WEIGHTS_H_

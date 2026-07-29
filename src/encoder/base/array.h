@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_BASE_ARRAY_H_
-#define LIB_JXL_BASE_ARRAY_H_
+#ifndef JXL_ENC_BASE_ARRAY_H_
+#define JXL_ENC_BASE_ARRAY_H_
 
 // MemoryManager-backed growable arrays (concrete POD peels).
 // C-shaped storage (ptr/len/capacity); prefer jxl_array_len/jxl_array_at/jxl_array_data/
@@ -444,4 +444,4 @@ static inline size_t jxl_i32_unique_in_array(jxl_array_i32* a) {
   return jxl_i32_unique(jxl_array_data(a), jxl_array_data(a) + jxl_array_len(a));
 }
 
-#endif  // LIB_JXL_BASE_ARRAY_H_
+#endif  // JXL_ENC_BASE_ARRAY_H_

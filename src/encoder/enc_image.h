@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_IMAGE_H_
-#define LIB_JXL_ENC_IMAGE_H_
+#ifndef JXL_ENC_ENC_IMAGE_H_
+#define JXL_ENC_ENC_IMAGE_H_
 
 // SIMD/multicore-friendly planar image representation with row accessors.
 
@@ -449,4 +449,4 @@ static inline const float* jxl_rect_const_plane_row(const jxl_rect* self,
   return jxl_image3_f_const_plane_row(image, c, y + self->y0_) + self->x0_;
 }
 
-#endif  // LIB_JXL_ENC_IMAGE_H_
+#endif  // JXL_ENC_ENC_IMAGE_H_

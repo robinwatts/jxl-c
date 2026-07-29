@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_COEFF_ORDER_FWD_H_
-#define LIB_JXL_COEFF_ORDER_FWD_H_
+#ifndef JXL_ENC_COEFF_ORDER_FWD_H_
+#define JXL_ENC_COEFF_ORDER_FWD_H_
 
 // Breaks circular dependency between ac_strategy and coeff_order.
 
@@ -33,4 +33,4 @@ static JXL_INLINE void jxl_coefficient_layout(size_t* JXL_RESTRICT rows,
   }
 }
 
-#endif  // LIB_JXL_COEFF_ORDER_FWD_H_
+#endif  // JXL_ENC_COEFF_ORDER_FWD_H_

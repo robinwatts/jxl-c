@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_FRAME_H_
-#define LIB_JXL_ENC_FRAME_H_
+#ifndef JXL_ENC_ENC_FRAME_H_
+#define JXL_ENC_ENC_FRAME_H_
 
 #include <jxl/context.h>
 #include "enc_allocator.h"
@@ -29,4 +29,4 @@ jxl_enc_status jxl_encode_frame(jxl_context* ctx,
                    jxl_encoder_output_processor_wrapper* output_processor);
 
 
-#endif  // LIB_JXL_ENC_FRAME_H_
+#endif  // JXL_ENC_ENC_FRAME_H_

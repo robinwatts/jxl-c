@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_ANS_PARAMS_H_
-#define LIB_JXL_ENC_ANS_PARAMS_H_
+#ifndef JXL_ENC_ENC_ANS_PARAMS_H_
+#define JXL_ENC_ENC_ANS_PARAMS_H_
 
 // Encoder-only parameter needed for ANS entropy encoding methods.
 
@@ -325,4 +325,4 @@ static inline void jxl_hist_count_streams_swap(jxl_hist_count_streams* self, jxl
 
 
 
-#endif  // LIB_JXL_ENC_ANS_PARAMS_H_
+#endif  // JXL_ENC_ENC_ANS_PARAMS_H_

@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_BASE_SANITIZER_DEFINITIONS_H_
-#define LIB_JXL_BASE_SANITIZER_DEFINITIONS_H_
+#ifndef JXL_ENC_BASE_SANITIZER_DEFINITIONS_H_
+#define JXL_ENC_BASE_SANITIZER_DEFINITIONS_H_
 
 #ifdef MEMORY_SANITIZER
 #define JXL_MEMORY_SANITIZER 1
@@ -41,4 +41,4 @@
 #else
 #define JXL_THREAD_SANITIZER 0
 #endif
-#endif  // LIB_JXL_BASE_SANITIZER_DEFINITIONS_H
+#endif  // JXL_ENC_BASE_SANITIZER_DEFINITIONS_H

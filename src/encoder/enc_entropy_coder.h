@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_ENTROPY_CODER_H_
-#define LIB_JXL_ENC_ENTROPY_CODER_H_
+#ifndef JXL_ENC_ENC_ENTROPY_CODER_H_
+#define JXL_ENC_ENC_ENTROPY_CODER_H_
 
 #include <stdint.h>
 
@@ -35,4 +35,4 @@ jxl_enc_status jxl_tokenize_coefficients(const coeff_order_t* JXL_RESTRICT order
                             const jxl_block_ctx_map* block_ctx_map);
 
 
-#endif  // LIB_JXL_ENC_ENTROPY_CODER_H_
+#endif  // JXL_ENC_ENC_ENTROPY_CODER_H_

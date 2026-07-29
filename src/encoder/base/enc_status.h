@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_BASE_ENC_STATUS_H_
-#define LIB_JXL_BASE_ENC_STATUS_H_
+#ifndef JXL_ENC_BASE_ENC_STATUS_H_
+#define JXL_ENC_BASE_ENC_STATUS_H_
 
 // Encoder-internal error handling (jxl_enc_status). Distinct from public
 // jxl_status_t in <jxl/status.h>; encode.c maps between the two at the API edge.
@@ -26,12 +26,12 @@
 
 #ifdef USE_ANDROID_LOGGER
 #include <android/log.h>
-#define LIBJXL_ANDROID_LOG_TAG ("libjxl")
+#define JXL_ENC_ANDROID_LOG_TAG ("jxl_c")
 static inline void android_vprintf(const char* format, va_list args) {
   char* message = NULL;
   int res = vasprintf(&message, format, args);
   if (res != -1) {
-    __android_log_write(ANDROID_LOG_DEBUG, LIBJXL_ANDROID_LOG_TAG, message);
+    __android_log_write(ANDROID_LOG_DEBUG, JXL_ENC_ANDROID_LOG_TAG, message);
     free(message);
   }
 }
@@ -281,4 +281,4 @@ static inline JXL_FORMAT(2, 3) jxl_enc_status jxl_enc_status_message(jxl_enc_sta
 }
 
 
-#endif  // LIB_JXL_BASE_ENC_STATUS_H_
+#endif  // JXL_ENC_BASE_ENC_STATUS_H_

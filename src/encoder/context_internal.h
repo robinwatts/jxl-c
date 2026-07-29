@@ -1,13 +1,13 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 //
 // Encoder-facing context accessors. src/context.h is the shared thin layout
 // (allocator + opaque decoder caches); prefer these accessors for CMS/sRGB.
 
-#ifndef LIB_JXL_CONTEXT_INTERNAL_H_
-#define LIB_JXL_CONTEXT_INTERNAL_H_
+#ifndef JXL_ENC_CONTEXT_INTERNAL_H_
+#define JXL_ENC_CONTEXT_INTERNAL_H_
 
 #include <jxl/context.h>
 #include "enc_allocator.h"
@@ -18,4 +18,4 @@
 void* jxl_context_lcms(jxl_context* ctx);
 const jxl_enc_color_encoding* jxl_context_srgb(jxl_context* ctx, int is_gray);
 
-#endif  // LIB_JXL_CONTEXT_INTERNAL_H_
+#endif  // JXL_ENC_CONTEXT_INTERNAL_H_

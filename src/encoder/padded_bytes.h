@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_BASE_PADDED_BYTES_H_
-#define LIB_JXL_BASE_PADDED_BYTES_H_
+#ifndef JXL_ENC_BASE_PADDED_BYTES_H_
+#define JXL_ENC_BASE_PADDED_BYTES_H_
 
 // Growable byte buffer with +8 capacity padding so jxl_bit_writer can write 64 bits
 // without bounds checks. Backed by jxl_array_u8; bind a ctx via
@@ -180,4 +180,4 @@ static inline jxl_enc_status jxl_padded_bytes_with_initial_space(
   return jxl_padded_bytes_init(out, size);
 }
 
-#endif  // LIB_JXL_BASE_PADDED_BYTES_H_
+#endif  // JXL_ENC_BASE_PADDED_BYTES_H_

@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_TOC_H_
-#define LIB_JXL_ENC_TOC_H_
+#ifndef JXL_ENC_ENC_TOC_H_
+#define JXL_ENC_ENC_TOC_H_
 
 #include "base/array.h"
 #include "base/compiler_specific.h"
@@ -21,4 +21,4 @@ jxl_enc_status jxl_write_toc_sizes(const jxl_array_size* group_sizes,
                      jxl_bit_writer* JXL_RESTRICT writer);
 
 
-#endif  // LIB_JXL_ENC_TOC_H_
+#endif  // JXL_ENC_ENC_TOC_H_

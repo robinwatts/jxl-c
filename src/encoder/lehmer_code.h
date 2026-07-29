@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_LEHMER_CODE_H_
-#define LIB_JXL_LEHMER_CODE_H_
+#ifndef JXL_ENC_LEHMER_CODE_H_
+#define JXL_ENC_LEHMER_CODE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -51,4 +51,4 @@ static inline jxl_enc_status jxl_compute_lehmer_code(const coeff_order_t* JXL_RE
 }
 
 
-#endif  // LIB_JXL_LEHMER_CODE_H_
+#endif  // JXL_ENC_LEHMER_CODE_H_

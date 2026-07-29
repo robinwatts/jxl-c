@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_PARAMS_H_
-#define LIB_JXL_ENC_PARAMS_H_
+#ifndef JXL_ENC_ENC_PARAMS_H_
+#define JXL_ENC_ENC_PARAMS_H_
 
 // Parameters and flags that govern JXL compression.
 
@@ -45,4 +45,4 @@ static inline void jxl_compress_params_construct_empty(jxl_compress_params* self
   jxl_modular_options_construct_empty(&self->options);
 }
 
-#endif  // LIB_JXL_ENC_PARAMS_H_
+#endif  // JXL_ENC_ENC_PARAMS_H_

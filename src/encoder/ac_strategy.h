@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_AC_STRATEGY_H_
-#define LIB_JXL_AC_STRATEGY_H_
+#ifndef JXL_ENC_AC_STRATEGY_H_
+#define JXL_ENC_AC_STRATEGY_H_
 
 #include <jxl/context.h>
 #include "enc_allocator.h"
@@ -212,4 +212,4 @@ static inline void jxl_ac_strategy_image_swap(jxl_ac_strategy_image* self, jxl_a
 
 
 
-#endif  // LIB_JXL_AC_STRATEGY_H_
+#endif  // JXL_ENC_AC_STRATEGY_H_

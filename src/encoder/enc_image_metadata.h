@@ -1,13 +1,13 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
 // Main codestream header bundles, the metadata that applies to all frames.
 // Enums must align with the C API definitions in codestream_header.h.
 
-#ifndef LIB_JXL_ENC_IMAGE_METADATA_H_
-#define LIB_JXL_ENC_IMAGE_METADATA_H_
+#ifndef JXL_ENC_ENC_IMAGE_METADATA_H_
+#define JXL_ENC_ENC_IMAGE_METADATA_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -539,4 +539,4 @@ static inline size_t jxl_codec_metadata_y_size(const jxl_codec_metadata* self) {
   return jxl_enc_size_header_y_size(&self->size);
 }
 
-#endif  // LIB_JXL_ENC_IMAGE_METADATA_H_
+#endif  // JXL_ENC_ENC_IMAGE_METADATA_H_

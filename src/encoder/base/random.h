@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_BASE_RANDOM_
-#define LIB_JXL_BASE_RANDOM_
+#ifndef JXL_ENC_BASE_RANDOM_
+#define JXL_ENC_BASE_RANDOM_
 
 // Random number generator + distributions.
 // We don't use <random> because the implementation (and thus results) differs
@@ -68,4 +68,4 @@ static inline uint32_t jxl_rng_geometric(jxl_rng* self, jxl_rng_geometric_distri
   return (uint32_t)(geo);
 }
 
-#endif  // LIB_JXL_BASE_RANDOM_
+#endif  // JXL_ENC_BASE_RANDOM_

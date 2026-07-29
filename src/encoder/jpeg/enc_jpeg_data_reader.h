@@ -1,12 +1,12 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
 // Functions for reading a jpeg byte stream into a jxl_jpeg_data object.
 
-#ifndef LIB_JXL_JPEG_ENC_JPEG_DATA_READER_H_
-#define LIB_JXL_JPEG_ENC_JPEG_DATA_READER_H_
+#ifndef JXL_ENC_JPEG_ENC_JPEG_DATA_READER_H_
+#define JXL_ENC_JPEG_ENC_JPEG_DATA_READER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -22,4 +22,4 @@ jxl_enc_status jxl_read_jpeg(const uint8_t* data, size_t len,
                 jxl_jpeg_data* jpg);
 
 
-#endif  // LIB_JXL_JPEG_ENC_JPEG_DATA_READER_H_
+#endif  // JXL_ENC_JPEG_ENC_JPEG_DATA_READER_H_

@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_BASE_CHUNKED_ARRAY_H_
-#define LIB_JXL_BASE_CHUNKED_ARRAY_H_
+#ifndef JXL_ENC_BASE_CHUNKED_ARRAY_H_
+#define JXL_ENC_BASE_CHUNKED_ARRAY_H_
 
 // CSR-style list of chunks: flat Array data plus start offsets.
 // starts has NumChunks()+1 entries when non-empty;
@@ -145,4 +145,4 @@ static inline jxl_enc_status jxl_u32_chunks_push_to_last(jxl_u32_chunks* self, u
   return jxl_enc_ok_status();
 }
 
-#endif  // LIB_JXL_BASE_CHUNKED_ARRAY_H_
+#endif  // JXL_ENC_BASE_CHUNKED_ARRAY_H_

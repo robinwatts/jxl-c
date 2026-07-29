@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_MODULAR_ENCODING_ENC_MA_H_
-#define LIB_JXL_MODULAR_ENCODING_ENC_MA_H_
+#ifndef JXL_ENC_MODULAR_ENCODING_ENC_MA_H_
+#define JXL_ENC_MODULAR_ENCODING_ENC_MA_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -233,4 +233,4 @@ jxl_enc_status jxl_compute_best_tree(jxl_tree_samples *tree_samples, float thres
                        jxl_static_prop_range static_prop_range,
                        float fast_decode_multiplier, jxl_tree *tree);
 
-#endif  // LIB_JXL_MODULAR_ENCODING_ENC_MA_H_
+#endif  // JXL_ENC_MODULAR_ENCODING_ENC_MA_H_

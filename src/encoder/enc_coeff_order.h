@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_COEFF_ORDER_H_
-#define LIB_JXL_ENC_COEFF_ORDER_H_
+#ifndef JXL_ENC_ENC_COEFF_ORDER_H_
+#define JXL_ENC_ENC_COEFF_ORDER_H_
 
 #include <stdint.h>
 
@@ -58,4 +58,4 @@ jxl_enc_status jxl_encode_coeff_orders(uint16_t used_orders,
                          jxl_bit_writer* writer, jxl_layer_type layer);
 
 
-#endif  // LIB_JXL_ENC_COEFF_ORDER_H_
+#endif  // JXL_ENC_ENC_COEFF_ORDER_H_

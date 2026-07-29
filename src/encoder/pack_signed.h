@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_PACK_H_
-#define LIB_JXL_PACK_H_
+#ifndef JXL_ENC_PACK_H_
+#define JXL_ENC_PACK_H_
 
 // Pack/jxl_unpack_signed utilities.
 
@@ -33,4 +33,4 @@ static inline int32_t jxl_unpack_signed(size_t value)
 }
 
 
-#endif  // LIB_JXL_PACK_H_
+#endif  // JXL_ENC_PACK_H_

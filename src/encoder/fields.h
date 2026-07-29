@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_FIELDS_H_
-#define LIB_JXL_FIELDS_H_
+#ifndef JXL_ENC_FIELDS_H_
+#define JXL_ENC_FIELDS_H_
 
 // Forward/backward-compatible 'bundles' with auto-serialized 'fields'.
 
@@ -309,4 +309,4 @@ static inline jxl_enc_status jxl_visitor_end_extensions(jxl_visitor* self) {
 }
 
 
-#endif  // LIB_JXL_FIELDS_H_
+#endif  // JXL_ENC_FIELDS_H_

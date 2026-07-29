@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_PASSES_STATE_H_
-#define LIB_JXL_PASSES_STATE_H_
+#ifndef JXL_ENC_PASSES_STATE_H_
+#define JXL_ENC_PASSES_STATE_H_
 
 #include <jxl/context.h>
 #include "enc_allocator.h"
@@ -93,4 +93,4 @@ static inline void jxl_passes_shared_state_destroy(jxl_passes_shared_state* self
 }
 
 
-#endif  // LIB_JXL_PASSES_STATE_H_
+#endif  // JXL_ENC_PASSES_STATE_H_

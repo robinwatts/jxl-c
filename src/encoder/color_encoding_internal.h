@@ -3,8 +3,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_COLOR_ENCODING_INTERNAL_H_
-#define LIB_JXL_COLOR_ENCODING_INTERNAL_H_
+#ifndef JXL_ENC_COLOR_ENCODING_INTERNAL_H_
+#define JXL_ENC_COLOR_ENCODING_INTERNAL_H_
 
 // Encoder metadata color encoding: fields/visitor wrapper over
 // jxl_cms_color_encoding (storage_). Not the public jxl_color_encoding POD.
@@ -245,4 +245,4 @@ static inline const jxl_cms_custom_transfer_function* jxl_enc_color_encoding_tf(
   return &self->storage_.tf;
 }
 
-#endif  // LIB_JXL_COLOR_ENCODING_INTERNAL_H_
+#endif  // JXL_ENC_COLOR_ENCODING_INTERNAL_H_

@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_LZ77_H_
-#define LIB_JXL_ENC_LZ77_H_
+#ifndef JXL_ENC_ENC_LZ77_H_
+#define JXL_ENC_ENC_LZ77_H_
 
 #include <stddef.h>
 
@@ -19,4 +19,4 @@ void jxl_apply_lz77(const jxl_histogram_params* params, size_t num_contexts,
                const jxl_array_size* image_widths, jxl_token_streams* out);
 
 
-#endif  // LIB_JXL_ENC_LZ77_H_
+#endif  // JXL_ENC_ENC_LZ77_H_

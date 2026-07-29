@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_BASE_COMMON_H_
-#define LIB_JXL_BASE_COMMON_H_
+#ifndef JXL_ENC_BASE_COMMON_H_
+#define JXL_ENC_BASE_COMMON_H_
 
 // Shared constants and helper functions.
 
@@ -165,4 +165,4 @@ static inline void jxl_format_number_f(char* data, size_t size, float n) {
 #define JXL_DO_JOIN(x, y) x##y
 
 
-#endif  // LIB_JXL_BASE_COMMON_H_
+#endif  // JXL_ENC_BASE_COMMON_H_

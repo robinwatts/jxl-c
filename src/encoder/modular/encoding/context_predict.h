@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_MODULAR_ENCODING_CONTEXT_PREDICT_H_
-#define LIB_JXL_MODULAR_ENCODING_CONTEXT_PREDICT_H_
+#ifndef JXL_ENC_MODULAR_ENCODING_CONTEXT_PREDICT_H_
+#define JXL_ENC_MODULAR_ENCODING_CONTEXT_PREDICT_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -718,4 +718,4 @@ static inline void jxl_predict_learn_all_nec(jxl_properties *p, size_t w,
 }
 
 
-#endif  // LIB_JXL_MODULAR_ENCODING_CONTEXT_PREDICT_H_
+#endif  // JXL_ENC_MODULAR_ENCODING_CONTEXT_PREDICT_H_

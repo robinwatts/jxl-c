@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_JPEG_ENC_JPEG_DATA_H_
-#define LIB_JXL_JPEG_ENC_JPEG_DATA_H_
+#ifndef JXL_ENC_JPEG_ENC_JPEG_DATA_H_
+#define JXL_ENC_JPEG_ENC_JPEG_DATA_H_
 
 #include <jxl/cms_interface.h>
 #include <jxl/context.h>
@@ -61,4 +61,4 @@ jxl_enc_status jxl_parse_jpg(jxl_context* ctx, const jxl_bytes* bytes,
 jxl_enc_status jxl_set_blobs_from_jpeg_data(const jxl_jpeg_data* jpeg_data, jxl_jpeg_blobs* blobs);
 
 
-#endif  // LIB_JXL_JPEG_ENC_JPEG_DATA_H_
+#endif  // JXL_ENC_JPEG_ENC_JPEG_DATA_H_

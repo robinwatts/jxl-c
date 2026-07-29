@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_COMPRESSED_DC_H_
-#define LIB_JXL_COMPRESSED_DC_H_
+#ifndef JXL_ENC_COMPRESSED_DC_H_
+#define JXL_ENC_COMPRESSED_DC_H_
 
 #include "ac_context.h"
 #include "base/rect.h"
@@ -18,4 +18,4 @@ void jxl_fill_quant_dc(const jxl_rect* r, jxl_image_b* quant_dc, const jxl_image
                  const jxl_block_ctx_map* bctx);
 
 
-#endif  // LIB_JXL_COMPRESSED_DC_H_
+#endif  // JXL_ENC_COMPRESSED_DC_H_

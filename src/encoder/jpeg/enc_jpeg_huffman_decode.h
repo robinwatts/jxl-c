@@ -1,12 +1,12 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
 // Utility function for building a Huffman lookup table for the jpeg decoder.
 
-#ifndef LIB_JXL_JPEG_ENC_JPEG_HUFFMAN_DECODE_H_
-#define LIB_JXL_JPEG_ENC_JPEG_HUFFMAN_DECODE_H_
+#ifndef JXL_ENC_JPEG_ENC_JPEG_HUFFMAN_DECODE_H_
+#define JXL_ENC_JPEG_ENC_JPEG_HUFFMAN_DECODE_H_
 
 #include <stdint.h>
 
@@ -50,4 +50,4 @@ void jxl_build_jpeg_huffman_table(const uint32_t* counts, const uint32_t* symbol
                            jxl_huffman_table_entry* lut);
 
 
-#endif  // LIB_JXL_JPEG_ENC_JPEG_HUFFMAN_DECODE_H_
+#endif  // JXL_ENC_JPEG_ENC_JPEG_HUFFMAN_DECODE_H_

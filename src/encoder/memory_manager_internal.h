@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_MEMORY_MANAGER_INTERNAL_H_
-#define LIB_JXL_MEMORY_MANAGER_INTERNAL_H_
+#ifndef JXL_ENC_MEMORY_MANAGER_INTERNAL_H_
+#define JXL_ENC_MEMORY_MANAGER_INTERNAL_H_
 
 // Aligned allocations backed by jxl_context / jxl_alloc.
 
@@ -77,4 +77,4 @@ static inline void jxl_aligned_memory_swap(jxl_aligned_memory* self,
   other->address_ = addr;
 }
 
-#endif  // LIB_JXL_MEMORY_MANAGER_INTERNAL_H_
+#endif  // JXL_ENC_MEMORY_MANAGER_INTERNAL_H_

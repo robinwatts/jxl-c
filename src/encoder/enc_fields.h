@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_FIELDS_H_
-#define LIB_JXL_ENC_FIELDS_H_
+#ifndef JXL_ENC_ENC_FIELDS_H_
+#define JXL_ENC_ENC_FIELDS_H_
 
 #include <stdint.h>
 
@@ -31,4 +31,4 @@ jxl_enc_status jxl_write_size_header(const jxl_enc_size_header* size, jxl_bit_wr
                        jxl_layer_type layer);
 
 
-#endif  // LIB_JXL_ENC_FIELDS_H_
+#endif  // JXL_ENC_ENC_FIELDS_H_

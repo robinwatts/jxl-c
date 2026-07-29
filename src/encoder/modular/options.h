@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_MODULAR_OPTIONS_H_
-#define LIB_JXL_MODULAR_OPTIONS_H_
+#ifndef JXL_ENC_MODULAR_OPTIONS_H_
+#define JXL_ENC_MODULAR_OPTIONS_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -156,4 +156,4 @@ static inline void jxl_modular_options_construct_empty(jxl_modular_options* self
 JXL_DEFINE_POD_ARRAY(jxl_array_modular_options, jxl_modular_options)
 
 
-#endif  // LIB_JXL_MODULAR_OPTIONS_H_
+#endif  // JXL_ENC_MODULAR_OPTIONS_H_

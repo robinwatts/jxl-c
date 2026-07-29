@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_BIT_WRITER_H_
-#define LIB_JXL_ENC_BIT_WRITER_H_
+#ifndef JXL_ENC_ENC_BIT_WRITER_H_
+#define JXL_ENC_ENC_BIT_WRITER_H_
 
 // jxl_bit_writer: unbuffered writes using unaligned 64-bit stores.
 
@@ -259,4 +259,4 @@ static inline jxl_enc_status jxl_bit_writers_emplace_back(jxl_bit_writers* self,
   return jxl_enc_ok_status();
 }
 
-#endif  // LIB_JXL_ENC_BIT_WRITER_H_
+#endif  // JXL_ENC_ENC_BIT_WRITER_H_

@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENTROPY_CODER_H_
-#define LIB_JXL_ENTROPY_CODER_H_
+#ifndef JXL_ENC_ENTROPY_CODER_H_
+#define JXL_ENC_ENTROPY_CODER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -40,4 +40,4 @@ static inline jxl_u32_enc jxl_qf_threshold_dist(void) {
 
 
 
-#endif  // LIB_JXL_ENTROPY_CODER_H_
+#endif  // JXL_ENC_ENTROPY_CODER_H_

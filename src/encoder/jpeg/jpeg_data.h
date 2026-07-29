@@ -1,12 +1,12 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
 // Data structures that represent the non-pixel contents of a jpeg file.
 
-#ifndef LIB_JXL_JPEG_JPEG_DATA_H_
-#define LIB_JXL_JPEG_JPEG_DATA_H_
+#ifndef JXL_ENC_JPEG_JPEG_DATA_H_
+#define JXL_ENC_JPEG_JPEG_DATA_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -392,4 +392,4 @@ static inline void jxl_jpeg_data_swap(jxl_jpeg_data* self, jxl_jpeg_data* other)
 
 
 
-#endif  // LIB_JXL_JPEG_JPEG_DATA_H_
+#endif  // JXL_ENC_JPEG_JPEG_DATA_H_

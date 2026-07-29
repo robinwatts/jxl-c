@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_BASE_COMPILER_SPECIFIC_H_
-#define LIB_JXL_BASE_COMPILER_SPECIFIC_H_
+#ifndef JXL_ENC_BASE_COMPILER_SPECIFIC_H_
+#define JXL_ENC_BASE_COMPILER_SPECIFIC_H_
 
 // Macros for compiler version + nonstandard keywords, e.g. __builtin_expect.
 
@@ -235,4 +235,4 @@
 #define JXL_STATIC_ASSERT_NAME(line) JXL_STATIC_ASSERT_NAME1(line)
 #endif
 
-#endif  // LIB_JXL_BASE_COMPILER_SPECIFIC_H_
+#endif  // JXL_ENC_BASE_COMPILER_SPECIFIC_H_

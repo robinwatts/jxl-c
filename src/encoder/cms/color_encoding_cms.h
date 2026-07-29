@@ -3,8 +3,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_CMS_COLOR_ENCODING_CMS_H_
-#define LIB_JXL_CMS_COLOR_ENCODING_CMS_H_
+#ifndef JXL_ENC_CMS_COLOR_ENCODING_CMS_H_
+#define JXL_ENC_CMS_COLOR_ENCODING_CMS_H_
 
 // Internal CMS color-encoding storage (ICC + fields).
 // Layering:
@@ -636,4 +636,4 @@ static inline jxl_enc_status jxl_cms_color_encoding_from_external(jxl_cms_color_
 }
 
 
-#endif  // LIB_JXL_CMS_COLOR_ENCODING_CMS_H_
+#endif  // JXL_ENC_CMS_COLOR_ENCODING_CMS_H_

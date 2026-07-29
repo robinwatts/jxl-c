@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_BASE_BITS_H_
-#define LIB_JXL_BASE_BITS_H_
+#ifndef JXL_ENC_BASE_BITS_H_
+#define JXL_ENC_BASE_BITS_H_
 
 // Specialized instructions for processing register-sized bit arrays.
 
@@ -138,4 +138,4 @@ static JXL_INLINE JXL_MAYBE_UNUSED size_t jxl_pop_count(uint64_t x) {
 }
 
 
-#endif  // LIB_JXL_BASE_BITS_H_
+#endif  // JXL_ENC_BASE_BITS_H_

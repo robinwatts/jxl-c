@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_BASE_RECT_H_
-#define LIB_JXL_BASE_RECT_H_
+#ifndef JXL_ENC_BASE_RECT_H_
+#define JXL_ENC_BASE_RECT_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -56,4 +56,4 @@ static inline size_t jxl_rect_y0(const jxl_rect* self) { return self->y0_; }
 static inline size_t jxl_rect_x_size(const jxl_rect* self) { return self->xsize_; }
 static inline size_t jxl_rect_y_size(const jxl_rect* self) { return self->ysize_; }
 
-#endif  // LIB_JXL_BASE_RECT_H_
+#endif  // JXL_ENC_BASE_RECT_H_

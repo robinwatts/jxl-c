@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_MODULAR_ENCODING_ENC_ENCODING_H_
-#define LIB_JXL_MODULAR_ENCODING_ENC_ENCODING_H_
+#ifndef JXL_ENC_MODULAR_ENCODING_ENC_ENCODING_H_
+#define JXL_ENC_MODULAR_ENCODING_ENC_ENCODING_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -36,4 +36,4 @@ jxl_enc_status jxl_modular_compress(const jxl_image *image, const jxl_modular_op
                        size_t group_id, const jxl_tree *tree, jxl_group_header *header,
                        jxl_token_stream *tokens, size_t *width);
 
-#endif  // LIB_JXL_MODULAR_ENCODING_ENC_ENCODING_H_
+#endif  // JXL_ENC_MODULAR_ENCODING_ENC_ENCODING_H_

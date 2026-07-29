@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_LAYER_TYPE_H_
-#define LIB_JXL_LAYER_TYPE_H_
+#ifndef JXL_ENC_LAYER_TYPE_H_
+#define JXL_ENC_LAYER_TYPE_H_
 
 // Bitstream layer tags used by encoder writers (WithMaxBits / allotments).
 
@@ -23,4 +23,4 @@ typedef enum jxl_layer_type {
   kLayerAcTokens,
 } jxl_layer_type;
 
-#endif  // LIB_JXL_LAYER_TYPE_H_
+#endif  // JXL_ENC_LAYER_TYPE_H_

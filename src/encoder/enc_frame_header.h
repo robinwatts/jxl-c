@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_ENC_FRAME_HEADER_H_
-#define LIB_JXL_ENC_FRAME_HEADER_H_
+#ifndef JXL_ENC_ENC_FRAME_HEADER_H_
+#define JXL_ENC_ENC_FRAME_HEADER_H_
 
 // Frame header with backward and forward-compatible extension capability and
 // compressed integer fields.
@@ -662,4 +662,4 @@ static inline jxl_u32_enc jxl_order_enc(void) {
   return jxl_u32_enc_make(jxl_val(0x5F), jxl_val(0x13), jxl_val(0), jxl_bits(kNumOrders));
 }
 
-#endif  // LIB_JXL_ENC_FRAME_HEADER_H_
+#endif  // JXL_ENC_ENC_FRAME_HEADER_H_

@@ -1,10 +1,10 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
-#ifndef LIB_JXL_CHROMA_FROM_LUMA_H_
-#define LIB_JXL_CHROMA_FROM_LUMA_H_
+#ifndef JXL_ENC_CHROMA_FROM_LUMA_H_
+#define JXL_ENC_CHROMA_FROM_LUMA_H_
 
 // Chroma-from-luma, computed using heuristics to determine the best linear
 // model for the X and B channels from the Y channel.
@@ -143,4 +143,4 @@ static inline void jxl_color_correlation_map_swap(jxl_color_correlation_map* sel
   other->base_ = tb;
 }
 
-#endif  // LIB_JXL_CHROMA_FROM_LUMA_H_
+#endif  // JXL_ENC_CHROMA_FROM_LUMA_H_

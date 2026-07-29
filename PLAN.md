@@ -400,7 +400,7 @@ Sub-order:
 
 ---
 
-### Phase 7a — Animation compositing (in progress)
+### Phase 7a — Animation compositing
 
 **Port / fix:** animated blend via `blending_info.source`, ref-chain build, `ct_done` through composite, decoder ref cache.
 
@@ -437,11 +437,15 @@ Sub-order:
 
 ---
 
-### Phase 9 — Hardening (~2 weeks)
+### Phase 9 — Hardening
 
-- libFuzzer on `jxl_decoder_feed` — `c/fuzz/decode_fuzzer.c` (`JXL_C_BUILD_FUZZ=ON`, Clang)
-- ASan/UBSan CI — `.github/workflows/c-sanitizers.yml` (`JXL_C_ENABLE_SANITIZERS=ON`)
-- Benchmark vs Rust — `c/tools/bench_decode.c` (`JXL_C_BUILD_TOOLS=ON`)
+Scaffolding is in place; ongoing work is corpus depth and CI policy, not greenfield tooling.
+
+- libFuzzer on `jxl_decoder_feed` — `fuzz/decode_fuzzer.c` (`JXL_C_BUILD_FUZZ=ON`, Clang)
+- ASan/UBSan CI — `.github/workflows/sanitizers.yml` (`JXL_C_ENABLE_SANITIZERS=ON`; crop suite excluded for runtime)
+- Benchmark vs Rust — `tools/bench_decode.c` (`JXL_C_BUILD_TOOLS=ON`) + `scripts/bench_st_compare.sh`
+
+**Status:** tooling complete; fuzz campaigns / crash triage ongoing.
 
 ---
 
@@ -617,6 +621,8 @@ Rust uses **`i16` modular storage by default** when `ImageMetadata.modular_16bit
 
 ## Next steps
 
-1. **Phase 9 — Hardening (in progress):** libFuzzer (`decode_fuzzer`), ASan/UBSan CI (`c-sanitizers.yml`), `bench_decode` tool
-2. **`jxl_context` plan:** complete — see `include/jxl/context.h` / `src/context.h`
-3. **One-library cohesion:** public headers / status / thin context / install packaging done; encoder sources flattened out of `lib/jxl/` into `src/encoder/`
+1. **Phase 9 — Hardening (ongoing):** deepen fuzz corpus / triage; keep ASan+UBSan CI green; optional crop-suite policy in CI.
+2. **Optional cohesion polish:** CMS color-encoding peel strategy (public / cms / enc / decode-parsed layers); rename `memory_manager_internal.*` if desired.
+3. **v2+ product:** thread pool (`JXL_C_ENABLE_THREADS`), progressive animation streaming API.
+
+**Complete:** `jxl_context` plan; one-library public headers / status / thin context / install packaging / encoder flatten out of `lib/jxl/`.
