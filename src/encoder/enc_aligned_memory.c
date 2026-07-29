@@ -3,16 +3,16 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in LICENSE-BSD.
 
-#include "memory_manager_internal.h"
+#include "enc_aligned_memory.h"
 
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>  // memcpy
 
-#include "enc_allocator.h"
 #include "base/common.h"
 #include "base/enc_status.h"
+#include "enc_allocator.h"
 #include "simd_util.h"
 
 jxl_enc_status jxl_bytes_per_row(const size_t xsize, const size_t sizeof_t,

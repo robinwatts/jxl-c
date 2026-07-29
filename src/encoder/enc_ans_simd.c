@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/enc_status.h"
-#include "memory_manager_internal.h"
+#include "enc_aligned_memory.h"
 
 
 uint32_t jxl_estimate_token_cost(uint32_t* JXL_RESTRICT values, size_t len,

@@ -25,7 +25,7 @@
 #include "enc_params.h"
 #include "enc_image_metadata.h"
 #include "jpeg/jpeg_data.h"
-#include "memory_manager_internal.h"
+#include "enc_aligned_memory.h"
 #include "padded_bytes.h"
 
 

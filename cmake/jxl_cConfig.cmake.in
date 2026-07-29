@@ -8,9 +8,9 @@ pkg_check_modules(jxl_c_brotlidec REQUIRED IMPORTED_TARGET libbrotlidec)
 @JXL_C_CONFIG_FIND_LCMS2@
 
 if(NOT TARGET jxl_c::jxl_c)
-  add_library(jxl_c::jxl_c STATIC IMPORTED)
+  add_library(jxl_c::jxl_c @JXL_C_CONFIG_IMPORTED_TYPE@ IMPORTED)
   set_target_properties(jxl_c::jxl_c PROPERTIES
-    IMPORTED_LOCATION "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@/libjxl_c@CMAKE_STATIC_LIBRARY_SUFFIX@"
+    IMPORTED_LOCATION "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@/@JXL_C_CONFIG_IMPORTED_LOCATION@"
     INTERFACE_INCLUDE_DIRECTORIES "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@"
   )
   # Semicolon-separated lists expanded from configure time.

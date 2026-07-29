@@ -10,9 +10,12 @@
  * @brief Color encoding definitions used by JPEG XL.
  * All CIE units are for the standard 1931 2 degree observer.
  *
- * Public POD used by decode and encode APIs. Encoder internals keep separate
- * storage/wrapper types (`jxl_cms_color_encoding`, `jxl_enc_color_encoding`);
- * convert at the boundary with to/from_external helpers.
+ * Public POD used by decode and encode APIs. Internals keep separate types:
+ *   - jxl_cms_color_encoding     — encoder CMS storage (ICC + fields)
+ *   - jxl_enc_color_encoding     — encoder fields/visitor wrapper
+ *   - jxl_color_encoding_parsed  — decode bitstream-parsed encoding
+ * Convert at API edges (to/from_external, parsed_to_public). Do not merge these
+ * representations; they have different ownership and validation rules.
  */
 
 #ifndef JXL_COLOR_ENCODING_H_

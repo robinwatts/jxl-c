@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #include "base/enc_status.h"
-#include "memory_manager_internal.h"
+#include "enc_aligned_memory.h"
 
 #if defined(MEMORY_SANITIZER)
 #include <string.h>

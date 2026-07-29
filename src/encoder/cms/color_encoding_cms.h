@@ -7,11 +7,13 @@
 #define JXL_ENC_CMS_COLOR_ENCODING_CMS_H_
 
 // Internal CMS color-encoding storage (ICC + fields).
-// Layering:
-//   jxl_color_encoding          — public POD (<jxl/color_encoding.h>)
-//   jxl_cms_color_encoding      — this file: owned ICC + field storage
-//   jxl_enc_color_encoding      — fields/visitor wrapper around storage_
-// Convert at API edges with jxl_cms_color_encoding_to/from_external.
+// Layering (do not collapse):
+//   jxl_color_encoding           — public POD (<jxl/color_encoding.h>)
+//   jxl_cms_color_encoding       — this file: owned ICC + field storage
+//   jxl_enc_color_encoding       — fields/visitor wrapper around storage_
+//   jxl_color_encoding_parsed    — decode-only parsed bitstream form
+// Convert at API edges with jxl_cms_color_encoding_to/from_external (encode)
+// and jxl_color_encoding_parsed_to_public (decode).
 
 #include <jxl/cms_interface.h>
 #include <jxl/color_encoding.h>

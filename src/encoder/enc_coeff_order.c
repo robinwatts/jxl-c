@@ -19,7 +19,7 @@
 #include "enc_ans.h"
 #include "enc_coeff_order.h"
 #include "lehmer_code.h"
-#include "memory_manager_internal.h"
+#include "enc_aligned_memory.h"
 
 #include "layer_type.h"
 

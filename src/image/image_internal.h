@@ -54,6 +54,8 @@ typedef enum {
     JXL_RENDERING_ABSOLUTE_I = 3,
 } jxl_rendering_intent_i;
 
+/* Decode-side color encoding from the codestream (not the public POD).
+ * See <jxl/color_encoding.h> / color_encoding_cms.h for the layering map. */
 typedef struct {
     int have_icc_profile;
     jxl_color_space_i color_space;

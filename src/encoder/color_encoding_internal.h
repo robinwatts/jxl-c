@@ -8,7 +8,7 @@
 
 // Encoder metadata color encoding: fields/visitor wrapper over
 // jxl_cms_color_encoding (storage_). Not the public jxl_color_encoding POD.
-// See color_encoding_cms.h for the three-layer map.
+// See color_encoding_cms.h for the full layering map (includes decode-parsed).
 
 #include <jxl/cms_interface.h>
 #include <jxl/color_encoding.h>

@@ -17,7 +17,7 @@
 #include "base/compiler_specific.h"
 #include "base/rect.h"
 #include "base/enc_status.h"
-#include "memory_manager_internal.h"
+#include "enc_aligned_memory.h"
 
 // jxl_plane_base is image.{h|cc}-local; prefer typed Plane helpers elsewhere.
 // Type-independent parts of jxl_image_sb/jxl_image_b/jxl_image_i/jxl_image_f - reduces code

@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "dec_ans.h"
-#include "memory_manager_internal.h"
+#include "enc_aligned_memory.h"
 
 // Returns "extra_bits" sum and puts tokens into `tokens`.
 uint32_t jxl_estimate_token_cost(uint32_t* JXL_RESTRICT values, size_t len,

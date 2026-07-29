@@ -111,7 +111,7 @@ if(JXL_C_ENABLE_JPEG_ENCODER)
         src/encoder/jpeg/jpeg_data.c
         src/encoder/loop_filter.c
         src/encoder/luminance.c
-        src/encoder/memory_manager_internal.c
+        src/encoder/enc_aligned_memory.c
         src/encoder/modular/encoding/enc_encoding.c
         src/encoder/modular/encoding/enc_ma.c
         src/encoder/modular/encoding/encoding.c
@@ -584,6 +584,13 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/jxl_c.pc
 )
 
 include(CMakePackageConfigHelpers)
+if(JXL_C_BUILD_SHARED)
+    set(JXL_C_CONFIG_IMPORTED_TYPE "SHARED")
+    set(JXL_C_CONFIG_IMPORTED_LOCATION "libjxl_c${CMAKE_SHARED_LIBRARY_SUFFIX}")
+else()
+    set(JXL_C_CONFIG_IMPORTED_TYPE "STATIC")
+    set(JXL_C_CONFIG_IMPORTED_LOCATION "libjxl_c${CMAKE_STATIC_LIBRARY_SUFFIX}")
+endif()
 configure_package_config_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/jxl_cConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/jxl_cConfig.cmake

@@ -2,3 +2,5 @@
 /build2/
 /build-*/
 /build*/
+/scripts/migrate_*.py
+/scripts/import_simple_lossless.py

@@ -25,7 +25,7 @@
 #include "enc_huffman.h"
 #include "enc_lz77.h"
 #include "fields.h"
-#include "memory_manager_internal.h"
+#include "enc_aligned_memory.h"
 #include "simd_util.h"
 #include "base/common.h"
 

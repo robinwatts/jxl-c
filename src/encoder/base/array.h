@@ -6,7 +6,7 @@
 #ifndef JXL_ENC_BASE_ARRAY_H_
 #define JXL_ENC_BASE_ARRAY_H_
 
-// MemoryManager-backed growable arrays (concrete POD peels).
+// jxl_context-backed growable arrays (concrete POD peels).
 // C-shaped storage (ptr/len/capacity); prefer jxl_array_len/jxl_array_at/jxl_array_data/
 // jxl_array_empty.
 // ctx must be non-NULL before any growth (reserve/resize/push).

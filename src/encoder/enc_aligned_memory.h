@@ -3,10 +3,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in LICENSE-BSD.
 
-#ifndef JXL_ENC_MEMORY_MANAGER_INTERNAL_H_
-#define JXL_ENC_MEMORY_MANAGER_INTERNAL_H_
+#ifndef JXL_ENC_ALIGNED_MEMORY_H_
+#define JXL_ENC_ALIGNED_MEMORY_H_
 
-// Aligned allocations backed by jxl_context / jxl_alloc.
+// Cache-aware aligned allocations backed by jxl_context / jxl_alloc.
 
 #include <jxl/context.h>
 #include "enc_allocator.h"
@@ -77,4 +77,4 @@ static inline void jxl_aligned_memory_swap(jxl_aligned_memory* self,
   other->address_ = addr;
 }
 
-#endif  // JXL_ENC_MEMORY_MANAGER_INTERNAL_H_
+#endif  // JXL_ENC_ALIGNED_MEMORY_H_
