@@ -4,7 +4,7 @@
  * license that can be found in LICENSE-BSD.
  */
 
-/** @addtogroup libjxl_color
+/** @addtogroup jxl_color
  * @{
  * @file color_encoding.h
  * @brief Color encoding definitions used by JPEG XL.

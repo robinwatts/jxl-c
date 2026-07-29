@@ -4,7 +4,7 @@
  * license that can be found in LICENSE-BSD.
  */
 
-/** @addtogroup libjxl_metadata
+/** @addtogroup jxl_metadata
  * @{
  * @file codestream_header.h
  * @brief Minimal metadata enums for the JPEG-to-JXL encoder build.

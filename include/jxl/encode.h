@@ -4,7 +4,7 @@
  * license that can be found in LICENSE-BSD.
  */
 
-/** @addtogroup libjxl_encoder
+/** @addtogroup jxl_encoder
  * @{
  * @file encode.h
  * @brief JPEG-to-JXL encoder API (jxl_encoder_add_jpeg_frame).

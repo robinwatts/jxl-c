@@ -4,7 +4,7 @@
  * license that can be found in LICENSE-BSD.
  */
 
-/** @addtogroup libjxl_color
+/** @addtogroup jxl_color
  * @{
  * @file cms_interface.h
  * @brief Interface to allow the injection of different color management systems

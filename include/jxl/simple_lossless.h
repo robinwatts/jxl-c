@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+// Also available under the BSD-style license in LICENSE-BSD and the patent
+// grant in src/encoder/PATENTS (see NOTICE).
 #ifndef JXL_SIMPLE_LOSSLESS_H_
 #define JXL_SIMPLE_LOSSLESS_H_
 
@@ -23,7 +25,7 @@ typedef struct {
 } jxl_simple_lossless_image_desc;
 
 /*
- * Lossless modular encode (libjxl effort-1 class). Input is interleaved samples:
+ * Effort-1-class modular lossless encode. Input is interleaved samples:
  * G, GA, RGB, or RGBA; 8-bit uses one byte per channel, >8-bit uses 16-bit samples
  * (little-endian in the buffer unless big_endian is set).
  *
