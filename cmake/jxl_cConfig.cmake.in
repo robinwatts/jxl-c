@@ -1,0 +1,23 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(PkgConfig REQUIRED)
+pkg_check_modules(jxl_c_brotlidec REQUIRED IMPORTED_TARGET libbrotlidec)
+@JXL_C_CONFIG_FIND_BROTLIENC@
+@JXL_C_CONFIG_FIND_LCMS2@
+
+if(NOT TARGET jxl_c::jxl_c)
+  add_library(jxl_c::jxl_c STATIC IMPORTED)
+  set_target_properties(jxl_c::jxl_c PROPERTIES
+    IMPORTED_LOCATION "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@/libjxl_c@CMAKE_STATIC_LIBRARY_SUFFIX@"
+    INTERFACE_INCLUDE_DIRECTORIES "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@"
+  )
+  # Semicolon-separated lists expanded from configure time.
+  set_property(TARGET jxl_c::jxl_c PROPERTY
+    INTERFACE_LINK_LIBRARIES "@JXL_C_CONFIG_INTERFACE_LIBS@")
+  set_property(TARGET jxl_c::jxl_c PROPERTY
+    INTERFACE_COMPILE_DEFINITIONS "@JXL_C_CONFIG_COMPILE_DEFINITIONS@")
+endif()
+
+check_required_components(jxl_c)

@@ -18,8 +18,13 @@ cmake --build build -j$(nproc)
 python3 tests/conformance/gen_conformance_cases.py   # prefetch .npy cache
 ctest --test-dir build --output-on-failure
 
-# Optional: install headers + libjxl_c.a into a prefix (system Brotli/LCMS2 still needed to link)
+# Optional: install headers + libjxl_c.a (+ pkg-config / CMake package) into a prefix.
+# System Brotli and LCMS2 are still required to link.
 cmake --install build --prefix /tmp/jxl-c-prefix
+
+# Consume via pkg-config:
+#   pkg-config --cflags --libs jxl_c
+# or CMake: find_package(jxl_c CONFIG REQUIRED) then target_link_libraries(... jxl_c::jxl_c)
 ```
 
 If bootstrap reports missing oracle files (unlikely — they are vendored):

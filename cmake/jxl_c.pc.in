@@ -1,0 +1,12 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: jxl_c
+Description: JPEG XL C library (decode, encode, CMS)
+Version: @PROJECT_VERSION@
+URL: https://github.com/tirr-c/jxl-c
+Requires: @JXL_C_PC_REQUIRES@
+Libs: -L${libdir} -ljxl_c -lm
+Cflags: -I${includedir}@JXL_C_PC_CFLAGS@

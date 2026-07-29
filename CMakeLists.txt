@@ -535,6 +535,65 @@ install(FILES ${JXL_C_PUBLIC_HEADERS}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/jxl
 )
 
+# --- pkg-config + CMake package config for install consumers ---
+set(JXL_C_PC_REQUIRES "libbrotlidec")
+set(JXL_C_PC_CFLAGS "")
+set(JXL_C_CONFIG_FIND_BROTLIENC "")
+set(JXL_C_CONFIG_FIND_LCMS2 "")
+set(JXL_C_CONFIG_INTERFACE_LIBS "PkgConfig::jxl_c_brotlidec;m")
+set(JXL_C_CONFIG_COMPILE_DEFINITIONS "")
+
+if(JXL_C_ENABLE_JPEG_ENCODER)
+    string(APPEND JXL_C_PC_REQUIRES " libbrotlienc")
+    set(JXL_C_CONFIG_FIND_BROTLIENC
+        "pkg_check_modules(jxl_c_brotlienc REQUIRED IMPORTED_TARGET libbrotlienc)")
+    string(APPEND JXL_C_CONFIG_INTERFACE_LIBS ";PkgConfig::jxl_c_brotlienc")
+    list(APPEND JXL_C_CONFIG_COMPILE_DEFINITIONS "JXL_C_ENABLE_JPEG_ENCODER=1")
+endif()
+if(JXL_C_REQUIRE_LCMS2)
+    string(APPEND JXL_C_PC_REQUIRES " lcms2")
+    set(JXL_C_CONFIG_FIND_LCMS2
+        "pkg_check_modules(jxl_c_lcms2 REQUIRED IMPORTED_TARGET lcms2)")
+    string(APPEND JXL_C_CONFIG_INTERFACE_LIBS ";PkgConfig::jxl_c_lcms2")
+    list(APPEND JXL_C_CONFIG_COMPILE_DEFINITIONS "JXL_C_HAVE_LCMS2=1")
+endif()
+if(JXL_C_ENABLE_JBR)
+    list(APPEND JXL_C_CONFIG_COMPILE_DEFINITIONS "JXL_C_ENABLE_JBR=1")
+endif()
+if(JXL_C_ENABLE_SIMPLE_LOSSLESS)
+    list(APPEND JXL_C_CONFIG_COMPILE_DEFINITIONS "JXL_C_ENABLE_SIMPLE_LOSSLESS=1")
+endif()
+
+foreach(_jxl_c_def IN LISTS JXL_C_CONFIG_COMPILE_DEFINITIONS)
+    string(APPEND JXL_C_PC_CFLAGS " -D${_jxl_c_def}")
+endforeach()
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/jxl_c.pc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/jxl_c.pc
+    @ONLY
+)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/jxl_c.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/jxl_cConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/jxl_cConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/jxl_c
+)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/jxl_cConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/jxl_cConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/jxl_cConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/jxl_c
+)
+
 if(JXL_C_BUILD_FUZZ)
     if(NOT CMAKE_C_COMPILER_ID MATCHES "Clang")
         message(FATAL_ERROR "JXL_C_BUILD_FUZZ requires Clang (libFuzzer)")
