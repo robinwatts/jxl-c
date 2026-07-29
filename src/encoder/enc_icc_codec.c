@@ -10,11 +10,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "base/array.h"
 #include "base/common.h"
 #include "base/span.h"
 #include "base/enc_status.h"
+#include "common/icc_shuffle.h"
 #include "enc_ans.h"
 #include "layer_type.h"
 #include "fields.h"
@@ -34,8 +36,7 @@
 // in scanline order, the output is the result matrix in scanline order, with
 // missing elements skipped over (this may occur at multiple positions).
 static jxl_enc_status jxl_unshuffle(jxl_context* ctx, uint8_t* data, size_t size,
-                 size_t width) {
-  size_t height = (size + width - 1) / width;  // amount of rows of input
+                                    size_t width) {
   jxl_padded_bytes result;
   jxl_enc_status status =
       jxl_padded_bytes_with_initial_space(ctx, size, &result);
@@ -43,19 +44,8 @@ static jxl_enc_status jxl_unshuffle(jxl_context* ctx, uint8_t* data, size_t size
     jxl_padded_bytes_destroy(&result);
     return status;
   }
-
-  // i = input index, j output index
-  size_t s = 0;
-  size_t j = 0;
-  for (size_t i = 0; i < size; i++) {
-    *jxl_padded_bytes_at(&result, j) = data[i];
-    j += height;
-    if (j >= size) j = ++s;
-  }
-
-  for (size_t i = 0; i < size; i++) {
-    data[i] = *jxl_padded_bytes_at(&result, i);
-  }
+  jxl_icc_unshuffle(data, size, width, jxl_padded_bytes_data(&result));
+  memcpy(data, jxl_padded_bytes_data(&result), size);
   jxl_padded_bytes_destroy(&result);
   return jxl_enc_ok_status();
 }

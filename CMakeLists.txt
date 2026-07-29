@@ -322,6 +322,8 @@ set(JXL_C_SOURCES
     src/container_reader.c
     src/decoder_init.c
     src/decoder.c
+    src/common/icc_shuffle.c
+    src/common/icc_linear_predict.c
     ${JXL_C_JBR_SOURCES}
     ${JXL_C_SIMPLE_LOSSLESS_SOURCES}
     ${JXL_C_JPEG_ENCODER_SOURCES}

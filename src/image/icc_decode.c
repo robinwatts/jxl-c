@@ -6,6 +6,8 @@
 #include "common/icc_ans_context.h"
 #include "common/icc_codec_params.h"
 #include "common/icc_header_predict.h"
+#include "common/icc_linear_predict.h"
+#include "common/icc_shuffle.h"
 
 #include <string.h>
 
@@ -48,42 +50,6 @@ static jxl_bs_status_t icc_varint(icc_mem_stream *stream, uint64_t *value_out) {
     return JXL_BS_OK;
 }
 
-static void shuffle2(const uint8_t *bytes, size_t len, uint8_t *out) {
-    size_t idx;
-    size_t height = len / 2;
-    size_t odd = len % 2;
-    size_t o = 0;
-    for (idx = 0; idx < height; ++idx) {
-        out[o++] = bytes[idx];
-        out[o++] = bytes[idx + height + odd];
-    }
-    if (odd != 0) {
-        out[o++] = bytes[height];
-    }
-}
-
-static void shuffle4(const uint8_t *bytes, size_t len, uint8_t *out) {
-    size_t idx;
-    size_t step = len / 4;
-    size_t wide_count = len % 4;
-    size_t o = 0;
-    for (idx = 0; idx < step; ++idx) {
-        size_t j;
-        size_t base = idx;
-        for (j = 0; j < wide_count; ++j) {
-            out[o++] = bytes[base];
-            base += step + 1;
-        }
-        for (j = wide_count; j < 4; ++j) {
-            out[o++] = bytes[base];
-            base += step;
-        }
-    }
-    for (idx = 1; idx <= wide_count; ++idx) {
-        out[o++] = bytes[(step + 1) * idx - 1];
-    }
-}
-
 static jxl_bs_status_t out_append(uint8_t *out, size_t out_cap, size_t *out_len, const uint8_t *src,
                                   size_t len) {
     if (*out_len > out_cap || len > out_cap - *out_len) {
@@ -101,15 +67,6 @@ static jxl_bs_status_t out_append_u32_be(uint8_t *out, size_t out_cap, size_t *o
     bytes[2] = (uint8_t)(v >> 8);
     bytes[3] = (uint8_t)v;
     return out_append(out, out_cap, out_len, bytes, 4);
-}
-
-static uint32_t read_be_u32_width(const uint8_t *src, size_t width) {
-    size_t i;
-    uint32_t v = 0;
-    for (i = 0; i < width; ++i) {
-        v |= (uint32_t)src[i] << (8 * (width - 1 - i));
-    }
-    return v;
 }
 
 static jxl_bs_status_t icc_stream_decode(jxl_context *alloc, const uint8_t *stream,
@@ -415,10 +372,10 @@ static jxl_bs_status_t icc_stream_decode(jxl_context *alloc, const uint8_t *stre
                     return st;
                 }
             } else if (command == 2) {
-                shuffle2(data, num, out + out_pos);
+                jxl_icc_shuffle2(data, num, out + out_pos);
                 out_pos += num;
             } else {
-                shuffle4(data, num, out + out_pos);
+                jxl_icc_shuffle4(data, num, out + out_pos);
                 out_pos += num;
             }
             data += num;
@@ -491,37 +448,19 @@ static jxl_bs_status_t icc_stream_decode(jxl_context *alloc, const uint8_t *stre
                     return JXL_BS_EOF;
                 }
                 if (width == 2) {
-                    shuffle2(data, num, tmp);
+                    jxl_icc_shuffle2(data, num, tmp);
                 } else {
-                    shuffle4(data, num, tmp);
+                    jxl_icc_shuffle4(data, num, tmp);
                 }
                 src = tmp;
             }
 
-            for (i = 0; i < num; i += width) {
-                size_t j;
-                uint32_t prev[3] = {0, 0, 0};
-                uint32_t p;
-                size_t block;
-                for (j = 0; j <= order; ++j) {
-                    size_t offset = out_pos - stride * (j + 1);
-                    prev[j] = read_be_u32_width(out + offset, width);
-                }
-
-                p = prev[0];
-                if (order == 1) {
-                    p = (uint32_t)(2u * prev[0] - prev[1]);
-                } else if (order == 2) {
-                    p = (uint32_t)(3u * (prev[0] - prev[1]) + prev[2]);
-                }
-
-                block = width;
-                if (block > num - i) {
-                    block = num - i;
-                }
-                for (j = 0; j < block; ++j) {
-                    uint32_t val = (uint32_t)src[i + j] + (p >> (8 * (width - 1 - j)));
-                    out[out_pos++] = (uint8_t)val;
+            {
+                size_t start = out_pos;
+                for (i = 0; i < num; ++i) {
+                    uint8_t predicted =
+                        jxl_icc_linear_predict_value(out, start, i, stride, width, (int)order);
+                    out[out_pos++] = (uint8_t)(src[i] + predicted);
                 }
             }
 

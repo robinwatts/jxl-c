@@ -17,6 +17,7 @@
 #include "common/icc_ans_context.h"
 #include "common/icc_codec_params.h"
 #include "common/icc_header_predict.h"
+#include "common/icc_linear_predict.h"
 #include "padded_bytes.h"
 
 enum { kICCHeaderSize = JXL_ICC_HEADER_SIZE };
@@ -138,8 +139,11 @@ static inline void jxl_icc_header_bytes_copy_from(jxl_icc_header_bytes* self, co
 jxl_icc_header_bytes jxl_icc_initial_header_prediction(uint32_t size);
 void jxl_icc_predict_header(const uint8_t* icc, size_t size, uint8_t* header,
                       size_t pos);
-uint8_t jxl_linear_predict_icc_value(const uint8_t* data, size_t start, size_t i,
-                              size_t stride, size_t width, int order);
+static inline uint8_t jxl_linear_predict_icc_value(const uint8_t* data, size_t start,
+                                                   size_t i, size_t stride, size_t width,
+                                                   int order) {
+  return jxl_icc_linear_predict_value(data, start, i, stride, width, order);
+}
 size_t jxl_iccans_context(size_t i, size_t b1, size_t b2);
 
 
