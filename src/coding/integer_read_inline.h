@@ -4,6 +4,7 @@
 
 #include "bitstream/bitstream.h"
 #include "coding/cdecoder_private.h"
+#include "common/hybrid_uint.h"
 
 #include "jxl/decode_types.h"
 
@@ -18,29 +19,14 @@ JXL_INTEGER_READ_INLINE uint32_t jxl_integer_read_uint(jxl_bs *bs, uint32_t spli
                                                        uint32_t split_exponent, uint32_t token) {
     uint32_t rest_bits;
     uint32_t n;
-    uint32_t tok;
     if (token < split) {
         return token;
     }
 
-    n = split_exponent - (msb_in_token + lsb_in_token) +
-        ((token - split) >> (msb_in_token + lsb_in_token));
-    n &= 31u;
-
+    n = jxl_hybrid_uint_extra_bits(split, msb_in_token, lsb_in_token, split_exponent, token);
     rest_bits = (uint32_t)(bs->buf & ((1ull << n) - 1ull));
     jxl_bs_consume_bits_inline(bs, n);
-
-    {
-        const uint32_t low_mask = lsb_in_token == 0 ? 0u : ((1u << lsb_in_token) - 1u);
-        const uint64_t low_bits = token & low_mask;
-        tok = token >> lsb_in_token;
-        {
-            const uint32_t msb_mask = msb_in_token == 0 ? 0u : ((1u << msb_in_token) - 1u);
-            tok &= msb_mask;
-            tok |= 1u << msb_in_token;
-            return (uint32_t)(((((uint64_t)tok << n) | rest_bits) << lsb_in_token) | low_bits);
-        }
-    }
+    return jxl_hybrid_uint_decode(split, msb_in_token, lsb_in_token, token, rest_bits, n);
 }
 
 JXL_INTEGER_READ_INLINE uint32_t jxl_integer_read_uint_config(jxl_bs *bs,

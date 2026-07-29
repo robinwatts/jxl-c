@@ -622,7 +622,7 @@ Rust uses **`i16` modular storage by default** when `ImageMetadata.modular_16bit
 ## Next steps
 
 1. **Phase 9 — Hardening (ongoing):** deepen fuzz corpus / triage; keep ASan+UBSan CI green; optional crop-suite policy in CI.
-2. **Optional cohesion polish:** CMS color-encoding peel strategy; rename `memory_manager_internal.*` if desired; further Medium shares (hybrid-uint adapters).
+2. **Optional cohesion polish:** CMS color-encoding peel strategy; rename `memory_manager_internal.*` if desired.
 3. **v2+ product:** thread pool (`JXL_C_ENABLE_THREADS`), progressive animation streaming API.
 
-**Complete:** `jxl_context` plan; one-library public headers / status / thin context / install packaging / encoder flatten; shared encoder helpers; `src/common/` ANS params, LZ77 special distances, pack/unpack signed, ICC wire params / ANS context / header predict / shuffle / linear predict.
+**Complete:** `jxl_context` plan; one-library public headers / status / thin context / install packaging / encoder flatten; shared encoder helpers; `src/common/` ANS params, LZ77 special distances, pack/unpack signed, ICC helpers, hybrid-uint encode/decode.

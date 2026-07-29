@@ -19,67 +19,17 @@
 #include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/enc_status.h"
+#include "common/hybrid_uint.h"
 #include "common/lz77_special_distances.h"
 #include "field_encodings.h"
 #include "fields.h"
 
-// Experiments show that best performance is typically achieved for a
-// split-exponent of 3 or 4. Trend seems to be that '4' is better
-// for large-ish pictures, and '3' better for rather small-ish pictures.
-// This is plausible - the more special symbols we have, the better
-// statistics we need to get a benefit out of them.
-
-// Our hybrid-encoding scheme has dedicated tokens for the smallest
-// (1 << split_exponents) numbers, and for the rest
-// encodes (number of bits) + (msb_in_token sub-leading binary digits) +
-// (lsb_in_token lowest binary digits) in the token, with the remaining bits
-// then being encoded as data.
-typedef struct jxl_hybrid_uint_config {
-  uint32_t split_exponent;
-  uint32_t split_token;
-  uint32_t msb_in_token;
-  uint32_t lsb_in_token;
-} jxl_hybrid_uint_config;
-
-static JXL_INLINE jxl_hybrid_uint_config jxl_hybrid_uint_config_make(uint32_t split_exponent,
-                                                 uint32_t msb_in_token,
-                                                 uint32_t lsb_in_token) {
-  JXL_DASSERT(split_exponent >= msb_in_token + lsb_in_token);
-  jxl_hybrid_uint_config self;
-  self.split_exponent = split_exponent;
-  self.split_token = 1u << split_exponent;
-  self.msb_in_token = msb_in_token;
-  self.lsb_in_token = lsb_in_token;
-  return self;
-}
-
-static JXL_INLINE jxl_hybrid_uint_config jxl_hybrid_uint_config_default() {
-  return jxl_hybrid_uint_config_make(4, 2, 0);
-}
-
+/* Encoder-facing encode entry; implementation lives in common/hybrid_uint.h. */
 static JXL_INLINE void jxl_hybrid_uint_config_encode(jxl_hybrid_uint_config self, uint32_t value,
-                                       uint32_t* JXL_RESTRICT token,
-                                       uint32_t* JXL_RESTRICT nbits,
-                                       uint32_t* JXL_RESTRICT bits) {
-  if (value < self.split_token) {
-    *token = value;
-    *nbits = 0;
-    *bits = 0;
-  } else {
-    uint32_t n = jxl_floor_log2_nonzero32(value);
-    uint32_t m = value - (1 << n);
-    *token = self.split_token +
-             ((n - self.split_exponent)
-              << (self.msb_in_token + self.lsb_in_token)) +
-             ((m >> (n - self.msb_in_token)) << self.lsb_in_token) +
-             (m & ((1 << self.lsb_in_token) - 1));
-    *nbits = n - self.msb_in_token - self.lsb_in_token;
-    *bits = (value >> self.lsb_in_token) & ((1UL << *nbits) - 1);
-  }
-}
-
-static JXL_INLINE uint32_t jxl_hybrid_uint_config_lsb_mask(jxl_hybrid_uint_config self) {
-  return (1 << self.lsb_in_token) - 1;
+                                                     uint32_t* JXL_RESTRICT token,
+                                                     uint32_t* JXL_RESTRICT nbits,
+                                                     uint32_t* JXL_RESTRICT bits) {
+  jxl_hybrid_uint_encode(self, value, token, nbits, bits);
 }
 
 JXL_DEFINE_POD_ARRAY(jxl_array_hybrid_uint_config, jxl_hybrid_uint_config)

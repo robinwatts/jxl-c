@@ -8,6 +8,7 @@
 #include "coding/ans_read_inline.h"
 #include "coding/integer_read_inline.h"
 #include "coding/internal.h"
+#include "common/hybrid_uint.h"
 #include "common/lz77_special_distances.h"
 #include "context.h"
 #include "prefix.h"
@@ -247,14 +248,11 @@ jxl_inline uint32_t fast_read_uint_deferred(jxl_bs *bs, uint32_t split, uint32_t
                                             uint32_t token, jxl_coding_status_t *err) {
     uint32_t rest_bits;
     uint32_t n;
-    uint32_t tok;
     if (token < split) {
         return token;
     }
 
-    n = split_exponent - (msb_in_token + lsb_in_token) +
-        ((token - split) >> (msb_in_token + lsb_in_token));
-    n &= 31u;
+    n = jxl_hybrid_uint_extra_bits(split, msb_in_token, lsb_in_token, split_exponent, token);
 
     if (n > bs->remaining_buf_bits) {
         jxl_bs_refill(bs);
@@ -269,17 +267,7 @@ jxl_inline uint32_t fast_read_uint_deferred(jxl_bs *bs, uint32_t split, uint32_t
     bs->num_read_bits += n;
     bs->buf >>= n;
 
-    {
-        const uint32_t low_mask = lsb_in_token == 0 ? 0u : ((1u << lsb_in_token) - 1u);
-        const uint64_t low_bits = token & low_mask;
-        tok = token >> lsb_in_token;
-        {
-            const uint32_t msb_mask = msb_in_token == 0 ? 0u : ((1u << msb_in_token) - 1u);
-            tok &= msb_mask;
-            tok |= 1u << msb_in_token;
-            return (uint32_t)(((((uint64_t)tok << n) | rest_bits) << lsb_in_token) | low_bits);
-        }
-    }
+    return jxl_hybrid_uint_decode(split, msb_in_token, lsb_in_token, token, rest_bits, n);
 }
 
 JXL_FAST_ALWAYS_INLINE uint32_t fast_prefix_read_trusted(jxl_bs *bs, const fast_rle_hot *h) {

@@ -5,13 +5,9 @@
 #include "coding/ans.h"
 #include "coding/decoder.h"
 #include "coding/prefix.h"
+#include "common/hybrid_uint.h"
 
-typedef struct jxl_integer_config {
-    uint32_t split_exponent;
-    uint32_t split;
-    uint32_t msb_in_token;
-    uint32_t lsb_in_token;
-} jxl_integer_config;
+typedef jxl_hybrid_uint_config jxl_integer_config;
 
 typedef enum {
     JXL_CODER_KIND_PREFIX = 0,

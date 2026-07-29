@@ -9,9 +9,9 @@
 
 #include <jxl/simple_lossless.h>
 
-#include "base/bits.h"
 #include "pack_signed.h"
 #include "toc_size_params.h"
+#include "common/hybrid_uint.h"
 
 #include <assert.h>
 #include <limits.h>
@@ -813,18 +813,12 @@ static void jxl_sl_free_frame_state(JxlSimpleLosslessFrameState *frame) {
 
 void encode_hybrid_uint000(uint32_t value, uint32_t *token, uint32_t *nbits,
                            uint32_t *bits) {
-  uint32_t n = value ? (uint32_t)jxl_floor_log2_nonzero32(value) : 0;
-  *token = value ? n + 1 : 0;
-  *nbits = value ? n : 0;
-  *bits = value ? value - (1U << n) : 0;
+  jxl_hybrid_uint_encode(jxl_hybrid_uint_config_make(0, 0, 0), value, token, nbits, bits);
 }
 
 void encode_hybrid_uint_lz77(uint32_t value, uint32_t *token, uint32_t *nbits,
                              uint32_t *bits) {
-  uint32_t n = value ? (uint32_t)jxl_floor_log2_nonzero32(value) : 0;
-  *token = value < 16 ? value : 16 + n - 4;
-  *nbits = value < 16 ? 0 : n;
-  *bits = value < 16 ? 0 : value - (1U << *nbits);
+  jxl_hybrid_uint_encode(jxl_hybrid_uint_config_make(4, 0, 0), value, token, nbits, bits);
 }
 
 size_t toc_bucket(size_t group_size) {
