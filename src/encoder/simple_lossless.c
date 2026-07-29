@@ -9,6 +9,10 @@
 
 #include <jxl/simple_lossless.h>
 
+#include "base/bits.h"
+#include "pack_signed.h"
+#include "toc_size_params.h"
+
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>
@@ -161,11 +165,6 @@ static size_t bitdepth_num_symbols(const BitDepthInfo *bd, int doing_ycocg_or_la
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #define FJXL_INLINE static __forceinline
-FJXL_INLINE uint32_t floor_log2(uint32_t v) {
-  unsigned long index;
-  _BitScanReverse(&index, v);
-  return index;
-}
 FJXL_INLINE uint32_t ctz_non_zero(uint64_t v) {
   unsigned long index;
   _BitScanForward(&index, v);
@@ -173,9 +172,6 @@ FJXL_INLINE uint32_t ctz_non_zero(uint64_t v) {
 }
 #else
 #define FJXL_INLINE static __attribute__((always_inline))
-FJXL_INLINE uint32_t floor_log2(uint32_t v) {
-  return v ? 31 - __builtin_clz(v) : 0;
-}
 FJXL_INLINE uint32_t ctz_non_zero(uint64_t v) { return __builtin_ctzll(v); }
 #endif
 
@@ -201,10 +197,6 @@ FJXL_INLINE size_t add_bits(uint32_t count, uint64_t bits, uint8_t *data_buf,
   *bit_buffer >>= bytes_in_buffer * 8;
   return bytes_in_buffer;
 }
-
-static const size_t kGroupSizeOffset[4] = {0, 1024, 17408, 4211712};
-static const size_t kTOCBits[4] = {12, 16, 24, 32};
-
 
 typedef struct BitWriter {
   uint8_t *data;
@@ -729,7 +721,8 @@ static void jxl_sl_prepare_header(JxlSimpleLosslessFrameState *frame,
       size_t group_size = frame->group_sizes[gi];
       size_t bucket = toc_bucket(group_size);
       bit_writer_write(output, 2, bucket);
-      bit_writer_write(output, kTOCBits[bucket] - 2, group_size - kGroupSizeOffset[bucket]);
+      bit_writer_write(output, (uint32_t)jxl_toc_group_size_extra_bits[bucket],
+                       group_size - jxl_toc_group_size_offset[bucket]);
     }
   }
   bit_writer_zero_pad_to_byte(output);
@@ -820,7 +813,7 @@ static void jxl_sl_free_frame_state(JxlSimpleLosslessFrameState *frame) {
 
 void encode_hybrid_uint000(uint32_t value, uint32_t *token, uint32_t *nbits,
                            uint32_t *bits) {
-  uint32_t n = floor_log2(value);
+  uint32_t n = value ? (uint32_t)jxl_floor_log2_nonzero32(value) : 0;
   *token = value ? n + 1 : 0;
   *nbits = value ? n : 0;
   *bits = value ? value - (1U << n) : 0;
@@ -828,7 +821,7 @@ void encode_hybrid_uint000(uint32_t value, uint32_t *token, uint32_t *nbits,
 
 void encode_hybrid_uint_lz77(uint32_t value, uint32_t *token, uint32_t *nbits,
                              uint32_t *bits) {
-  uint32_t n = floor_log2(value);
+  uint32_t n = value ? (uint32_t)jxl_floor_log2_nonzero32(value) : 0;
   *token = value < 16 ? value : 16 + n - 4;
   *nbits = value < 16 ? 0 : n;
   *bits = value < 16 ? 0 : value - (1U << *nbits);
@@ -836,7 +829,7 @@ void encode_hybrid_uint_lz77(uint32_t value, uint32_t *token, uint32_t *nbits,
 
 size_t toc_bucket(size_t group_size) {
   size_t bucket = 0;
-  while (bucket < 3 && group_size >= kGroupSizeOffset[bucket + 1]) ++bucket;
+  while (bucket < 3 && group_size >= jxl_toc_group_size_offset[bucket + 1]) ++bucket;
   return bucket;
 }
 
@@ -850,20 +843,15 @@ void compute_ac_group_data_offset(size_t dc_global_size, size_t num_dc_groups,
   size_t dc_global_bucket = toc_bucket(*min_dc_global_size);
   while (toc_bucket(*min_dc_global_size + max_padding) > dc_global_bucket) {
     dc_global_bucket = toc_bucket(*min_dc_global_size + max_padding);
-    *min_dc_global_size = kGroupSizeOffset[dc_global_bucket];
+    *min_dc_global_size = jxl_toc_group_size_offset[dc_global_bucket];
   }
   assert(toc_bucket(*min_dc_global_size) == dc_global_bucket);
   assert(toc_bucket(*min_dc_global_size + max_padding) == dc_global_bucket);
-  size_t max_toc_bits =
-      kTOCBits[dc_global_bucket] + 12 * (1 + num_dc_groups) + ac_toc_max_bits;
+  size_t max_toc_bits = 2 + jxl_toc_group_size_extra_bits[dc_global_bucket] +
+                        12 * (1 + num_dc_groups) + ac_toc_max_bits;
   size_t max_toc_size = (max_toc_bits + 7) / 8;
   *ac_group_offset = JXL_SL_MAX_FRAME_HEADER_SIZE + max_toc_size + *min_dc_global_size;
 }
-
-static uint32_t pack_signed(int32_t value) {
-  return ((uint32_t)value << 1) ^ (((uint32_t)(~value) >> 31) - 1);
-}
-
 
 static void chunk_encoder_encode_rle(size_t count, const PrefixCode *code, BitWriter *output) {
   if (count == 0) return;
@@ -967,7 +955,7 @@ static void channel_row_processor_process_chunk(ChannelRowProcessor *proc,
     int32_t clamp = d < 0 ? top : left;
     int32_t s = ac ^ bc;
     int32_t pred = s < 0 ? grad : clamp;
-    residuals[ix] = pack_signed(px - pred);
+    residuals[ix] = jxl_pack_signed(px - pred);
     prefix_size = prefix_size == required_prefix_size
                       ? prefix_size + (residuals[ix] == 0)
                       : prefix_size;
@@ -1631,7 +1619,7 @@ static JxlSimpleLosslessFrameState *ll_prepare(jxl_context *alloc, JxlChunkedFra
         for (i = 0; i < 19; i++) raw_counts[c][i] = (raw_counts[c][i] << 8) + base_raw_counts[i];
       if (!collided) {
         unsigned token, nbits, bits;
-        encode_hybrid_uint000(pack_signed(pcolors - 1), &token, &nbits, &bits);
+        encode_hybrid_uint000(jxl_pack_signed(pcolors - 1), &token, &nbits, &bits);
         for (i = 0; i < token + 1; i++)
           raw_counts[0][i] = JXL_SL_MAX(raw_counts[0][i], (uint64_t)1);
         for (i = token + 1; i < 10; i++) raw_counts[0][i] = 1;

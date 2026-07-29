@@ -336,10 +336,14 @@ target_include_directories(jxl_c_obj
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
-if(JXL_C_ENABLE_JPEG_ENCODER)
+if(JXL_C_ENABLE_JPEG_ENCODER OR JXL_C_ENABLE_SIMPLE_LOSSLESS)
+    # Shared encoder helpers (pack_signed, bits, TOC size params) live under
+    # src/encoder/; both encode products include them with that root.
     target_include_directories(jxl_c_obj PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/encoder
     )
+endif()
+if(JXL_C_ENABLE_JPEG_ENCODER)
     target_compile_definitions(jxl_c_obj
         PUBLIC JXL_C_ENABLE_JPEG_ENCODER=1
         PRIVATE JXL_STATIC_DEFINE JXL_CMS_STATIC_DEFINE

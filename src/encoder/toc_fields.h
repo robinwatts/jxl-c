@@ -7,16 +7,24 @@
 #define JXL_ENC_TOC_FIELDS_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "base/compiler_specific.h"
 #include "field_encodings.h"
+#include "toc_size_params.h"
 
 
 // (2+bits) = 2,3,4 bytes so encoders can patch TOC after encoding.
 // 30 is sufficient for 4K channels of uncompressed 16-bit samples.
 static inline jxl_u32_enc jxl_toc_dist(void) {
-  return jxl_u32_enc_make(jxl_bits(10), jxl_bits_offset(14, 1024), jxl_bits_offset(22, 17408),
-                    jxl_bits_offset(30, 4211712));
+  return jxl_u32_enc_make(
+      jxl_bits((uint32_t)jxl_toc_group_size_extra_bits[0]),
+      jxl_bits_offset((uint32_t)jxl_toc_group_size_extra_bits[1],
+                      (uint32_t)jxl_toc_group_size_offset[1]),
+      jxl_bits_offset((uint32_t)jxl_toc_group_size_extra_bits[2],
+                      (uint32_t)jxl_toc_group_size_offset[2]),
+      jxl_bits_offset((uint32_t)jxl_toc_group_size_extra_bits[3],
+                      (uint32_t)jxl_toc_group_size_offset[3]));
 }
 
 size_t jxl_max_bits(size_t num_sizes);
