@@ -301,8 +301,8 @@ jxl_enc_status jxl_encoder_append_box_with_contents(jxl_encoder* self,
 }
 
 uint32_t jxl_encoder_version(void) {
-  return JPEGXL_MAJOR_VERSION * 1000000 + JPEGXL_MINOR_VERSION * 1000 +
-         JPEGXL_PATCH_VERSION;
+  return JXL_MAJOR_VERSION * 1000000 + JXL_MINOR_VERSION * 1000 +
+         JXL_PATCH_VERSION;
 }
 
 static void jxl_write_jxlp_box_counter_bytes(uint32_t counter, bool last,
