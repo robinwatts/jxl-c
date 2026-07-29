@@ -1,14 +1,18 @@
 /* Copyright (c) the JPEG XL Project Authors. All rights reserved.
  *
  * Use of this source code is governed by a BSD-style
- * license that can be found in the LICENSE file.
+ * license that can be found in LICENSE-BSD.
  */
 
-/** @addtogroup libjxl_colour
+/** @addtogroup libjxl_color
  * @{
  * @file color_encoding.h
- * @brief Colour encoding definitions used by JPEG XL.
+ * @brief Color encoding definitions used by JPEG XL.
  * All CIE units are for the standard 1931 2 degree observer.
+ *
+ * Public POD used by decode and encode APIs. Encoder internals keep separate
+ * storage/wrapper types (`jxl_cms_color_encoding`, `jxl_enc_color_encoding`);
+ * convert at the boundary with to/from_external helpers.
  */
 
 #ifndef JXL_COLOR_ENCODING_H_
@@ -18,7 +22,7 @@
 extern "C" {
 #endif
 
-/** Colour space of the image data. */
+/** Color space of the image data. */
 typedef enum {
   /** Tristimulus RGB */
   JXL_COLOR_SPACE_RGB,
@@ -26,13 +30,13 @@ typedef enum {
    * This value implies that num_color_channels in @ref jxl_basic_info is 1, any
    * other value implies num_color_channels is 3. */
   JXL_COLOR_SPACE_GRAY,
-  /** XYB (opsin) colour space */
+  /** XYB (opsin) color space */
   JXL_COLOR_SPACE_XYB,
-  /** None of the other table entries describe the colour space appropriately */
+  /** None of the other table entries describe the color space appropriately */
   JXL_COLOR_SPACE_UNKNOWN,
 } jxl_color_space;
 
-/** Built-in white points for colour encoding. When decoding, the numerical xy
+/** Built-in white points for color encoding. When decoding, the numerical xy
  * white point value can be read from the @ref jxl_color_encoding white_point
  * field regardless of the enum value. When encoding, enum values except
  * ::JXL_WHITE_POINT_CUSTOM override the numerical fields. Some enum values
@@ -52,7 +56,7 @@ typedef enum {
   JXL_WHITE_POINT_DCI = 11,
 } jxl_white_point;
 
-/** Built-in primaries for colour encoding. When decoding, the primaries can be
+/** Built-in primaries for color encoding. When decoding, the primaries can be
  * read from the @ref jxl_color_encoding primaries_red_xy, primaries_green_xy and
  * primaries_blue_xy fields regardless of the enum value. When encoding, the
  * enum values except ::JXL_PRIMARIES_CUSTOM override the numerical fields.
@@ -74,7 +78,7 @@ typedef enum {
   JXL_PRIMARIES_P3 = 11,
 } jxl_primaries;
 
-/** Built-in transfer functions for colour encoding. Enum values match a subset
+/** Built-in transfer functions for color encoding. Enum values match a subset
  * of CICP (Rec. ITU-T H.273 | ISO/IEC 23091-2:2019(E)) unless specified
  * otherwise. */
 typedef enum {
@@ -97,7 +101,7 @@ typedef enum {
   JXL_TRANSFER_FUNCTION_GAMMA = 65535,
 } jxl_transfer_function;
 
-/** Rendering intent for colour encoding, as specified in ISO 15076-1:2010 */
+/** Rendering intent for color encoding, as specified in ISO 15076-1:2010 */
 typedef enum {
   /** vendor-specific */
   JXL_RENDERING_INTENT_PERCEPTUAL = 0,
@@ -109,10 +113,10 @@ typedef enum {
   JXL_RENDERING_INTENT_ABSOLUTE,
 } jxl_rendering_intent;
 
-/** Colour encoding of the image as structured information.
+/** Color encoding of the image as structured information.
  */
 typedef struct {
-  /** Colour space of the image data.
+  /** Color space of the image data.
    */
   jxl_color_space color_space;
 
@@ -126,7 +130,7 @@ typedef struct {
 
   /** Built-in RGB primaries. If this value is ::JXL_PRIMARIES_CUSTOM, must
    * use the numerical primaries values below. This field and the custom values
-   * below are unused and must be ignored if the colour space is
+   * below are unused and must be ignored if the color space is
    * ::JXL_COLOR_SPACE_GRAY or ::JXL_COLOR_SPACE_XYB.
    */
   jxl_primaries primaries;
@@ -148,7 +152,7 @@ typedef struct {
    */
   double gamma;
 
-  /** Rendering intent defined for the colour profile. */
+  /** Rendering intent defined for the color profile. */
   jxl_rendering_intent rendering_intent;
 } jxl_color_encoding;
 

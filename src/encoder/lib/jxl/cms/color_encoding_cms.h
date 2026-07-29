@@ -1,10 +1,17 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
 #ifndef LIB_JXL_CMS_COLOR_ENCODING_CMS_H_
 #define LIB_JXL_CMS_COLOR_ENCODING_CMS_H_
+
+// Internal CMS color-encoding storage (ICC + fields).
+// Layering:
+//   jxl_color_encoding          — public POD (<jxl/color_encoding.h>)
+//   jxl_cms_color_encoding      — this file: owned ICC + field storage
+//   jxl_enc_color_encoding      — fields/visitor wrapper around storage_
+// Convert at API edges with jxl_cms_color_encoding_to/from_external.
 
 #include <jxl/cms_interface.h>
 #include <jxl/color_encoding.h>

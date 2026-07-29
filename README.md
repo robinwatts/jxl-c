@@ -1,8 +1,8 @@
 # jxl-c
 
-Manual C port of the [jxl-oxide](https://github.com/tirr-c/jxl-oxide) JPEG XL **decode** pipeline.
+C library for JPEG XL: decode, simple lossless encode, and JPEG→JXL recompression, sharing one public `jxl_context` and header surface under `include/jxl/`.
 
-Fixtures and goldens come from the `third_party/jxl-oxide` git submodule. Decode parity oracle text files live in this repo under `tests/oracle/decode/`. All build and test workflows run from **jxl-c** only.
+The decode pipeline is a manual port of [jxl-oxide](https://github.com/tirr-c/jxl-oxide). The JPEG encoder and CMS pieces are adapted from the JPEG XL Project (libjxl). Fixtures and goldens come from the `third_party/jxl-oxide` git submodule. Decode parity oracle text files live under `tests/oracle/decode/`. All build and test workflows run from **jxl-c** only.
 
 ## Quick start
 
@@ -24,6 +24,19 @@ If bootstrap reports missing oracle files (unlikely — they are vendored):
 ```bash
 ./scripts/gen_decode_oracles.sh
 ```
+
+## Public API
+
+Umbrella header: `<jxl/jxl.h>`. Leaf headers for embedders:
+
+| Header | Role |
+|--------|------|
+| `context.h` | Session + allocator (`jxl_context`) |
+| `decode.h` / `types.h` | Decode + shared types |
+| `encode.h` | JPEG→JXL encoder |
+| `simple_lossless.h` | Simple modular lossless encode |
+| `cms.h` / `cms_interface.h` | Color management |
+| `status.h` | Public `jxl_status_t` |
 
 ## Paths
 
@@ -62,14 +75,15 @@ scripts/bench_st_compare.sh --iters 40 --rounds 3
 
 ```
 jxl-c/
-  include/jxl/             # public C API (decode + encode)
-  src/                     # library sources
+  include/jxl/             # public C API (decode + encode + CMS)
+  src/                     # decode + shared internals
+  src/encoder/             # JPEG→JXL + simple lossless (+ CMS helpers)
   tests/oracle/decode/     # vendored/regenerated parity oracles
   tools/                   # bench_decode, gen_decode_oracles
   third_party/jxl-oxide/   # git submodule (fixtures + Rust cross-checks)
 ```
 
-See [PLAN.md](PLAN.md) for the port roadmap.
+See [PLAN.md](PLAN.md) for the decode port roadmap and [NOTICE](NOTICE) for licensing origins.
 
 ## CMake options
 
@@ -83,4 +97,9 @@ See [PLAN.md](PLAN.md) for the port roadmap.
 | `JXL_C_BUILD_TOOLS` | OFF | `bench_decode` |
 | `JXL_C_BUILD_FUZZ` | OFF | libFuzzer target (Clang) |
 
-Dual-licensed under MIT and Apache 2.0 (same as jxl-oxide).
+## License
+
+This repository combines code from more than one origin. See [NOTICE](NOTICE).
+
+- Decode / oxide-derived sources: [LICENSE-MIT](LICENSE-MIT) **or** [LICENSE-APACHE](LICENSE-APACHE)
+- libjxl-derived encoder / CMS sources: [LICENSE-BSD](LICENSE-BSD) (and [src/encoder/PATENTS](src/encoder/PATENTS) where applicable)

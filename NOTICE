@@ -1,0 +1,42 @@
+jxl-c NOTICE
+============
+
+This repository is a single C library that combines JPEG XL decode and encode
+code from more than one upstream project. Treat file headers and the licenses
+listed below as authoritative for each source file.
+
+Decode pipeline (jxl-oxide port)
+--------------------------------
+Much of the decode path under `src/` (outside `src/encoder/`) and the matching
+public decode headers are a manual C port of jxl-oxide:
+
+  https://github.com/tirr-c/jxl-oxide
+
+Those files are dual-licensed under MIT and Apache 2.0. See:
+
+  LICENSE-MIT
+  LICENSE-APACHE
+
+Encoder / CMS (JPEG XL Project / libjxl)
+----------------------------------------
+The JPEG→JXL encoder, CMS helpers, and related public headers adapted from
+libjxl live primarily under `src/encoder/` and in public headers such as
+`include/jxl/encode.h`, `include/jxl/cms.h`, `include/jxl/cms_interface.h`,
+`include/jxl/color_encoding.h`, and `include/jxl/codestream_header.h`.
+
+Those files are BSD-licensed (JPEG XL Project Authors). See:
+
+  LICENSE-BSD
+  src/encoder/LICENSE-BSD   (same text, kept next to encoder sources)
+  src/encoder/PATENTS
+
+Simple lossless
+---------------
+`include/jxl/simple_lossless.h` and `src/encoder/simple_lossless.c` carry
+MIT OR Apache-2.0 SPDX markers and also note availability under the encoder
+BSD terms / patent grant where applicable. Prefer the SPDX marker on the file.
+
+Third-party dependencies
+------------------------
+Brotli, LCMS2, and other vendored or system dependencies keep their own
+licenses as shipped by those projects.

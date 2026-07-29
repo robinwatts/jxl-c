@@ -1,6 +1,6 @@
 # jxl-c Port Plan
 
-Manual port of the jxl-oxide decode pipeline to C, with Rust tests as the correctness oracle during development.
+Decode-focused port plan for the jxl-oxide → C work. The shipped library also includes JPEG→JXL encode and simple lossless encode under the same `jxl_context` / `include/jxl/` surface; see [README.md](README.md). Rust `jxl-oxide` fixtures remain the decode correctness oracle.
 
 ## Decisions (locked)
 
@@ -13,7 +13,7 @@ Manual port of the jxl-oxide decode pipeline to C, with Rust tests as the correc
 | **v1 scope** | **Still images + animation** (multi-keyframe render; animation timing getters; no progressive streaming API) |
 | Threading | Deferred (single-threaded v1) |
 | JBR (JPEG reconstruction) | **In v1** — `src/jbr/`; `JXL_C_ENABLE_JBR=ON` (CMake option to disable) |
-| **`jxl_context`** | Explicit create/destroy required; pluggable allocator; CMS on context — see [CONTEXT_PLAN.md](CONTEXT_PLAN.md) |
+| **`jxl_context`** | Explicit create/destroy required; pluggable allocator; CMS on context — see `include/jxl/context.h` / `src/context.h` |
 
 ### v1 scope
 
@@ -201,7 +201,7 @@ jxl_status_t jxl_decoder_try_init(jxl_decoder *dec);
 const jxl_image_header *jxl_decoder_header(const jxl_decoder *dec);
 
 jxl_status_t jxl_decoder_request_icc(jxl_decoder *dec, const uint8_t *icc, size_t len);
-jxl_status_t jxl_decoder_request_color_encoding(jxl_decoder *dec, jxl_colour_encoding enc);
+jxl_status_t jxl_decoder_request_color_encoding(jxl_decoder *dec, jxl_color_encoding enc);
 
 /* Renders keyframe 0 (still images and animation). */
 jxl_status_t jxl_decoder_render(jxl_context *ctx, jxl_decoder *dec, jxl_render **out);
@@ -618,4 +618,5 @@ Rust uses **`i16` modular storage by default** when `ImageMetadata.modular_16bit
 ## Next steps
 
 1. **Phase 9 — Hardening (in progress):** libFuzzer (`decode_fuzzer`), ASan/UBSan CI (`c-sanitizers.yml`), `bench_decode` tool
-2. **`jxl_context` plan:** complete — see [CONTEXT_PLAN.md](CONTEXT_PLAN.md)
+2. **`jxl_context` plan:** complete — see `include/jxl/context.h` / `src/context.h`
+3. **One-library cohesion:** public headers / status / thin context done; remaining: optional encoder tree flatten, further CMS peel docs

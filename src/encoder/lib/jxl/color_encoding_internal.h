@@ -1,12 +1,14 @@
 // Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// license that can be found in LICENSE-BSD.
 
 #ifndef LIB_JXL_COLOR_ENCODING_INTERNAL_H_
 #define LIB_JXL_COLOR_ENCODING_INTERNAL_H_
 
-// Metadata for color space conversions.
+// Encoder metadata color encoding: fields/visitor wrapper over
+// jxl_cms_color_encoding (storage_). Not the public jxl_color_encoding POD.
+// See color_encoding_cms.h for the three-layer map.
 
 #include <jxl/cms_interface.h>
 #include <jxl/color_encoding.h>
