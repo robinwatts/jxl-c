@@ -4,7 +4,7 @@
 #include "render/color/fastmath_internal.h"
 
 #include <immintrin.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 #include <string.h>
 
 #if defined(JXL_HAVE_SIMD_AVX2)

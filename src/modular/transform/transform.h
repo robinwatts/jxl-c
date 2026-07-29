@@ -10,7 +10,7 @@
 #include "modular/predictor.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct {
     uint32_t begin_c;

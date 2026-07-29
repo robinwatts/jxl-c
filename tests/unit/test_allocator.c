@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct {
     size_t alloc_calls;

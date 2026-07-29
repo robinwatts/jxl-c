@@ -7,7 +7,7 @@
 #include "jbr/header.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct jxl_jbr_data jxl_jbr_data;
 

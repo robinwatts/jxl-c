@@ -16,7 +16,7 @@
 #include "modular/param.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 #define JXL_JBR_CFL_FIXED_POINT_BITS 11
 #define JXL_JBR_CFL_DEFAULT_COLOR_FACTOR 84

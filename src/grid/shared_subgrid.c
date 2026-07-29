@@ -2,7 +2,7 @@
 #include "shared_subgrid.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 #include <assert.h>
 
 static uint32_t *ptr_wrapping(const uint32_t *base, size_t x, size_t y, size_t stride) {

@@ -11,7 +11,7 @@
 #include "jbr/output.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 jxl_jbr_status jxl_jbr_reconstruct(jxl_context *alloc, jxl_context *ctx,
                                    const jxl_jbr_data *jbrd, const jxl_frame *frame,

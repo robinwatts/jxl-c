@@ -12,7 +12,7 @@
 #include "modular/transformed_grid.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct {
     size_t dest_channel_idx;

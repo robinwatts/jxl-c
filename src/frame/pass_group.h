@@ -18,7 +18,7 @@
 #include "vardct/lf.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct {
     size_t block_left;

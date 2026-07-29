@@ -2,7 +2,7 @@
 #ifndef JXL_ALLOCATOR_INTERNAL_H_
 #define JXL_ALLOCATOR_INTERNAL_H_
 
-#include "jxl/allocator.h"
+#include "jxl/context.h"
 
 #include <stddef.h>
 #include <stdint.h>

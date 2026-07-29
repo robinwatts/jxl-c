@@ -7,7 +7,7 @@
 #include "bitstream/container/parser.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef enum {
     JXL_AUX_BOX_DECODING = 0,

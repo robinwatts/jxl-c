@@ -5,7 +5,7 @@
 #include "grid/aligned_grid.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct {
     const uint32_t *ptr;

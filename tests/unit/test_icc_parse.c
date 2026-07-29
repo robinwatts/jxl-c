@@ -3,7 +3,7 @@
 
 #include "image/icc_parse.h"
 #include "jxl/status.h"
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 #include <stdio.h>
 #include <stdlib.h>

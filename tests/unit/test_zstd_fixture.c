@@ -4,7 +4,7 @@
 /* Smoke test: read Rust decode golden (.buf.zst) via libzstd. */
 #include <zstd.h>
 
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

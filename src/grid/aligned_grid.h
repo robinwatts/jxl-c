@@ -6,7 +6,7 @@
 #include "grid/error.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 #define JXL_GRID_ALIGN 32
 

@@ -38,7 +38,7 @@ static jxl_context *test_library_ctx(void) {
 }
 
 #include <assert.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

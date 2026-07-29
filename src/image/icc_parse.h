@@ -3,7 +3,7 @@
 #define JXL_ICC_PARSE_H_
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 /* True when Rust ColorEncodingWithProfile::with_icc would parse to a well-known RGB enum
  * (XYB→linear→display transfer) instead of a raw ICC→ICC CMS transform. */

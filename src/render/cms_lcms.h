@@ -6,7 +6,7 @@
 #include "jxl/status.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 /* Linear sRGB (D65) float RGB [0,1] -> target ICC profile. */
 jxl_status_t jxl_cms_transform_linear_srgb_to_icc(jxl_context *alloc, float *r, float *g,

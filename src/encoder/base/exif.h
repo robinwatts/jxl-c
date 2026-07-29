@@ -9,8 +9,6 @@
 // Basic parsing of Exif (just enough for the render-impacting things
 // like orientation)
 
-#include <jxl/codestream_header.h>
-
 #include <stddef.h>
 #include <stdint.h>
 
@@ -18,6 +16,17 @@
 #include "base/compiler_specific.h"
 #include "base/span.h"
 
+/* Values 1..8 match the EXIF orientation definitions. */
+typedef enum {
+  JXL_ORIENT_IDENTITY = 1,
+  JXL_ORIENT_FLIP_HORIZONTAL = 2,
+  JXL_ORIENT_ROTATE_180 = 3,
+  JXL_ORIENT_FLIP_VERTICAL = 4,
+  JXL_ORIENT_TRANSPOSE = 5,
+  JXL_ORIENT_ROTATE_90_CW = 6,
+  JXL_ORIENT_ANTI_TRANSPOSE = 7,
+  JXL_ORIENT_ROTATE_90_CCW = 8,
+} jxl_orientation;
 
 static const uint16_t kExifOrientationTag = 274;
 

@@ -4,7 +4,6 @@
 // license that can be found in LICENSE-BSD.
 
 // Main codestream header bundles, the metadata that applies to all frames.
-// Enums must align with the C API definitions in codestream_header.h.
 
 #ifndef JXL_ENC_ENC_IMAGE_METADATA_H_
 #define JXL_ENC_ENC_IMAGE_METADATA_H_

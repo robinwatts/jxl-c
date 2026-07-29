@@ -3,7 +3,7 @@
 #define JXL_RENDER_COLOR_ENCODING_UTIL_H_
 
 #include "image/image_internal.h"
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 #include "jxl/status.h"
 

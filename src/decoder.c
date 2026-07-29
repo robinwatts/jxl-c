@@ -41,7 +41,7 @@ jxl_status_t jxl_decoder_init_from_input(jxl_context *alloc, const uint8_t *inpu
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 #include <string.h>
 
 static void crop_size_with_orientation(uint32_t orientation, uint32_t w, uint32_t h,

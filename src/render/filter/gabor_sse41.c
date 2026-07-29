@@ -2,7 +2,7 @@
 #include "compiler.h"
 #include "render/filter/gabor_sse41.h"
 
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 #if defined(JXL_HAVE_SIMD_SSE41)
 

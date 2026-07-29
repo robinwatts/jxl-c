@@ -6,7 +6,7 @@
 #include "render/subgrid_f32.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 jxl_inline size_t jxl_filter_mirror(int64_t offset, size_t len) {
     for (;;) {

@@ -9,7 +9,7 @@
 #include "allocator.h"
 
 #include <emmintrin.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 static int subgrid_simd_eligible(jxl_subgrid_f32 sg, size_t min_w, size_t min_h) {
     const uintptr_t ptr = (uintptr_t)sg.data;

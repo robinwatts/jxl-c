@@ -6,7 +6,7 @@
 #include "../error.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct jxl_brotli_decoder jxl_brotli_decoder;
 

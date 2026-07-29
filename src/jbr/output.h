@@ -6,7 +6,7 @@
 #include "jbr/error.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct {
     uint8_t *data;

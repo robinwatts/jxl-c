@@ -9,7 +9,7 @@
 #include "modular/group_subimage.h"
 #include "modular/region.h"
 
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 #include <stdio.h>
 #include <stdlib.h>
 

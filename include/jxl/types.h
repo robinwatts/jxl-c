@@ -2,7 +2,6 @@
 #ifndef JXL_TYPES_H_
 #define JXL_TYPES_H_
 
-#include <jxl/allocator.h>
 #include <jxl/color_encoding.h>
 
 #include <stddef.h>

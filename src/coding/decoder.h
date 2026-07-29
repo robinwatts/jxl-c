@@ -10,7 +10,7 @@
 #include <stddef.h>
 
 typedef struct jxl_context jxl_context;
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct jxl_coding_decoder jxl_coding_decoder;
 

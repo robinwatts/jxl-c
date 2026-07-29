@@ -22,7 +22,7 @@ Encoder / CMS (JPEG XL Project / libjxl)
 The JPEG→JXL encoder, CMS helpers, and related public headers adapted from
 libjxl live primarily under `src/encoder/` and in public headers such as
 `include/jxl/encode.h`, `include/jxl/cms.h`, `include/jxl/cms_interface.h`,
-`include/jxl/color_encoding.h`, and `include/jxl/codestream_header.h`.
+and `include/jxl/color_encoding.h`.
 
 Those files are BSD-licensed (JPEG XL Project Authors). See:
 

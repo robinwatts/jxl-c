@@ -3,7 +3,7 @@
 #define JXL_MODULAR_SAMPLE_H_
 
 #include "compiler.h"
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 #include "bitstream/unpack.h"
 

@@ -8,7 +8,7 @@
 #include "frame/frame_header.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef enum {
     JXL_TOC_KIND_ALL = 0,

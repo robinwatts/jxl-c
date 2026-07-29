@@ -7,7 +7,7 @@
 #include "jxl/status.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 jxl_status_t jxl_collect_codestream(jxl_context *alloc, const uint8_t *file_data,
                                     size_t file_len, uint8_t **out_data, size_t *out_len);

@@ -2,7 +2,7 @@
 #include "render/color/rec2408_internal.h"
 
 #include <immintrin.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 #if defined(JXL_HAVE_SIMD_AVX2)
 

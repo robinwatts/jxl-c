@@ -20,7 +20,7 @@
 
 #include <math.h>
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>

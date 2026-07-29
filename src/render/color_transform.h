@@ -5,7 +5,7 @@
 #include "image/image_internal.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct jxl_context jxl_context;
 

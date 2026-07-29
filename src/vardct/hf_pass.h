@@ -10,7 +10,7 @@
 #include "vardct/lf.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct jxl_context jxl_context;
 

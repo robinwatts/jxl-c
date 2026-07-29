@@ -7,7 +7,7 @@
 #include "frame/noise.h"
 #include "modular/region.h"
 
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 int jxl_render_noise(jxl_context *alloc, const jxl_frame_header *header,
                      uint32_t visible_frames, uint32_t invisible_frames, float corr_x, float corr_b,

@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 #include <string.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct {
     const uint8_t *bytes;

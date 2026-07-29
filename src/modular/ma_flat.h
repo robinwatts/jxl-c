@@ -7,7 +7,7 @@
 #include "modular/error.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct {
     uint8_t cluster;

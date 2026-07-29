@@ -2,7 +2,7 @@
 #include "render/color/color_transform_internal.h"
 #include "render/color/fastmath_neon_internal.h"
 
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 #include <string.h>
 
 #if defined(JXL_HAVE_SIMD_NEON)

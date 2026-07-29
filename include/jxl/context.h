@@ -2,7 +2,6 @@
 #ifndef JXL_CONTEXT_H_
 #define JXL_CONTEXT_H_
 
-#include <jxl/allocator.h>
 #include <jxl/status.h>
 
 #include <stddef.h>
@@ -12,6 +11,24 @@ extern "C" {
 #endif
 
 typedef struct jxl_context jxl_context;
+typedef struct jxl_cms jxl_cms;
+
+typedef void *(*jxl_alloc_fn)(void *user_data, size_t size);
+typedef void (*jxl_free_fn)(void *user_data, void *ptr);
+typedef void *(*jxl_calloc_fn)(void *user_data, size_t nmemb, size_t size);
+typedef void *(*jxl_realloc_fn)(void *user_data, void *ptr, size_t size);
+
+/*
+ * Pluggable heap for a jxl_context. Passed via jxl_context_options::alloc.
+ * alloc and free are required; calloc and realloc may be NULL (library defaults).
+ */
+typedef struct {
+    jxl_alloc_fn alloc;
+    jxl_free_fn free;
+    jxl_calloc_fn calloc;
+    jxl_realloc_fn realloc;
+    void *user_data;
+} jxl_allocator_t;
 
 /*
  * Library session: owns the allocator vtable, optional CMS backend, and

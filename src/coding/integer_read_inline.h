@@ -6,7 +6,7 @@
 #include "coding/cdecoder_private.h"
 #include "common/hybrid_uint.h"
 
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 #if defined(__GNUC__) || defined(__clang__)
 #define JXL_INTEGER_READ_INLINE static __attribute__((always_inline)) inline

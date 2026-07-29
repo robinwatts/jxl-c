@@ -5,7 +5,7 @@
 #include "compiler.h"
 #include "vardct/dct_select.h"
 
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef enum {
     JXL_BLOCK_INFO_UNINIT = 0,

@@ -5,7 +5,7 @@
  * Usage: gen_decode_oracles <decode-fixtures-dir> <oracle-output-dir>
  */
 #include "jxl/context.h"
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 #include "allocator.h"
 #include "bitstream/bitstream.h"

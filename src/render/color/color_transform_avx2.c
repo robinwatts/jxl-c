@@ -4,7 +4,7 @@
 
 #include <immintrin.h>
 #include <smmintrin.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 #include <string.h>
 
 #if defined(JXL_HAVE_SIMD_AVX2)

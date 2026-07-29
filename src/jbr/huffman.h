@@ -7,7 +7,7 @@
 #include "jbr/error.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct {
     int is_ac;

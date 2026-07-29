@@ -3,7 +3,7 @@
 
 #include "context.h"
 
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 #include <stdlib.h>
 #include <string.h>
 

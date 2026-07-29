@@ -3,7 +3,7 @@
 
 #include "modular/group_subimage.h"
 
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 #include <string.h>
 
 #define JXL_MODULAR_GRID_ALIGN 32

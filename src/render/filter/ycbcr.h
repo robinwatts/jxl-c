@@ -7,7 +7,7 @@
 #include "render/subgrid_f32.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct jxl_context jxl_context;
 

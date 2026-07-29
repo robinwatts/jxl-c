@@ -4,7 +4,7 @@
 #include "allocator.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 #include <string.h>
 
 #if defined(JXL_C_HAVE_LCMS2)

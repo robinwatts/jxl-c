@@ -2,7 +2,7 @@
 #include "deps_check.h"
 
 #include <brotli/decode.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 #if defined(JXL_C_HAVE_LCMS2)
 #include <lcms2.h>

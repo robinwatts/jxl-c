@@ -3,7 +3,7 @@
 #define JXL_CONFORMANCE_NPY_H_
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct {
     float *samples;

@@ -10,7 +10,7 @@
 #include "modular/predictor.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct jxl_ma_tree_node jxl_ma_tree_node;
 

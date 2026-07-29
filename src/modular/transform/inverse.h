@@ -11,7 +11,7 @@
 #include "modular/param.h"
 
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 /* Rust TransformedModularSubimage::finish — reverse transforms on a grid array. */
 jxl_modular_status_t jxl_modular_subimage_finish(jxl_context *ctx, jxl_context *alloc,

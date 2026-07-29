@@ -7,7 +7,7 @@
 #include "context.h"
 #include "bitstream/bitstream.h"
 #include "bitstream/error.h"
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 #include "render/features/upsampling.h"
 
 #include <stdlib.h>

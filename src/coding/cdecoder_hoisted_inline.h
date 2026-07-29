@@ -7,7 +7,7 @@
 #include "coding/cdecoder_private.h"
 #include "coding/integer_read_inline.h"
 
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 #define JXL_HOIST_READ_VARINT_LZ77(dec, bs, slot, cluster, dist_multiplier, out_token, on_err)   \
     do {                                                                                         \

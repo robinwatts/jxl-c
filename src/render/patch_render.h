@@ -12,7 +12,7 @@
 #include "allocator.h"
 #include "jxl/status.h"
 
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 typedef struct {
     int valid;

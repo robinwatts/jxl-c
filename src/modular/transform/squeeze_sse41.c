@@ -7,7 +7,7 @@
 #include <emmintrin.h>
 #include <string.h>
 #include <stddef.h>
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 #if defined(JXL_HAVE_SIMD_SSE41)
 jxl_inline __m128i tendency_i16_x86_64_sse41(__m128i a, __m128i b, __m128i c) {

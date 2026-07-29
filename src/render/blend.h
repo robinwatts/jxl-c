@@ -4,7 +4,7 @@
 
 #include "frame/frame_header.h"
 
-#include "jxl/decode_types.h"
+#include "jxl/types.h"
 
 float jxl_blend_clamp01(float v, int clamp);
 

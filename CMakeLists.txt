@@ -154,21 +154,18 @@ endif()
 
 set(JXL_C_PUBLIC_HEADERS
     include/jxl/jxl.h
-    include/jxl/allocator.h
     include/jxl/status.h
     include/jxl/color_encoding.h
     include/jxl/types.h
-    include/jxl/decode_types.h
+    include/jxl/types.h
     include/jxl/context.h
     include/jxl/decode.h
     include/jxl/encode.h
     include/jxl/simple_lossless.h
     include/jxl/cms_interface.h
     include/jxl/cms.h
-    include/jxl/codestream_header.h
     include/jxl/version.h
     include/jxl/jxl_export.h
-    include/jxl/jxl_cms_export.h
 )
 
 set(JXL_C_BITSTREAM_SOURCES
@@ -348,7 +345,7 @@ endif()
 if(JXL_C_ENABLE_JPEG_ENCODER)
     target_compile_definitions(jxl_c_obj
         PUBLIC JXL_C_ENABLE_JPEG_ENCODER=1
-        PRIVATE JXL_STATIC_DEFINE JXL_CMS_STATIC_DEFINE
+        PRIVATE JXL_STATIC_DEFINE
     )
 endif()
 target_compile_definitions(jxl_c_obj PRIVATE JXL_C_BUILDING)
