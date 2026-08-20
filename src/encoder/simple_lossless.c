@@ -24,8 +24,10 @@
 #define UINT32_MAX 0xffffffffU
 #endif
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
 #define JXL_SL_ALIGN64 __attribute__((aligned(64)))
+#elif defined(_MSC_VER)
+#define JXL_SL_ALIGN64 __declspec(align(64))
 #else
 #define JXL_SL_ALIGN64
 #endif
@@ -36,8 +38,6 @@
 #ifndef JXL_SL_MAX
 #define JXL_SL_MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
-
-#include <sys/types.h>
 
 typedef struct BitDepthInfo {
   size_t bitdepth;
@@ -164,11 +164,21 @@ static size_t bitdepth_num_symbols(const BitDepthInfo *bd, int doing_ycocg_or_la
 }
 
 #if defined(_MSC_VER) && !defined(__clang__)
+#include <intrin.h>
 #define FJXL_INLINE static __forceinline
 FJXL_INLINE uint32_t ctz_non_zero(uint64_t v) {
   unsigned long index;
-  _BitScanForward(&index, v);
-  return index;
+#if defined(_WIN64)
+  _BitScanForward64(&index, v);
+  return (uint32_t)index;
+#else
+  if ((uint32_t)v != 0) {
+    _BitScanForward(&index, (unsigned long)(uint32_t)v);
+    return (uint32_t)index;
+  }
+  _BitScanForward(&index, (unsigned long)(uint32_t)(v >> 32));
+  return (uint32_t)index + 32u;
+#endif
 }
 #else
 #define FJXL_INLINE static __attribute__((always_inline))
@@ -335,11 +345,11 @@ static void prefix_code_compute_canonical_code(const uint8_t *first_chunk_nbits,
 static void prefix_code_compute_code_lengths_nonzero_impl_u32(
     jxl_context *alloc, const uint64_t *freqs, size_t n, size_t precision, uint32_t infty,
     const uint8_t *min_limit, const uint8_t *max_limit, uint8_t *nbits) {
-  size_t table_size = ((1U << precision) + 1) * (n + 1);
+  size_t table_size = ((((size_t)1) << precision) + 1) * (n + 1);
   uint32_t *dynp = (uint32_t *)jxl_alloc(alloc, table_size * sizeof(uint32_t));
   size_t i, sym, off;
   for (i = 0; i < table_size; i++) dynp[i] = infty;
-#define D(sym, off) dynp[(sym) * ((1 << precision) + 1) + (off)]
+#define D(sym, off) dynp[(sym) * ((((size_t)1) << precision) + 1) + (off)]
   D(0, 0) = 0;
   for (sym = 0; sym < n; sym++) {
     uint32_t bits;
@@ -376,11 +386,11 @@ static void prefix_code_compute_code_lengths_nonzero_impl_u32(
 static void prefix_code_compute_code_lengths_nonzero_impl_u64(
     jxl_context *alloc, const uint64_t *freqs, size_t n, size_t precision, uint64_t infty,
     const uint8_t *min_limit, const uint8_t *max_limit, uint8_t *nbits) {
-  size_t table_size = ((1U << precision) + 1) * (n + 1);
+  size_t table_size = ((((size_t)1) << precision) + 1) * (n + 1);
   uint64_t *dynp = (uint64_t *)jxl_alloc(alloc, table_size * sizeof(uint64_t));
   size_t i, sym, off;
   for (i = 0; i < table_size; i++) dynp[i] = infty;
-#define D64(sym, off) dynp[(sym) * ((1 << precision) + 1) + (off)]
+#define D64(sym, off) dynp[(sym) * ((((size_t)1) << precision) + 1) + (off)]
   D64(0, 0) = 0;
   for (sym = 0; sym < n; sym++) {
     uint64_t bits;

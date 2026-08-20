@@ -8,7 +8,7 @@
 
 // Macros for compiler version + nonstandard keywords, e.g. __builtin_expect.
 
-#include <sys/types.h>  // IWYU pragma: export
+#include "limits-imp.h"  // ssize_t / SSIZE_MAX (POSIX + MSVC)
 #ifdef __clang_analyzer__
 #include <stdio.h>  // IWYU pragma: export
 #endif

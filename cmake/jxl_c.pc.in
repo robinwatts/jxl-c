@@ -8,5 +8,5 @@ Description: JPEG XL C library (decode, encode, CMS)
 Version: @PROJECT_VERSION@
 URL: https://github.com/tirr-c/jxl-c
 Requires: @JXL_C_PC_REQUIRES@
-Libs: -L${libdir} -ljxl_c -lm
+Libs: -L${libdir} @JXL_C_PC_LIBS@
 Cflags: -I${includedir}@JXL_C_PC_CFLAGS@

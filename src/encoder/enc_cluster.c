@@ -5,6 +5,7 @@
 
 #include "enc_cluster.h"
 
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -73,7 +74,7 @@ static float jxl_histogram_distance(const jxl_histogram* a, const jxl_array_i32*
   return distance - a->entropy - b->entropy;
 }
 
-static const float kInfinity = __builtin_inff();
+static const float kInfinity = (float)INFINITY;
 
 static float jxl_histogram_kl_divergence(const jxl_histogram* actual,
                             const jxl_array_i32* actual_counts,

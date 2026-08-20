@@ -10,6 +10,10 @@
 #include <stdlib.h>
 #include <string.h>  // memcpy
 
+#if defined(_MSC_VER)
+#include <intrin.h>
+#endif
+
 #include "base/common.h"
 #include "base/enc_status.h"
 #include "enc_allocator.h"
@@ -98,8 +102,12 @@ void jxl_aligned_memory_init(jxl_aligned_memory* self, jxl_context* ctx,
     jxl_allocator_state* state = jxl_context_alloc_state(ctx);
     group = (size_t)(state->next_align_group++);
   } else {
-    static uint32_t next_group = 0;
+    static volatile long next_group = 0;
+#if defined(_MSC_VER)
+    group = (size_t)(_InterlockedIncrement(&next_group) - 1);
+#else
     group = (size_t)(__atomic_fetch_add(&next_group, 1u, __ATOMIC_RELAXED));
+#endif
   }
   group &= (kMemoryNumAlignmentGroups - 1);
   size_t offset = kMemoryAlignment * group;
