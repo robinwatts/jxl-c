@@ -65,8 +65,8 @@ void jxl_enc_quantizer_init_with(jxl_enc_quantizer* self, const jxl_dequant_matr
 jxl_quantizer_params jxl_enc_quantizer_get_params(const jxl_enc_quantizer* self);
 
 static inline void jxl_enc_quantizer_recompute_from_global_scale(jxl_enc_quantizer* self) {
-  self->global_scale_float_ = self->global_scale_ * (1.0 / kGlobalScaleDenom);
-  self->inv_global_scale_ = 1.0 * kGlobalScaleDenom / self->global_scale_;
+  self->global_scale_float_ = self->global_scale_ * (1.0f / kGlobalScaleDenom);
+  self->inv_global_scale_ = 1.0f * kGlobalScaleDenom / self->global_scale_;
   self->inv_quant_dc_ = self->inv_global_scale_ / self->quant_dc_;
 }
 

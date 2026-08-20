@@ -87,9 +87,9 @@ static inline void jxl_mul3x3_matrix(const jxl_matrix3x3* a, const jxl_matrix3x3
                                   (double)(jxl_matrix3x3_at_const(b, 1)[x]),
                                   (double)(jxl_matrix3x3_at_const(b, 2)[x])};
     for (y = 0; y < 3; y++) {
-      jxl_matrix3x3_at(c, y)[x] = jxl_matrix3x3_at_const(a, y)[0] * temp[0] +
+      jxl_matrix3x3_at(c, y)[x] = (float)(jxl_matrix3x3_at_const(a, y)[0] * temp[0] +
                              jxl_matrix3x3_at_const(a, y)[1] * temp[1] +
-                             jxl_matrix3x3_at_const(a, y)[2] * temp[2];
+                             jxl_matrix3x3_at_const(a, y)[2] * temp[2]);
     }
   }
 }
@@ -104,7 +104,7 @@ static inline void jxl_mul3x3_vector(const jxl_matrix3x3* a, const jxl_vector3* 
     for (x = 0; x < 3; x++) {
       e += (double)(jxl_matrix3x3_at_const(a, y)[x]) * *jxl_vector3_at_const(b, x);
     }
-    *jxl_vector3_at(c, y) = e;
+    *jxl_vector3_at(c, y) = (float)e;
   }
 }
 
@@ -143,7 +143,7 @@ static inline jxl_enc_status jxl_inv3x3_matrix(jxl_matrix3x3* matrix) {
   idet = 1.0 / det;
   for (j = 0; j < 3; j++) {
     for (i = 0; i < 3; i++) {
-      jxl_matrix3x3_at(matrix, j)[i] = temp[j][i] * idet;
+      jxl_matrix3x3_at(matrix, j)[i] = (float)(temp[j][i] * idet);
     }
   }
   return jxl_enc_ok_status();

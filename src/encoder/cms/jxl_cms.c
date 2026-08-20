@@ -368,7 +368,7 @@ static jxl_enc_status jxl_detect_transfer_function(const cmsContext context, con
       const double estimated_gamma =
           cmsEstimateGamma(gray_trc, /*precision=*/1e-4);
       if (estimated_gamma > 0) {
-        gamma = 1. / estimated_gamma;
+        gamma = (float)(1.0 / estimated_gamma);
       }
     } else {
     float rgb_gamma[3];
@@ -384,7 +384,7 @@ static jxl_enc_status jxl_detect_transfer_function(const cmsContext context, con
         const double estimated_gamma =
             cmsEstimateGamma(trc, /*precision=*/1e-4);
         if (estimated_gamma > 0) {
-          rgb_gamma[i] = 1. / estimated_gamma;
+          rgb_gamma[i] = (float)(1.0 / estimated_gamma);
         }
       }
       ++i;

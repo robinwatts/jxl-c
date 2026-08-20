@@ -122,11 +122,11 @@ static inline jxl_enc_status jxl_cms_customxy_set_value(jxl_cms_customxy* self, 
   bool ok = (fabs(xy->x) < kCmsCustomxyRoughLimit) &&
             (fabs(xy->y) < kCmsCustomxyRoughLimit);
   if (!ok) return JXL_FAILURE("X or Y is out of bounds");
-  self->x = (int32_t)(roundf(xy->x * kCmsCustomxyMul));
+  self->x = (int32_t)(roundf((float)(xy->x * kCmsCustomxyMul)));
   if (self->x < kCmsCustomxyMin || self->x > kCmsCustomxyMax) {
     return JXL_FAILURE("X is out of bounds");
   }
-  self->y = (int32_t)(roundf(xy->y * kCmsCustomxyMul));
+  self->y = (int32_t)(roundf((float)(xy->y * kCmsCustomxyMul)));
   if (self->y < kCmsCustomxyMin || self->y > kCmsCustomxyMax) {
     return JXL_FAILURE("Y is out of bounds");
   }
@@ -261,7 +261,7 @@ static inline jxl_enc_status jxl_cms_custom_transfer_function_set_gamma(jxl_cms_
   // values because those curves also have a linear part.
 
   self->have_gamma = true;
-  self->gamma = roundf(new_gamma * kCmsCustomTransferFunctionGammaMul);
+  self->gamma = (uint32_t)roundf((float)(new_gamma * kCmsCustomTransferFunctionGammaMul));
   self->transfer_function = kTFUnknown;
   return jxl_enc_ok_status();
 }

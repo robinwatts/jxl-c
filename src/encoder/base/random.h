@@ -58,7 +58,7 @@ static inline float jxl_rng_uniform_f(jxl_rng* self, float begin, float end) {
 }
 
 static inline jxl_rng_geometric_distribution jxl_rng_make_geometric(float p) {
-  return 1.0 / log(1 - p);
+  return 1.0f / logf(1.0f - p);
 }
 
 static inline uint32_t jxl_rng_geometric(jxl_rng* self, jxl_rng_geometric_distribution dist) {

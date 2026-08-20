@@ -232,7 +232,7 @@ static jxl_enc_status jxl_learn_tree_from_samples(jxl_tree_samples *tree_samples
     return jxl_enc_ok_status();
   }
   float pixel_fraction = jxl_tree_samples_num_samples(tree_samples) * 1.0f / total_pixels;
-  float required_cost = pixel_fraction * 0.9 + 0.1;
+  float required_cost = pixel_fraction * 0.9f + 0.1f;
   jxl_tree_samples_all_samples_done(tree_samples);
   jxl_enc_status status = jxl_compute_best_tree(
       tree_samples, options->splitting_heuristics_node_threshold * required_cost,

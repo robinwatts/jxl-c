@@ -453,10 +453,10 @@ jxl_array_clear(&prop_value_used_count);
             // favour Zero (faster if it's the only predictor used in a
             // group+channel combination)
             if (jxl_tree_samples_predictor_from_index(tree_samples, pred) == kPredictorWeighted) {
-              penalty += 1e-8;
+              penalty += 1e-8f;
             }
             if (jxl_tree_samples_predictor_from_index(tree_samples, pred) == kPredictorZero) {
-              penalty -= 1e-8;
+              penalty -= 1e-8f;
             }
             if (rcost + penalty < jxl_ma_cost_info_cost(jxl_array_at(&costs_r, i - first_used))) {
               jxl_array_at(&costs_r, i - first_used)->cost = rcost;
@@ -1158,7 +1158,7 @@ void jxl_collect_pixel_samples(const jxl_image *image, const jxl_modular_options
   }
   jxl_rng rng = jxl_rng_make(group_id);
   // Sample 10% of the final number of samples for property quantization.
-  float fraction = JXL_MIN(options->nb_repeats * 0.1, 0.99);
+  float fraction = JXL_MIN(options->nb_repeats * 0.1f, 0.99f);
   jxl_rng_geometric_distribution dist = jxl_rng_make_geometric(fraction);
   size_t total_pixels = 0;
   jxl_array_size channel_ids;

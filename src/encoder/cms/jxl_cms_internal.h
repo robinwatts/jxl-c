@@ -143,17 +143,17 @@ static void jxl_create_table_curve(size_t n, jxl_extra_tf tf, jxl_array_u16* tab
     // Clamp to table range - necessary for HLG.
     y = jxl_clamp1_d(y, 0.0, 1.0);
     // 1.0 corresponds to table value 0xFFFF.
-    *jxl_array_at(table, i) = (uint16_t)(roundf(y * 65535.0));
+    *jxl_array_at(table, i) = (uint16_t)(round(y * 65535.0));
   }
 }
 
 static jxl_enc_status jxl_ciexyz_from_white_ci_exy(double wx, double wy, jxl_color* XYZ) {
   // Target Y = 1.
   if (fabs(wy) < 1e-12) return JXL_FAILURE("Y value is too small");
-  const float factor = 1 / wy;
-  *jxl_color_at(XYZ, 0) = wx * factor;
-  *jxl_color_at(XYZ, 1) = 1;
-  *jxl_color_at(XYZ, 2) = (1 - wx - wy) * factor;
+  const float factor = (float)(1.0 / wy);
+  *jxl_color_at(XYZ, 0) = (float)(wx * (double)factor);
+  *jxl_color_at(XYZ, 1) = 1.0f;
+  *jxl_color_at(XYZ, 2) = (float)((1.0 - wx - wy) * (double)factor);
   return jxl_enc_ok_status();
 }
 
@@ -265,7 +265,7 @@ static jxl_enc_status jxl_create_icc_chad_matrix(double wx, double wy, jxl_matri
   if (wy == 0) {  // jxl_white_point can not be pitch-black.
     return JXL_FAILURE("Invalid jxl_white_point");
   }
-  JXL_RETURN_IF_ERROR(jxl_adapt_to_xyzd50(wx, wy, &m));
+  JXL_RETURN_IF_ERROR(jxl_adapt_to_xyzd50((float)wx, (float)wy, &m));
   *result = m;
   return jxl_enc_ok_status();
 }
@@ -275,7 +275,8 @@ static jxl_enc_status jxl_create_iccrgb_matrix(double rx, double ry, double gx, 
                                  double bx, double by, double wx, double wy,
                                  jxl_matrix3x3* result) {
   jxl_matrix3x3 m;
-  JXL_RETURN_IF_ERROR(jxl_primaries_to_xyzd50(rx, ry, gx, gy, bx, by, wx, wy, &m));
+  JXL_RETURN_IF_ERROR(jxl_primaries_to_xyzd50((float)rx, (float)ry, (float)gx, (float)gy,
+                                              (float)bx, (float)by, (float)wx, (float)wy, &m));
   *result = m;
   return jxl_enc_ok_status();
 }
@@ -873,7 +874,7 @@ static jxl_enc_status jxl_maybe_create_profile_impl(const jxl_color_encoding* c,
   }
 
   if (tf == JXL_TRANSFER_FUNCTION_GAMMA) {
-    float gamma = 1.0 / c->gamma;
+    float gamma = 1.0f / (float)c->gamma;
     const float gamma_params[] = {gamma};
     status = jxl_create_icc_curv_para_tag(gamma_params, 1, 0, &tags);
     if (!jxl_enc_status_ok(status)) goto done;

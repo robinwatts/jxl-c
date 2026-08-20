@@ -38,12 +38,12 @@ static inline double TF_HLG_BaseInvOETF(double e) {
   const double original_sign = e;
   e = fabs(e);
 
-  if (e <= 0.5) return copysignf(e * e * (1.0 / 3), original_sign);
+  if (e <= 0.5) return copysign(e * e * (1.0 / 3.0), original_sign);
 
   const double s =
       (exp((e - kTFHlgC) * kTFHlgRA) + kTFHlgB) * kTFHlgInv12;
   JXL_DASSERT(s >= 0);
-  return copysignf(s, original_sign);
+  return copysign(s, original_sign);
 }
 
 // EOTF. e = encoded. (OOTF is identity at the HLG system gamma we use.)
@@ -71,7 +71,7 @@ static inline double TF_PQ_BaseDisplayFromEncoded(float display_intensity_target
   JXL_DASSERT(den != 0.0);
   const double d = pow(num / den, 1.0 / kTFPQM1);
   JXL_DASSERT(d >= 0.0);  // Equal for e ~= 1E-9
-  return copysignf(d * (10000.0f / display_intensity_target), original_sign);
+  return copysign(d * (10000.0 / display_intensity_target), original_sign);
 }
 
 #endif  // JXL_ENC_CMS_TRANSFER_FUNCTIONS_H_
