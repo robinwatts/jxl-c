@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "compiler.h"
 #include "base/compiler_specific.h"
 #include "base/enc_status.h"
 #include "cms/color_encoding_cms.h"
@@ -87,7 +88,7 @@ typedef struct jxl_customxy {
 jxl_enc_status jxl_customxy_visit_fields(jxl_customxy* self, jxl_visitor* JXL_RESTRICT visitor);
 JXL_FIELDS_NAME(jxl_customxy)
 
-static inline void jxl_customxy_init(jxl_customxy* self) {
+jxl_inline void jxl_customxy_init(jxl_customxy* self) {
   JXL_FIELDS_REGISTER_PTR(jxl_customxy, &self->fields);
   jxl_bundle_init(&self->fields);
 }

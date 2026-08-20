@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "compiler.h"
 #include "base/compiler_specific.h"
 #include "base/enc_status.h"
 
@@ -24,11 +25,11 @@ typedef struct jxl_fields jxl_fields;
 // before jxl_bundle_init.
 #if (JXL_IS_DEBUG_BUILD)
 #define JXL_FIELDS_NAME(Type)                                                 \
-  static inline jxl_enc_status Type##_visit_fields_thunk(                         \
+  jxl_inline jxl_enc_status Type##_visit_fields_thunk(                 \
       jxl_fields* self, jxl_visitor* JXL_RESTRICT visitor) {                  \
     return Type##_visit_fields((Type*)(self), visitor);                       \
   }                                                                           \
-  static inline const char* Type##_name_thunk(const jxl_fields*) {            \
+  jxl_inline const char* Type##_name_thunk(const jxl_fields*dummy) {   \
     return #Type;                                                             \
   }
 #define JXL_FIELDS_REGISTER(Type)                                             \
@@ -63,7 +64,7 @@ typedef struct jxl_fields jxl_fields;
 // type. Call jxl_fields_construct_empty before Register if the member is not
 // otherwise zeroed.
 typedef struct jxl_fields {
-  jxl_enc_status (*visit_fields_fn)(jxl_fields*, jxl_visitor*);
+  jxl_enc_status (*visit_fields_fn)(jxl_fields*, jxl_visitor*JXL_RESTRICT);
 #if (JXL_IS_DEBUG_BUILD)
   const char* (*name_fn)(const jxl_fields*);
 #endif  // JXL_IS_DEBUG_BUILD

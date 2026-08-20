@@ -14,7 +14,7 @@
 #include "common/hybrid_uint.h"
 
 #include <assert.h>
-#include <limits.h>
+#include "limits-imp.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -344,8 +344,8 @@ static void prefix_code_compute_code_lengths_nonzero_impl_u32(
   for (sym = 0; sym < n; sym++) {
     uint32_t bits;
     for (bits = min_limit[sym]; bits <= max_limit[sym]; bits++) {
-      size_t off_delta = 1U << (precision - bits);
-      for (off = 0; off + off_delta <= (1U << precision); off++) {
+      size_t off_delta = ((size_t)1) << (precision - bits);
+      for (off = 0; off + off_delta <= (((size_t)1) << precision); off++) {
         uint32_t candidate = D(sym, off) + (uint32_t)(freqs[sym] * bits);
         if (candidate < D(sym + 1, off + off_delta)) {
           D(sym + 1, off + off_delta) = candidate;
@@ -354,13 +354,13 @@ static void prefix_code_compute_code_lengths_nonzero_impl_u32(
     }
   }
   sym = n;
-  off = 1U << precision;
+  off = ((size_t)1) << precision;
   assert(D(sym, off) != infty);
   while (sym-- > 0) {
     uint32_t bits;
     assert(off > 0);
     for (bits = min_limit[sym]; bits <= max_limit[sym]; bits++) {
-      size_t off_delta = 1U << (precision - bits);
+      size_t off_delta = ((size_t)1) << (precision - bits);
       if (off_delta <= off &&
           D(sym + 1, off) == D(sym, off - off_delta) + (uint32_t)(freqs[sym] * bits)) {
         off -= off_delta;
@@ -385,8 +385,8 @@ static void prefix_code_compute_code_lengths_nonzero_impl_u64(
   for (sym = 0; sym < n; sym++) {
     uint64_t bits;
     for (bits = min_limit[sym]; bits <= max_limit[sym]; bits++) {
-      size_t off_delta = 1U << (precision - bits);
-      for (off = 0; off + off_delta <= (1U << precision); off++) {
+      size_t off_delta = ((size_t)1) << (precision - bits);
+      for (off = 0; off + off_delta <= (((size_t)1) << precision); off++) {
         uint64_t candidate = D64(sym, off) + freqs[sym] * bits;
         if (candidate < D64(sym + 1, off + off_delta)) {
           D64(sym + 1, off + off_delta) = candidate;
@@ -395,13 +395,13 @@ static void prefix_code_compute_code_lengths_nonzero_impl_u64(
     }
   }
   sym = n;
-  off = 1U << precision;
+  off = ((size_t)1) << precision;
   assert(D64(sym, off) != infty);
   while (sym-- > 0) {
     uint64_t bits;
     assert(off > 0);
     for (bits = min_limit[sym]; bits <= max_limit[sym]; bits++) {
-      size_t off_delta = 1U << (precision - bits);
+      size_t off_delta = ((size_t)1) << (precision - bits);
       if (off_delta <= off &&
           D64(sym + 1, off) == D64(sym, off - off_delta) + freqs[sym] * bits) {
         off -= off_delta;

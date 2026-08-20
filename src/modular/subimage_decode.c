@@ -12,7 +12,7 @@
 #include "modular/util.h"
 
 #include "allocator.h"
-#include <limits.h>
+#include "limits-imp.h"
 #include <stdio.h>
 #include <string.h>
 

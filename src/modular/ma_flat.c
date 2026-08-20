@@ -5,7 +5,7 @@
 #include "modular/predictor_state.h"
 
 #include "allocator.h"
-#include <limits.h>
+#include "limits-imp.h"
 #include <stdio.h>
 #include <string.h>
 

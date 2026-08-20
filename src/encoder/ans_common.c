@@ -46,7 +46,7 @@ jxl_enc_status jxl_init_alias_table_body(const int32_t* counts, size_t counts_si
   JXL_RETURN_IF_ERROR(jxl_array_append(distribution, counts, counts_size));
 
   const uint32_t range = 1 << log_range;
-  const size_t table_size = 1 << log_alpha_size;
+  const size_t table_size = ((size_t)1) << log_alpha_size;
   JXL_ENSURE(table_size <= range);
   while (!jxl_array_empty(distribution) && jxl_array_back(distribution) == 0) {
     jxl_array_pop_back(distribution);

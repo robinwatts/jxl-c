@@ -89,7 +89,7 @@ static JXL_NOINLINE bool jxl_debug(const char* format, ...) {
 
 #if JXL_IS_DEBUG_BUILD
 // Exits the program after printing a stack trace when possible.
-JXL_NORETURN static JXL_NOINLINE bool jxl_abort() {
+JXL_NORETURN static JXL_NOINLINE void jxl_abort() {
   JXL_PRINT_STACK_TRACE();
   JXL_CRASH();
 }

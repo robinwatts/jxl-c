@@ -29,25 +29,25 @@ static jxl_enc_status jxl_write_visitor_ok(const jxl_write_visitor* self) {
   return jxl_enc_status_from_bool(self->ok);
 }
 
-static jxl_enc_status jxl_write_bits(jxl_visitor* self, size_t bits, uint32_t /*default_value*/,
+static jxl_enc_status jxl_write_bits(jxl_visitor* self, size_t bits, uint32_t default_value,
                  uint32_t* JXL_RESTRICT value) {
   jxl_write_visitor* v = (jxl_write_visitor*)(self);
   v->ok = v->ok && jxl_enc_status_ok(jxl_bits_coder_write(bits, *value, v->writer));
   return jxl_enc_ok_status();
 }
-static jxl_enc_status jxl_write_u32(jxl_visitor* self, jxl_u32_enc enc, uint32_t /*default_value*/,
+static jxl_enc_status jxl_write_u32(jxl_visitor* self, jxl_u32_enc enc, uint32_t default_value,
                 uint32_t* JXL_RESTRICT value) {
   jxl_write_visitor* v = (jxl_write_visitor*)(self);
   v->ok = v->ok && jxl_enc_status_ok(jxl_u32_coder_write(enc, *value, v->writer));
   return jxl_enc_ok_status();
 }
-static jxl_enc_status jxl_write_u64(jxl_visitor* self, uint64_t /*default_value*/,
+static jxl_enc_status jxl_write_u64(jxl_visitor* self, uint64_t default_value,
                 uint64_t* JXL_RESTRICT value) {
   jxl_write_visitor* v = (jxl_write_visitor*)(self);
   v->ok = v->ok && jxl_enc_status_ok(jxl_u64_coder_write(*value, v->writer));
   return jxl_enc_ok_status();
 }
-static jxl_enc_status jxl_write_f16(jxl_visitor* self, float /*default_value*/,
+static jxl_enc_status jxl_write_f16(jxl_visitor* self, float default_value,
                 float* JXL_RESTRICT value) {
   jxl_write_visitor* v = (jxl_write_visitor*)(self);
   v->ok = v->ok && jxl_enc_status_ok(jxl_f16_coder_write(*value, v->writer));

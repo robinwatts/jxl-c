@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS // Shut up, MSVC
+#endif
 
 #include "context.h"
 
 #include "context_caches.h"
 
-#include <limits.h>
+#include "limits-imp.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

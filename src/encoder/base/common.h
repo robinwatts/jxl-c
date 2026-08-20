@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 
 #include <float.h>
-#include <limits.h>
+#include "limits-imp.h"
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>

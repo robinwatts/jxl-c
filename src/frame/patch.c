@@ -4,7 +4,7 @@
 #include "bitstream/unpack.h"
 #include "frame/util.h"
 
-#include <limits.h>
+#include "limits-imp.h"
 #include <stdlib.h>
 #include <string.h>
 

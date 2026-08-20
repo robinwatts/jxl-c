@@ -183,10 +183,10 @@ jxl_enc_status jxl_jpeg_data_visit_fields(jxl_jpeg_data* self, jxl_visitor* visi
       return JXL_FAILURE("Invalid quant table for component %" jxl_pr_iu_s ": %u\n",
                          i, jxl_array_at(&self->components, i)->quant_idx);
     }
-    used_tables |= 1U << jxl_array_at(&self->components, i)->quant_idx;
+    used_tables |= ((size_t)1) << jxl_array_at(&self->components, i)->quant_idx;
   }
   for (size_t i = 0; i < jxl_array_len(&self->quant); i++) {
-    if (used_tables & (1 << i)) continue;
+    if (used_tables & (((size_t)1) << i)) continue;
     if (i == 0) return JXL_FAILURE("First quant table unused.");
     // Unused self->quant table has to be set to copy of previous self->quant table
     for (size_t j = 0; j < 64; j++) {

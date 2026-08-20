@@ -6,7 +6,7 @@
 #include "modular/sample.h"
 #include "modular/util.h"
 
-#include <limits.h>
+#include "limits-imp.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

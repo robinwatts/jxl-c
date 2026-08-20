@@ -1127,7 +1127,7 @@ jxl_enc_status jxl_entropy_encoding_data_choose_uint_configs_scratch(
 
   // log_alpha_size - 5 is encoded in the header, so min is 5.
   size_t log_size = 5;
-  while (max_tok >= (1u << log_size)) ++log_size;
+  while (max_tok >= (((size_t)1) << log_size)) ++log_size;
 
   size_t max_log_alpha_size = self->use_prefix_code ? PREFIX_MAX_BITS : 8;
   JXL_ENSURE(log_size <= max_log_alpha_size);

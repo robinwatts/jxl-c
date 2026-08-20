@@ -604,8 +604,8 @@ static inline jxl_frame_dimensions jxl_enc_frame_header_to_frame_dimensions(
   ysize = self->frame_size.ysize ? self->frame_size.ysize : ysize;
 
   if (self->dc_level != 0) {
-    xsize = jxl_div_ceil(xsize, 1 << (3 * self->dc_level));
-    ysize = jxl_div_ceil(ysize, 1 << (3 * self->dc_level));
+    xsize = jxl_div_ceil(xsize, ((size_t)1) << (3 * self->dc_level));
+    ysize = jxl_div_ceil(ysize, ((size_t)1) << (3 * self->dc_level));
   }
 
   jxl_frame_dimensions frame_dim;

@@ -20,7 +20,7 @@
 #include "render/vardct/frame_render.h"
 #include "vardct/lf.h"
 
-#include <limits.h>
+#include "limits-imp.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
