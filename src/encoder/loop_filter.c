@@ -26,25 +26,25 @@ jxl_enc_status jxl_loop_filter_visit_fields(jxl_loop_filter* self, jxl_visitor* 
     JXL_QUIET_RETURN_IF_ERROR(jxl_visitor_bool(visitor, false, &self->gab_custom));
     if (jxl_enc_status_ok(jxl_visitor_conditional(visitor, self->gab_custom))) {
       JXL_QUIET_RETURN_IF_ERROR(
-          jxl_visitor_f16(visitor, 1.1 * 0.104699568f, &self->gab_x_weight1));
+          jxl_visitor_f16(visitor, 1.1f * 0.104699568f, &self->gab_x_weight1));
       JXL_QUIET_RETURN_IF_ERROR(
-          jxl_visitor_f16(visitor, 1.1 * 0.055680538f, &self->gab_x_weight2));
+          jxl_visitor_f16(visitor, 1.1f * 0.055680538f, &self->gab_x_weight2));
       if (fabs(1.0f + (self->gab_x_weight1 + self->gab_x_weight2) * 4) < 1e-8) {
         return JXL_FAILURE(
             "Gaborish x weights lead to near 0 unnormalized kernel");
       }
       JXL_QUIET_RETURN_IF_ERROR(
-          jxl_visitor_f16(visitor, 1.1 * 0.104699568f, &self->gab_y_weight1));
+          jxl_visitor_f16(visitor, 1.1f * 0.104699568f, &self->gab_y_weight1));
       JXL_QUIET_RETURN_IF_ERROR(
-          jxl_visitor_f16(visitor, 1.1 * 0.055680538f, &self->gab_y_weight2));
+          jxl_visitor_f16(visitor, 1.1f * 0.055680538f, &self->gab_y_weight2));
       if (fabs(1.0f + (self->gab_y_weight1 + self->gab_y_weight2) * 4) < 1e-8) {
         return JXL_FAILURE(
             "Gaborish y weights lead to near 0 unnormalized kernel");
       }
       JXL_QUIET_RETURN_IF_ERROR(
-          jxl_visitor_f16(visitor, 1.1 * 0.104699568f, &self->gab_b_weight1));
+          jxl_visitor_f16(visitor, 1.1f * 0.104699568f, &self->gab_b_weight1));
       JXL_QUIET_RETURN_IF_ERROR(
-          jxl_visitor_f16(visitor, 1.1 * 0.055680538f, &self->gab_b_weight2));
+          jxl_visitor_f16(visitor, 1.1f * 0.055680538f, &self->gab_b_weight2));
       if (fabs(1.0f + (self->gab_b_weight1 + self->gab_b_weight2) * 4) < 1e-8) {
         return JXL_FAILURE(
             "Gaborish b weights lead to near 0 unnormalized kernel");
