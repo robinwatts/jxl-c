@@ -47,7 +47,7 @@ static int load_file(const char *path, uint8_t **out, size_t *out_len) {
 static void test_fixture(const char *name) {
     char path[512];
     size_t file_len;
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     size_t cs_len;
     jxl_bs bs;
     jxl_parsed_image_header parsed;
@@ -60,10 +60,10 @@ static void test_fixture(const char *name) {
         assert(0);
     }
 
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
     uint8_t *cs = NULL;
     cs_len = 0;
-    if (jxl_collect_codestream(&alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
+    if (jxl_collect_codestream(alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
         assert(0);
     }
     free(file);
@@ -78,7 +78,7 @@ static void test_fixture(const char *name) {
         assert(0);
     }
 
-    jxl_bs_status_t st = jxl_image_skip_post_header(&alloc, &bs, &parsed);
+    jxl_bs_status_t st = jxl_image_skip_post_header(alloc, &bs, &parsed);
     if (st != JXL_BS_OK) {
         fprintf(stderr, "%s: skip_post_header failed st=%d bits=%zu\n", name, (int)st,
                 bs.num_read_bits);
@@ -89,13 +89,13 @@ static void test_fixture(const char *name) {
     }
 
     printf("%s: icc skip ok bits=%zu\n", name, bs.num_read_bits);
-    jxl_free_state(&alloc, cs);
+    jxl_free(alloc, cs);
 }
 
 static void test_ec_bit_depth(const char *name) {
     char path[512];
     size_t file_len;
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     size_t cs_len;
     jxl_bs bs;
     jxl_parsed_image_header parsed;
@@ -107,10 +107,10 @@ static void test_ec_bit_depth(const char *name) {
         assert(0);
     }
 
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
     uint8_t *cs = NULL;
     cs_len = 0;
-    if (jxl_collect_codestream(&alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
+    if (jxl_collect_codestream(alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
         assert(0);
     }
     free(file);
@@ -120,14 +120,14 @@ static void test_ec_bit_depth(const char *name) {
     if (jxl_image_header_parse(&bs, &parsed) != JXL_BS_OK) {
         assert(0);
     }
-    if (jxl_image_decode_post_header(&alloc, &bs, &parsed) != JXL_BS_OK) {
+    if (jxl_image_decode_post_header(alloc, &bs, &parsed) != JXL_BS_OK) {
         assert(0);
     }
     printf("%s: image_bd=%u ec_count=%u ec0_bd=%u icc=%zu\n", name, parsed.bit_depth_bits,
            parsed.ec_bit_depth_count,
            parsed.ec_bit_depth_count > 0 ? parsed.ec_bit_depth[0] : 0, parsed.embedded_icc_len);
-    jxl_parsed_image_header_free_embedded_icc(&alloc, &parsed);
-    jxl_free_state(&alloc, cs);
+    jxl_parsed_image_header_free_embedded_icc(alloc, &parsed);
+    jxl_free(alloc, cs);
 }
 
 int main(void) {

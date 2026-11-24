@@ -6,6 +6,7 @@
 #include <string.h>
 
 #ifdef JXL_HAVE_ZSTD
+#define ZSTD_STATIC_LINKING_ONLY
 #include <zstd.h>
 #endif
 

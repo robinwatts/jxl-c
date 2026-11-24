@@ -34,13 +34,15 @@ static void test_epf_force_scalar(int on) {
 #endif
 
 static jxl_context *test_alloc_state(void) {
-    static jxl_allocator_state alloc;
-    static int init = 0;
+    static jxl_context *ctx;
+    static int init;
     if (!init) {
-        jxl_allocator_init(&alloc, NULL);
+        if (jxl_context_create(NULL, &ctx) != JXL_OK) {
+            return NULL;
+        }
         init = 1;
     }
-    return &alloc;
+    return ctx;
 }
 
 static void fill_channels(float *ch[3], size_t w, size_t h, unsigned seed) {

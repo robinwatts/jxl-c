@@ -42,7 +42,8 @@ static void *counting_realloc(void *user_data, void *ptr, size_t size) {
 }
 
 static void test_lcms_routes_through_custom_allocator(void) {
-    jxl_allocator_state state;
+    jxl_context *ctx = NULL;
+    jxl_context_options opts;
     float r;
     float g;
     float b;
@@ -54,19 +55,21 @@ static void test_lcms_routes_through_custom_allocator(void) {
     vtable.realloc = counting_realloc;
     vtable.user_data = &counts;
 
-
-    jxl_allocator_init(&state, &vtable);
+    opts.alloc = vtable;
+    opts.cms = NULL;
+    assert(jxl_context_create(&opts, &ctx) == JXL_OK);
 
     r = 0.25f;
     g = 0.5f;
     b = 0.75f;
 
     jxl_status_t status = jxl_cms_transform_linear_srgb_to_icc(
-        &state, &r, &g, &b, 1, k_jxl_linear_srgb_icc, sizeof(k_jxl_linear_srgb_icc));
+        ctx, &r, &g, &b, 1, k_jxl_linear_srgb_icc, sizeof(k_jxl_linear_srgb_icc));
     assert(status == JXL_OK);
 
     assert(counts.alloc_calls + counts.calloc_calls > 0);
     assert(counts.free_calls > 0);
+    jxl_context_destroy(ctx);
 }
 #endif
 

@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 int main(void) {
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     size_t cs_len;
     jxl_bs bs;
     uint32_t sig;
@@ -23,10 +23,10 @@ int main(void) {
     assert(fread(file, 1, (size_t)n, f) == (size_t)n);
     fclose(f);
 
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
     uint8_t *cs = NULL;
     cs_len = 0;
-    JXL_TEST_ASSERT_EQ(jxl_collect_codestream(&alloc, file, (size_t)n, &cs, &cs_len), JXL_OK);
+    JXL_TEST_ASSERT_EQ(jxl_collect_codestream(alloc, file, (size_t)n, &cs, &cs_len), JXL_OK);
     free(file);
 
     jxl_bs_init(&bs, cs, cs_len);

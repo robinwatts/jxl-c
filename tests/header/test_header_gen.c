@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#include <assert.h>
 #include "test_paths.h"
 
 #include "bitstream/bitstream.h"
@@ -52,7 +53,7 @@ static int read_file(const char *path, uint8_t **out, size_t *out_len) {
 static int process_one(const char *name, const char *update_path) {
     char path[1024];
     size_t file_len;
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     size_t cs_len;
     jxl_bs bs;
     jxl_parsed_image_header parsed;
@@ -64,10 +65,10 @@ static int process_one(const char *name, const char *update_path) {
         return -1;
     }
 
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
     uint8_t *cs = NULL;
     cs_len = 0;
-    if (jxl_collect_codestream(&alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
+    if (jxl_collect_codestream(alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
         free(file);
         return -1;
     }
@@ -75,7 +76,7 @@ static int process_one(const char *name, const char *update_path) {
 
     jxl_bs_init(&bs, cs, cs_len);
     jxl_bs_status_t st = jxl_image_header_parse(&bs, &parsed);
-    jxl_free_state(&alloc, cs);
+    jxl_free(alloc, cs);
     if (st != JXL_BS_OK) {
         fprintf(stderr, "%s: parse failed\n", name);
         return -1;

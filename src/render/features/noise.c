@@ -526,16 +526,18 @@ int jxl_render_noise(jxl_context *alloc, const jxl_frame_header *header,
 uint64_t jxl_noise_planes_ch0_checksum(const jxl_frame_header *header, uint32_t visible_frames,
                                        uint32_t invisible_frames) {
                                            size_t i;
-    jxl_allocator_state alloc;
+    jxl_context *ctx = NULL;
     uint64_t h;
-    jxl_allocator_init(&alloc, NULL);
 
     float *noise_x = NULL;
     float *noise_y = NULL;
     float *noise_b = NULL;
-    if (header == NULL ||
-        !init_noise_planes(&alloc, header, visible_frames, invisible_frames, &noise_x, &noise_y,
+    if (header == NULL || jxl_context_create(NULL, &ctx) != JXL_OK) {
+        return 0;
+    }
+    if (!init_noise_planes(ctx, header, visible_frames, invisible_frames, &noise_x, &noise_y,
                            &noise_b)) {
+        jxl_context_destroy(ctx);
         return 0;
     }
     size_t pixels = (size_t)header->width * (size_t)header->height;
@@ -545,9 +547,10 @@ uint64_t jxl_noise_planes_ch0_checksum(const jxl_frame_header *header, uint32_t 
         memcpy(&bits, &noise_x[i], sizeof(bits));
         h = h * (uint64_t)31 + ((uint64_t)bits ^ (uint64_t)i);
     }
-    jxl_free_state(&alloc, noise_x);
-    jxl_free_state(&alloc, noise_y);
-    jxl_free_state(&alloc, noise_b);
+    jxl_free(ctx, noise_x);
+    jxl_free(ctx, noise_y);
+    jxl_free(ctx, noise_b);
+    jxl_context_destroy(ctx);
     return h;
 }
 #endif

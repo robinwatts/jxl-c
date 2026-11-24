@@ -132,6 +132,11 @@ FetchContent_Declare(
     GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(brotli)
+# v1.1.0 always adds the brotli CLI. Strict C99 hides fdopen, and this tree
+# only needs the libraries.
+if(TARGET brotli)
+    set_target_properties(brotli PROPERTIES EXCLUDE_FROM_ALL TRUE)
+endif()
 
 if(JXL_C_REQUIRE_LCMS2)
     find_package(PkgConfig QUIET)

@@ -21,10 +21,15 @@
 #include "jxl/context.h"
 
 static jxl_context *test_alloc(void) {
-    static jxl_allocator_state alloc;
+    static jxl_context *ctx;
     static int init;
-    if (!init) { jxl_allocator_init(&alloc, NULL); init = 1; }
-    return &alloc;
+    if (!init) {
+        if (jxl_context_create(NULL, &ctx) != JXL_OK) {
+            return NULL;
+        }
+        init = 1;
+    }
+    return ctx;
 }
 
 static jxl_context *test_library_ctx(void) {
@@ -442,18 +447,18 @@ static void assert_layout_matches_oracle(const char *fixture,
 }
 
 static void test_grayalpha_gmodular_decode_full(void) {
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     jxl_parsed_image_header image;
     size_t cs_len;
     jxl_ma_config global_ma;
     int has_ma;
     jxl_modular_params params;
     jxl_modular_image_destination dest;
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
 
     uint8_t *cs = NULL;
     cs_len = 0;
-    jxl_frame *frame = load_modular_frame("grayalpha", &alloc, &image, &cs, &cs_len);
+    jxl_frame *frame = load_modular_frame("grayalpha", alloc, &image, &cs, &cs_len);
     if (frame == NULL) {
         fprintf(stderr, "grayalpha load failed\n");
         assert(0);
@@ -467,7 +472,7 @@ static void test_grayalpha_gmodular_decode_full(void) {
     assert(params.num_channels == 2u);
 
     jxl_modular_image_destination_init(&dest);
-    JXL_TEST_ASSERT_EQ(setup_modular_dest_from_lf_global(&alloc, frame, &image, &global_ma, &has_ma, &dest),
+    JXL_TEST_ASSERT_EQ(setup_modular_dest_from_lf_global(alloc, frame, &image, &global_ma, &has_ma, &dest),
                        JXL_FRAME_OK);
     const jxl_modular_channels *sub = jxl_modular_dest_subimage_channels(&dest);
     assert(dest.channels.info_len == 2u);
@@ -483,16 +488,16 @@ static void test_grayalpha_gmodular_decode_full(void) {
     assert(alpha_grid != NULL && alpha_grid->buf != NULL);
     assert(jxl_modular_grid_sample_as_i32(alpha_grid, 1, 0) == 8);
 
-    jxl_modular_image_destination_free(&alloc, &dest);
+    jxl_modular_image_destination_free(alloc, &dest);
     jxl_modular_params_free(test_alloc(), &params);
-    jxl_ma_config_destroy(&alloc, &global_ma);
-    jxl_frame_free(&alloc, frame);
+    jxl_ma_config_destroy(alloc, &global_ma);
+    jxl_frame_free(alloc, frame);
     free(frame);
-    jxl_free_state(&alloc, cs);
+    jxl_free(alloc, cs);
 }
 
 static void test_issue_311_pass_group0_decode(void) {
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     jxl_parsed_image_header image;
     size_t cs_len;
     jxl_ma_config global_ma;
@@ -501,11 +506,11 @@ static void test_issue_311_pass_group0_decode(void) {
     jxl_modular_params params;
     jxl_modular_image_destination dest;
     jxl_pass_group_modular_params pg = {0};
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
 
     uint8_t *cs = NULL;
     cs_len = 0;
-    jxl_frame *frame = load_modular_frame("issue_311", &alloc, &image, &cs, &cs_len);
+    jxl_frame *frame = load_modular_frame("issue_311", alloc, &image, &cs, &cs_len);
     if (frame == NULL) {
         fprintf(stderr, "issue_311 load failed\n");
         assert(0);
@@ -516,7 +521,7 @@ static void test_issue_311_pass_group0_decode(void) {
     jxl_ma_config_init(&global_ma);
     has_ma = 0;
     if (jxl_frame_modular_pass_group_bitstream(
-            test_library_ctx(), &alloc, frame, &image, 0, 0, &global_ma, &has_ma, &pg_bs, 1) != JXL_FRAME_OK) {
+            test_library_ctx(), alloc, frame, &image, 0, 0, &global_ma, &has_ma, &pg_bs, 1) != JXL_FRAME_OK) {
         fprintf(stderr, "issue_311 pass_group bitstream setup failed\n");
         assert(0);
     }
@@ -526,10 +531,10 @@ static void test_issue_311_pass_group0_decode(void) {
     JXL_TEST_REQUIRE(jxl_modular_params_set_for_modular_frame(test_alloc(), test_library_ctx(), &params, &image, &frame->header));
 
     jxl_modular_image_destination_init(&dest);
-    JXL_TEST_ASSERT_EQ(setup_modular_dest_from_lf_global(&alloc, frame, &image, &global_ma, &has_ma, &dest),
+    JXL_TEST_ASSERT_EQ(setup_modular_dest_from_lf_global(alloc, frame, &image, &global_ma, &has_ma, &dest),
                        JXL_FRAME_OK);
 
-    if (jxl_modular_decode_frame_lf_groups(test_library_ctx(), &alloc, frame, &global_ma, has_ma,
+    if (jxl_modular_decode_frame_lf_groups(test_library_ctx(), alloc, frame, &global_ma, has_ma,
                                            &dest, 0, NULL) !=
         JXL_OK) {
         fprintf(stderr, "issue_311 lf groups failed\n");
@@ -537,7 +542,7 @@ static void test_issue_311_pass_group0_decode(void) {
     }
 
     pg.ctx = test_library_ctx();
-    pg.alloc = &alloc;
+    pg.alloc = alloc;
     pg.frame_header = &frame->header;
     pg.global_ma = &global_ma;
     pg.modular_params = &params;
@@ -557,16 +562,16 @@ static void test_issue_311_pass_group0_decode(void) {
     assert(jxl_modular_grid_sample_as_i32(ch0, 0, 0) == 255);
     assert(jxl_modular_grid_sample_as_i32(ch0, 1, 0) == 255);
 
-    jxl_modular_image_destination_free(&alloc, &dest);
+    jxl_modular_image_destination_free(alloc, &dest);
     jxl_modular_params_free(test_alloc(), &params);
-    jxl_ma_config_destroy(&alloc, &global_ma);
-    jxl_frame_free(&alloc, frame);
+    jxl_ma_config_destroy(alloc, &global_ma);
+    jxl_frame_free(alloc, frame);
     free(frame);
-    jxl_free_state(&alloc, cs);
+    jxl_free(alloc, cs);
 }
 
 static void test_grayalpha_lf_global_skip_and_pass_group(void) {
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     jxl_parsed_image_header image;
     size_t cs_len;
     jxl_ma_config global_ma;
@@ -575,11 +580,11 @@ static void test_grayalpha_lf_global_skip_and_pass_group(void) {
     jxl_modular_params params;
     jxl_modular_image_destination dest;
     jxl_pass_group_modular_params pg = {0};
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
 
     uint8_t *cs = NULL;
     cs_len = 0;
-    jxl_frame *frame = load_modular_frame("grayalpha", &alloc, &image, &cs, &cs_len);
+    jxl_frame *frame = load_modular_frame("grayalpha", alloc, &image, &cs, &cs_len);
     if (frame == NULL) {
         fprintf(stderr, "grayalpha load failed\n");
         assert(0);
@@ -592,7 +597,7 @@ static void test_grayalpha_lf_global_skip_and_pass_group(void) {
     jxl_ma_config_init(&global_ma);
     has_ma = 0;
     if (jxl_frame_modular_pass_group_bitstream(
-            test_library_ctx(), &alloc, frame, &image, 0, 0, &global_ma, &has_ma, &pg_bs, 1) != JXL_FRAME_OK) {
+            test_library_ctx(), alloc, frame, &image, 0, 0, &global_ma, &has_ma, &pg_bs, 1) != JXL_FRAME_OK) {
         fprintf(stderr, "grayalpha pass_group bitstream setup failed at bit %zu\n",
                 pg_bs.num_read_bits);
         assert(0);
@@ -604,11 +609,11 @@ static void test_grayalpha_lf_global_skip_and_pass_group(void) {
     JXL_TEST_REQUIRE(jxl_modular_params_set_for_modular_frame(test_alloc(), test_library_ctx(), &params, &image, &frame->header));
 
     jxl_modular_image_destination_init(&dest);
-    JXL_TEST_ASSERT_EQ(setup_modular_dest_from_lf_global(&alloc, frame, &image, &global_ma, &has_ma, &dest),
+    JXL_TEST_ASSERT_EQ(setup_modular_dest_from_lf_global(alloc, frame, &image, &global_ma, &has_ma, &dest),
                        JXL_FRAME_OK);
 
     pg.ctx = test_library_ctx();
-    pg.alloc = &alloc;
+    pg.alloc = alloc;
     pg.frame_header = &frame->header;
     pg.global_ma = &global_ma;
     pg.modular_params = &params;
@@ -623,17 +628,17 @@ static void test_grayalpha_lf_global_skip_and_pass_group(void) {
     jxl_frame_status_t st = jxl_decode_pass_group_modular_coefficients(&pg_bs, &pg);
     assert(st == JXL_FRAME_OK);
 
-    jxl_modular_image_destination_free(&alloc, &dest);
+    jxl_modular_image_destination_free(alloc, &dest);
     jxl_modular_params_free(test_alloc(), &params);
-    jxl_ma_config_destroy(&alloc, &global_ma);
-    jxl_frame_free(&alloc, frame);
+    jxl_ma_config_destroy(alloc, &global_ma);
+    jxl_frame_free(alloc, frame);
     free(frame);
-    jxl_free_state(&alloc, cs);
+    jxl_free(alloc, cs);
 }
 
 static void test_squeeze_edge_pass_group_modular(void) {
     size_t i;
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     jxl_parsed_image_header image;
     size_t cs_len;
     jxl_ma_config global_ma;
@@ -642,11 +647,11 @@ static void test_squeeze_edge_pass_group_modular(void) {
     jxl_modular_image_destination dest;
     jxl_bs pg_bs;
     jxl_pass_group_modular_params pg = {0};
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
 
     uint8_t *cs = NULL;
     cs_len = 0;
-    jxl_frame *frame = load_modular_frame("squeeze_edge", &alloc, &image, &cs, &cs_len);
+    jxl_frame *frame = load_modular_frame("squeeze_edge", alloc, &image, &cs, &cs_len);
     if (frame == NULL) {
         fprintf(stderr, "squeeze_edge load failed\n");
         assert(0);
@@ -671,7 +676,7 @@ static void test_squeeze_edge_pass_group_modular(void) {
     JXL_TEST_REQUIRE(jxl_modular_params_set_for_modular_frame(test_alloc(), test_library_ctx(), &params, &image, &frame->header));
 
     jxl_modular_image_destination_init(&dest);
-    if (setup_modular_dest_from_lf_global(&alloc, frame, &image, &global_ma, &has_ma, &dest) !=
+    if (setup_modular_dest_from_lf_global(alloc, frame, &image, &global_ma, &has_ma, &dest) !=
         JXL_FRAME_OK) {
         assert(0);
     }
@@ -681,7 +686,7 @@ static void test_squeeze_edge_pass_group_modular(void) {
     jxl_bs_init(&pg_bs, best_pg->bytes, best_pg->bytes_len);
 
     pg.ctx = test_library_ctx();
-    pg.alloc = &alloc;
+    pg.alloc = alloc;
     pg.frame_header = &frame->header;
     pg.global_ma = &global_ma;
     pg.modular_params = &params;
@@ -704,12 +709,12 @@ static void test_squeeze_edge_pass_group_modular(void) {
         assert(0);
     }
 
-    jxl_modular_image_destination_free(&alloc, &dest);
+    jxl_modular_image_destination_free(alloc, &dest);
     jxl_modular_params_free(test_alloc(), &params);
-    jxl_ma_config_destroy(&alloc, &global_ma);
-    jxl_frame_free(&alloc, frame);
+    jxl_ma_config_destroy(alloc, &global_ma);
+    jxl_frame_free(alloc, frame);
     free(frame);
-    jxl_free_state(&alloc, cs);
+    jxl_free(alloc, cs);
 }
 
 static void test_modular_pass_group_offsets_decode_fixtures(void) {
@@ -729,7 +734,7 @@ static void test_modular_pass_group_offsets_decode_fixtures(void) {
     while (read_line(f, line, sizeof(line))) {
         char fixture[128];
         size_t expected_bits = 0;
-        jxl_allocator_state alloc;
+        jxl_context *alloc = NULL;
         jxl_parsed_image_header image;
         size_t cs_len;
         if (line[0] == '\0' || line[0] == '#') {
@@ -748,25 +753,25 @@ static void test_modular_pass_group_offsets_decode_fixtures(void) {
             assert(0);
         }
         strcpy(seen[seen_len++], fixture);
-        jxl_allocator_init(&alloc, NULL);
+        if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
 
         uint8_t *cs = NULL;
         cs_len = 0;
-        jxl_frame *frame = load_modular_frame(fixture, &alloc, &image, &cs, &cs_len);
+        jxl_frame *frame = load_modular_frame(fixture, alloc, &image, &cs, &cs_len);
         if (frame == NULL) {
             fprintf(stderr, "%s load failed\n", fixture);
             assert(0);
         }
 
-        size_t got_bits = modular_pass_group_offset_or_zero(&alloc, frame, &image);
+        size_t got_bits = modular_pass_group_offset_or_zero(alloc, frame, &image);
         if (got_bits != expected_bits) {
             fprintf(stderr, "%s expected bits=%zu got=%zu\n", fixture, expected_bits, got_bits);
             assert(0);
         }
 
-        jxl_frame_free(&alloc, frame);
+        jxl_frame_free(alloc, frame);
         free(frame);
-        jxl_free_state(&alloc, cs);
+        jxl_free(alloc, cs);
     }
     fclose(f);
 }
@@ -837,18 +842,18 @@ static jxl_frame *load_conformance_first_frame(const char *case_name, jxl_contex
 }
 
 static void test_spot_frame0_full_modular_decode(void) {
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     jxl_parsed_image_header image;
     size_t cs_len;
     jxl_ma_config global_ma;
     int has_ma;
     jxl_modular_params mod_params;
     jxl_modular_image_destination dest;
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
 
     uint8_t *cs = NULL;
     cs_len = 0;
-    jxl_frame *frame = load_conformance_first_frame("spot", &alloc, &image, &cs, &cs_len);
+    jxl_frame *frame = load_conformance_first_frame("spot", alloc, &image, &cs, &cs_len);
     if (frame == NULL) {
         fprintf(stderr, "spot frame0 load failed\n");
         assert(0);
@@ -864,7 +869,7 @@ static void test_spot_frame0_full_modular_decode(void) {
     JXL_TEST_REQUIRE(jxl_modular_params_set_for_modular_frame(test_alloc(), test_library_ctx(), &mod_params, &image, &frame->header));
 
     jxl_modular_image_destination_init(&dest);
-    JXL_TEST_ASSERT_EQ(setup_modular_dest_from_lf_global(&alloc, frame, &image, &global_ma, &has_ma, &dest),
+    JXL_TEST_ASSERT_EQ(setup_modular_dest_from_lf_global(alloc, frame, &image, &global_ma, &has_ma, &dest),
                        JXL_FRAME_OK);
     assert(has_ma);
 
@@ -872,7 +877,7 @@ static void test_spot_frame0_full_modular_decode(void) {
     assert(multi_group);
 
     jxl_status_t pgst = jxl_modular_decode_frame_group_coefficients(
-        test_library_ctx(), &alloc, frame, &image, &global_ma, has_ma, &mod_params, &dest,
+        test_library_ctx(), alloc, frame, &image, &global_ma, has_ma, &mod_params, &dest,
         multi_group, 1, NULL);
     if (pgst != JXL_OK) {
         fprintf(stderr, "spot frame0 all pass groups failed status=%d\n", (int)pgst);
@@ -892,26 +897,26 @@ static void test_spot_frame0_full_modular_decode(void) {
         assert(0);
     }
 
-    jxl_modular_image_destination_free(&alloc, &dest);
+    jxl_modular_image_destination_free(alloc, &dest);
     jxl_modular_params_free(test_alloc(), &mod_params);
-    jxl_ma_config_destroy(&alloc, &global_ma);
-    jxl_frame_free(&alloc, frame);
+    jxl_ma_config_destroy(alloc, &global_ma);
+    jxl_frame_free(alloc, frame);
     free(frame);
-    jxl_free_state(&alloc, cs);
+    jxl_free(alloc, cs);
 }
 
 static void test_lossless_pfm_modular_decode(void) {
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     jxl_parsed_image_header image;
     size_t cs_len;
     jxl_ma_config global_ma;
     int has_ma;
     jxl_modular_params mod_params;
     jxl_modular_image_destination dest;
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
     uint8_t *cs = NULL;
     cs_len = 0;
-    jxl_frame *frame = load_conformance_first_frame("lossless_pfm", &alloc, &image, &cs, &cs_len);
+    jxl_frame *frame = load_conformance_first_frame("lossless_pfm", alloc, &image, &cs, &cs_len);
     if (frame == NULL) {
         assert(0);
     }
@@ -920,22 +925,22 @@ static void test_lossless_pfm_modular_decode(void) {
     jxl_modular_params_init(&mod_params);
     JXL_TEST_REQUIRE(jxl_modular_params_set_for_modular_frame(test_alloc(), test_library_ctx(), &mod_params, &image, &frame->header));
     jxl_modular_image_destination_init(&dest);
-    JXL_TEST_ASSERT_EQ(setup_modular_dest_from_lf_global(&alloc, frame, &image, &global_ma, &has_ma, &dest),
+    JXL_TEST_ASSERT_EQ(setup_modular_dest_from_lf_global(alloc, frame, &image, &global_ma, &has_ma, &dest),
                        JXL_FRAME_OK);
     int multi_group = !jxl_toc_is_single_entry(&frame->toc);
     jxl_status_t pgst = jxl_modular_decode_frame_group_coefficients(
-        test_library_ctx(), &alloc, frame, &image, &global_ma, has_ma, &mod_params, &dest,
+        test_library_ctx(), alloc, frame, &image, &global_ma, has_ma, &mod_params, &dest,
         multi_group, 1, NULL);
     if (pgst != JXL_OK) {
         fprintf(stderr, "lossless_pfm pg decode failed %d\n", (int)pgst);
         assert(0);
     }
-    jxl_modular_image_destination_free(&alloc, &dest);
+    jxl_modular_image_destination_free(alloc, &dest);
     jxl_modular_params_free(test_alloc(), &mod_params);
-    jxl_ma_config_destroy(&alloc, &global_ma);
-    jxl_frame_free(&alloc, frame);
+    jxl_ma_config_destroy(alloc, &global_ma);
+    jxl_frame_free(alloc, frame);
     free(frame);
-    jxl_free_state(&alloc, cs);
+    jxl_free(alloc, cs);
 }
 
 int main(void) {

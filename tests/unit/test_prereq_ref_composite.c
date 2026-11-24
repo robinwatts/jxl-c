@@ -68,7 +68,7 @@ int main(void) {
     uint32_t i;
     char path[512];
     size_t input_len;
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     jxl_reference_store refs;
     jxl_progressive_lf_store lf_store;
     int any_ref;
@@ -84,18 +84,18 @@ int main(void) {
     jxl_context *library_ctx = NULL;
     JXL_TEST_ASSERT_EQ(jxl_context_create(NULL, &library_ctx), JXL_OK);
 
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
     jxl_reference_store_init(&refs);
     jxl_progressive_lf_store_init(&lf_store);
 
     jxl_status_t st =
-        jxl_decode_prerequisite_frames(library_ctx, &alloc, input, input_len, &refs, &lf_store, 0,
+        jxl_decode_prerequisite_frames(library_ctx, alloc, input, input_len, &refs, &lf_store, 0,
                                        NULL, 0);
     free(input);
     if (st != JXL_OK) {
         fprintf(stderr, "jxl_decode_prerequisite_frames failed: %d\n", (int)st);
-        jxl_progressive_lf_store_free(&alloc, &lf_store);
-        jxl_reference_store_free(&alloc, &refs);
+        jxl_progressive_lf_store_free(alloc, &lf_store);
+        jxl_reference_store_free(alloc, &refs);
         return 1;
     }
 
@@ -106,15 +106,15 @@ int main(void) {
             if (refs.slots[i].width == 0 || refs.slots[i].height == 0 ||
                 refs.slots[i].num_planes == 0) {
                 fprintf(stderr, "ref slot %u has invalid dimensions\n", i);
-                jxl_progressive_lf_store_free(&alloc, &lf_store);
-                jxl_reference_store_free(&alloc, &refs);
+                jxl_progressive_lf_store_free(alloc, &lf_store);
+                jxl_reference_store_free(alloc, &refs);
                 return 1;
             }
             double sum = ref_plane_sum(&refs.slots[i], 0);
             if (sum <= 0.0) {
                 fprintf(stderr, "ref slot %u plane 0 is empty (sum=%g)\n", i, sum);
-                jxl_progressive_lf_store_free(&alloc, &lf_store);
-                jxl_reference_store_free(&alloc, &refs);
+                jxl_progressive_lf_store_free(alloc, &lf_store);
+                jxl_reference_store_free(alloc, &refs);
                 return 1;
             }
         }
@@ -122,13 +122,13 @@ int main(void) {
 
     if (!any_ref) {
         fprintf(stderr, "expected at least one composited reference slot for blendmodes_5\n");
-        jxl_progressive_lf_store_free(&alloc, &lf_store);
-        jxl_reference_store_free(&alloc, &refs);
+        jxl_progressive_lf_store_free(alloc, &lf_store);
+        jxl_reference_store_free(alloc, &refs);
         return 1;
     }
 
-    jxl_progressive_lf_store_free(&alloc, &lf_store);
-    jxl_reference_store_free(&alloc, &refs);
+    jxl_progressive_lf_store_free(alloc, &lf_store);
+    jxl_reference_store_free(alloc, &refs);
     jxl_context_destroy(library_ctx);
     return 0;
 }

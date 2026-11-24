@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static jxl_allocator_state g_alloc;
+static jxl_context *g_alloc;
 static jxl_context *g_ctx;
 static int g_init;
 
@@ -31,11 +31,11 @@ static void ensure_init(void) {
     if (g_init) {
         return;
     }
-    jxl_allocator_init(&g_alloc, NULL);
     if (jxl_context_create(NULL, &g_ctx) != JXL_OK) {
         fprintf(stderr, "gen_decode_oracles: context create failed\n");
         exit(1);
     }
+    g_alloc = g_ctx;
     g_init = 1;
 }
 
@@ -79,7 +79,7 @@ static jxl_frame *load_modular_frame(const char *decode_dir, const char *fixture
     if (read_file(path, &file, &file_len) != 0) {
         return NULL;
     }
-    if (jxl_collect_codestream(&g_alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
+    if (jxl_collect_codestream(g_alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
         free(file);
         return NULL;
     }
@@ -88,20 +88,20 @@ static jxl_frame *load_modular_frame(const char *decode_dir, const char *fixture
     jxl_bs_init(&bs, cs, cs_len);
     memset(&image, 0, sizeof(image));
     if (jxl_image_header_parse(&bs, &image) != JXL_BS_OK) {
-        jxl_free_state(&g_alloc, cs);
+        jxl_free(g_alloc, cs);
         return NULL;
     }
 
     frame = malloc(sizeof(*frame));
     if (frame == NULL) {
-        jxl_free_state(&g_alloc, cs);
+        jxl_free(g_alloc, cs);
         return NULL;
     }
     jxl_frame_init(frame);
-    if (jxl_frame_parse(&g_alloc, &bs, &image, frame) != JXL_FRAME_OK) {
-        jxl_frame_free(&g_alloc, frame);
+    if (jxl_frame_parse(g_alloc, &bs, &image, frame) != JXL_FRAME_OK) {
+        jxl_frame_free(g_alloc, frame);
         free(frame);
-        jxl_free_state(&g_alloc, cs);
+        jxl_free(g_alloc, cs);
         return NULL;
     }
 
@@ -111,9 +111,9 @@ static jxl_frame *load_modular_frame(const char *decode_dir, const char *fixture
         jxl_frame_feed_bytes(frame, cs + meta_end, frame->toc.total_size, &consumed);
     }
     if (consumed != frame->toc.total_size || !jxl_frame_is_loading_done(frame)) {
-        jxl_frame_free(&g_alloc, frame);
+        jxl_frame_free(g_alloc, frame);
         free(frame);
-        jxl_free_state(&g_alloc, cs);
+        jxl_free(g_alloc, cs);
         return NULL;
     }
 
@@ -134,9 +134,9 @@ static size_t pass_group_bit_offset(jxl_frame *frame, const jxl_parsed_image_hea
     }
     jxl_ma_config_init(&global_ma);
     has_ma = 0;
-    st = jxl_frame_modular_pass_group_bitstream(g_ctx, &g_alloc, frame, image, 0, 0, &global_ma,
+    st = jxl_frame_modular_pass_group_bitstream(g_ctx, g_alloc, frame, image, 0, 0, &global_ma,
                                                 &has_ma, &pg_bs, 1);
-    jxl_ma_config_destroy(&g_alloc, &global_ma);
+    jxl_ma_config_destroy(g_alloc, &global_ma);
     if (st != JXL_FRAME_OK) {
         return 0;
     }
@@ -161,7 +161,7 @@ static jxl_frame_status_t setup_modular_dest(jxl_frame *frame,
         return JXL_FRAME_BITSTREAM_ERROR;
     }
 
-    jxl_ma_config_destroy(&g_alloc, global_ma);
+    jxl_ma_config_destroy(g_alloc, global_ma);
     jxl_ma_config_init(global_ma);
 
     jxl_bs_init(&gbs, src->bytes, src->bytes_len);
@@ -187,15 +187,15 @@ static jxl_frame_status_t setup_modular_dest(jxl_frame *frame,
         ma_params.tracker = NULL;
         ma_params.node_limit = node_limit;
         ma_params.depth_limit = 2048;
-        if (jxl_ma_config_parse(&g_alloc, &gbs, &ma_params, global_ma) != JXL_MODULAR_OK) {
+        if (jxl_ma_config_parse(g_alloc, &gbs, &ma_params, global_ma) != JXL_MODULAR_OK) {
             return JXL_FRAME_DECODER_ERROR;
         }
     }
 
     jxl_modular_params_init(&mod_params);
-    if (!jxl_modular_params_set_for_modular_frame(&g_alloc, g_ctx, &mod_params, image,
+    if (!jxl_modular_params_set_for_modular_frame(g_alloc, g_ctx, &mod_params, image,
                                                   &frame->header)) {
-        jxl_modular_params_free(&g_alloc, &mod_params);
+        jxl_modular_params_free(g_alloc, &mod_params);
         return JXL_FRAME_OUT_OF_MEMORY;
     }
 
@@ -205,26 +205,26 @@ static jxl_frame_status_t setup_modular_dest(jxl_frame *frame,
     ctx.tracker = NULL;
     ctx.retain_pretransform_channels = 1;
 
-    if (jxl_modular_dest_apply_local_header(&g_alloc, &gbs, &ctx, dest) != JXL_MODULAR_OK) {
-        jxl_modular_params_free(&g_alloc, &mod_params);
+    if (jxl_modular_dest_apply_local_header(g_alloc, &gbs, &ctx, dest) != JXL_MODULAR_OK) {
+        jxl_modular_params_free(g_alloc, &mod_params);
         return JXL_FRAME_DECODER_ERROR;
     }
     if (jxl_modular_image_has_squeeze(dest)) {
         ctx.retain_pretransform_channels = 1;
     }
-    if (jxl_modular_prepare_gmodular(&g_alloc, dest) != JXL_MODULAR_OK) {
-        jxl_modular_params_free(&g_alloc, &mod_params);
+    if (jxl_modular_prepare_gmodular(g_alloc, dest) != JXL_MODULAR_OK) {
+        jxl_modular_params_free(g_alloc, &mod_params);
         return JXL_FRAME_DECODER_ERROR;
     }
     {
         int multi_group = !jxl_toc_is_single_entry(&frame->toc);
-        if (jxl_modular_gmodular_decode(g_ctx, &g_alloc, &gbs, dest, multi_group ? 1 : 0) !=
+        if (jxl_modular_gmodular_decode(g_ctx, g_alloc, &gbs, dest, multi_group ? 1 : 0) !=
             JXL_MODULAR_OK) {
-            jxl_modular_params_free(&g_alloc, &mod_params);
+            jxl_modular_params_free(g_alloc, &mod_params);
             return JXL_FRAME_DECODER_ERROR;
         }
     }
-    jxl_modular_params_free(&g_alloc, &mod_params);
+    jxl_modular_params_free(g_alloc, &mod_params);
     return JXL_FRAME_OK;
 }
 
@@ -266,9 +266,9 @@ static int write_pass_group_offsets(const char *fixtures_dir, const char *oracle
         }
         bits = pass_group_bit_offset(frame, &image);
         fprintf(out, "%s %zu\n", fixtures[i], bits);
-        jxl_frame_free(&g_alloc, frame);
+        jxl_frame_free(g_alloc, frame);
         free(frame);
-        jxl_free_state(&g_alloc, cs);
+        jxl_free(g_alloc, cs);
     }
 
     fclose(out);
@@ -310,20 +310,20 @@ static int write_transformed_layouts(const char *fixtures_dir, const char *oracl
         jxl_modular_image_destination_init(&dest);
         if (setup_modular_dest(frame, &image, &global_ma, &has_ma, &dest) != JXL_FRAME_OK) {
             fprintf(stderr, "gen_decode_oracles: setup modular dest failed for %s\n", fixture);
-            jxl_modular_image_destination_free(&g_alloc, &dest);
-            jxl_ma_config_destroy(&g_alloc, &global_ma);
-            jxl_frame_free(&g_alloc, frame);
+            jxl_modular_image_destination_free(g_alloc, &dest);
+            jxl_ma_config_destroy(g_alloc, &global_ma);
+            jxl_frame_free(g_alloc, frame);
             free(frame);
-            jxl_free_state(&g_alloc, cs);
+            jxl_free(g_alloc, cs);
             fclose(out);
             return 1;
         }
         write_layout_line(out, fixture, &dest);
-        jxl_modular_image_destination_free(&g_alloc, &dest);
-        jxl_ma_config_destroy(&g_alloc, &global_ma);
-        jxl_frame_free(&g_alloc, frame);
+        jxl_modular_image_destination_free(g_alloc, &dest);
+        jxl_ma_config_destroy(g_alloc, &global_ma);
+        jxl_frame_free(g_alloc, frame);
         free(frame);
-        jxl_free_state(&g_alloc, cs);
+        jxl_free(g_alloc, cs);
     }
 
     fclose(out);

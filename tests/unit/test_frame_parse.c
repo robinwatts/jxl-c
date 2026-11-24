@@ -60,7 +60,7 @@ static int read_fixture(const char *name, uint8_t **file_out, size_t *file_len_o
 static void verify_fixture(const jxl_frame_field_expect *expect) {
     size_t g;
     size_t file_len;
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     size_t cs_len;
     jxl_bs bs;
     jxl_parsed_image_header image;
@@ -80,10 +80,10 @@ static void verify_fixture(const jxl_frame_field_expect *expect) {
         assert(0);
     }
 
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
     uint8_t *cs = NULL;
     cs_len = 0;
-    if (jxl_collect_codestream(&alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
+    if (jxl_collect_codestream(alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
         free(file);
         assert(0);
     }
@@ -91,16 +91,16 @@ static void verify_fixture(const jxl_frame_field_expect *expect) {
 
     jxl_bs_init(&bs, cs, cs_len);
     if (jxl_image_header_parse(&bs, &image) != JXL_BS_OK) {
-        jxl_free_state(&alloc, cs);
+        jxl_free(alloc, cs);
         assert(0);
     }
-    if (jxl_image_skip_post_header(&alloc, &bs, &image) != JXL_BS_OK) {
-        jxl_free_state(&alloc, cs);
+    if (jxl_image_skip_post_header(alloc, &bs, &image) != JXL_BS_OK) {
+        jxl_free(alloc, cs);
         assert(0);
     }
 
     jxl_frame_header_init(&header);
-    if (jxl_frame_header_parse(&alloc, &bs, &image, &header) != JXL_FRAME_OK) {
+    if (jxl_frame_header_parse(alloc, &bs, &image, &header) != JXL_FRAME_OK) {
         fprintf(stderr, "%s: frame header parse failed at bit %u\n", expect->name,
                 (unsigned)bs.num_read_bits);
         assert(0);
@@ -122,7 +122,7 @@ static void verify_fixture(const jxl_frame_field_expect *expect) {
     }
 
     jxl_toc_init(&toc);
-    if (jxl_toc_parse(&alloc, &bs, &header, &toc) != JXL_FRAME_OK) {
+    if (jxl_toc_parse(alloc, &bs, &header, &toc) != JXL_FRAME_OK) {
         fprintf(stderr, "%s: toc parse failed at bit %u\n", expect->name, (unsigned)bs.num_read_bits);
         assert(0);
     }
@@ -145,21 +145,21 @@ static void verify_fixture(const jxl_frame_field_expect *expect) {
         fprintf(stderr, "%s: single_entry mismatch\n", expect->name);
         assert(0);
     }
-    jxl_toc_free(&alloc, &toc);
-    jxl_frame_header_free(&alloc, &header);
+    jxl_toc_free(alloc, &toc);
+    jxl_frame_header_free(alloc, &header);
 
     jxl_bs_init(&bs_full, cs, cs_len);
     if (jxl_image_header_parse(&bs_full, &image) != JXL_BS_OK) {
-        jxl_free_state(&alloc, cs);
+        jxl_free(alloc, cs);
         assert(0);
     }
-    if (jxl_image_skip_post_header(&alloc, &bs_full, &image) != JXL_BS_OK) {
-        jxl_free_state(&alloc, cs);
+    if (jxl_image_skip_post_header(alloc, &bs_full, &image) != JXL_BS_OK) {
+        jxl_free(alloc, cs);
         assert(0);
     }
 
     jxl_frame_init(&frame);
-    if (jxl_frame_parse(&alloc, &bs_full, &image, &frame) != JXL_FRAME_OK) {
+    if (jxl_frame_parse(alloc, &bs_full, &image, &frame) != JXL_FRAME_OK) {
         fprintf(stderr, "%s: jxl_frame_parse failed\n", expect->name);
         assert(0);
     }
@@ -193,8 +193,8 @@ static void verify_fixture(const jxl_frame_field_expect *expect) {
         }
     }
 
-    jxl_frame_free(&alloc, &frame);
-    jxl_free_state(&alloc, cs);
+    jxl_frame_free(alloc, &frame);
+    jxl_free(alloc, cs);
 }
 
 static void test_all_verified_fixtures(void) {

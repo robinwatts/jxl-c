@@ -5,10 +5,15 @@
 #include "allocator.h"
 
 static jxl_context *test_alloc(void) {
-    static jxl_allocator_state alloc;
+    static jxl_context *ctx;
     static int init;
-    if (!init) { jxl_allocator_init(&alloc, NULL); init = 1; }
-    return &alloc;
+    if (!init) {
+        if (jxl_context_create(NULL, &ctx) != JXL_OK) {
+            return NULL;
+        }
+        init = 1;
+    }
+    return ctx;
 }
 
 #include <assert.h>
@@ -41,7 +46,7 @@ static void test_wp_header_default(void) {
 static const uint8_t k_header_global_ma[] = {0x03};
 
 static void test_modular_header_global(void) {
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     jxl_bs bs;
     jxl_modular_params params;
     jxl_ma_config global_ma;
@@ -50,7 +55,7 @@ static void test_modular_header_global(void) {
     jxl_modular_image_destination dest;
     jxl_channel_shift shifts[1];
     jxl_modular_parse_ctx ctx = {0};
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
 
     jxl_bs_init(&bs, k_header_global_ma, sizeof(k_header_global_ma));
 
@@ -71,21 +76,21 @@ static void test_modular_header_global(void) {
     jxl_modular_header_ma_init(&hm);
     jxl_modular_channels_init(&channels);
 
-    JXL_TEST_ASSERT_EQ(jxl_modular_read_local_header(&alloc, &bs, &ctx, &hm, &channels), JXL_MODULAR_OK);
+    JXL_TEST_ASSERT_EQ(jxl_modular_read_local_header(alloc, &bs, &ctx, &hm, &channels), JXL_MODULAR_OK);
     assert(hm.header.use_global_tree);
     assert(hm.header.nb_transforms == 0);
     assert(channels.info_len == 1);
     assert(channels.info[0].width == 64);
 
     jxl_modular_image_destination_init(&dest);
-    JXL_TEST_ASSERT_EQ(jxl_modular_image_destination_create(&alloc, &hm, 256, 8, JXL_MODULAR_SAMPLE_I32,
+    JXL_TEST_ASSERT_EQ(jxl_modular_image_destination_create(alloc, &hm, 256, 8, JXL_MODULAR_SAMPLE_I32,
                                                               &channels, NULL, &dest),
                        JXL_MODULAR_OK);
     assert(dest.image_channels_len == 1);
     assert(dest.image_channels[0].width == 64);
 
-    jxl_modular_image_destination_free(&alloc, &dest);
-    jxl_modular_header_ma_free(&alloc, &hm);
+    jxl_modular_image_destination_free(alloc, &dest);
+    jxl_modular_header_ma_free(alloc, &hm);
     jxl_modular_channels_free(test_alloc(), &channels);
     jxl_modular_params_free(test_alloc(), &params);
 }

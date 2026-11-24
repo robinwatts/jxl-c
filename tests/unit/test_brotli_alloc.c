@@ -40,7 +40,8 @@ static void *counting_realloc(void *user_data, void *ptr, size_t size) {
 }
 
 static void test_brotli_routes_through_custom_allocator(void) {
-    jxl_allocator_state state;
+    jxl_context *ctx = NULL;
+    jxl_context_options opts;
     size_t out_len;
     jxl_allocator_t vtable;
     alloc_counts_t counts = {0};
@@ -50,10 +51,11 @@ static void test_brotli_routes_through_custom_allocator(void) {
     vtable.realloc = counting_realloc;
     vtable.user_data = &counts;
 
+    opts.alloc = vtable;
+    opts.cms = NULL;
+    assert(jxl_context_create(&opts, &ctx) == JXL_OK);
 
-    jxl_allocator_init(&state, &vtable);
-
-    jxl_brotli_decoder *dec = jxl_brotli_decoder_create(&state);
+    jxl_brotli_decoder *dec = jxl_brotli_decoder_create(ctx);
     assert(dec != NULL);
 
     /* Brotli JS decode_test.ts empty-string stream. */
@@ -67,7 +69,8 @@ static void test_brotli_routes_through_custom_allocator(void) {
 
     assert(counts.alloc_calls + counts.calloc_calls > 0);
 
-    jxl_brotli_decoder_destroy(&state, dec);
+    jxl_brotli_decoder_destroy(ctx, dec);
+    jxl_context_destroy(ctx);
     assert(counts.free_calls > 0);
 }
 

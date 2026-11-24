@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#include <assert.h>
 #include "test_paths.h"
 
 /* Isolate progressive_5 keyframe pass 0 / group 0 VarDCT decode. */
@@ -78,7 +79,7 @@ int main(void) {
     uint32_t pass;
     char path[512];
     size_t file_len;
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     size_t cs_len;
     jxl_bs bs;
     jxl_parsed_image_header parsed;
@@ -103,7 +104,7 @@ int main(void) {
         return 1;
     }
 
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
     jxl_context *library_ctx = NULL;
     if (jxl_context_create(NULL, &library_ctx) != JXL_OK) {
         fprintf(stderr, "context create failed\n");
@@ -112,7 +113,7 @@ int main(void) {
 
     uint8_t *cs = NULL;
     cs_len = 0;
-    if (jxl_collect_codestream(&alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
+    if (jxl_collect_codestream(alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
         fprintf(stderr, "codestream failed\n");
         return 1;
     }
@@ -124,13 +125,13 @@ int main(void) {
         fprintf(stderr, "image header failed\n");
         return 1;
     }
-    if (jxl_image_skip_post_header(&alloc, &bs, &parsed) != JXL_BS_OK) {
+    if (jxl_image_skip_post_header(alloc, &bs, &parsed) != JXL_BS_OK) {
         fprintf(stderr, "skip post header failed\n");
         return 1;
     }
 
     jxl_frame_init(&frame);
-    if (jxl_frame_parse_keyframe(&alloc, &bs, &parsed, cs, cs_len, &frame) != JXL_FRAME_OK) {
+    if (jxl_frame_parse_keyframe(alloc, &bs, &parsed, cs, cs_len, &frame) != JXL_FRAME_OK) {
         fprintf(stderr, "keyframe parse failed\n");
         return 1;
     }
@@ -182,7 +183,7 @@ int main(void) {
     lp.frame = &frame.header;
     lp.allow_partial = 0;
 
-    if (jxl_lf_global_consume(&alloc, &lf_bs, &lp, &lf_global) != JXL_FRAME_OK) {
+    if (jxl_lf_global_consume(alloc, &lf_bs, &lp, &lf_global) != JXL_FRAME_OK) {
         fprintf(stderr, "lf global failed\n");
         return 1;
     }
@@ -196,7 +197,7 @@ int main(void) {
     hp.global_ma = lf_global.has_global_ma ? &lf_global.global_ma : NULL;
     hp.hf_block_ctx = &lf_global.hf_block_ctx;
 
-    if (jxl_hf_global_parse(library_ctx, &alloc, &hf_bs, &hp, &hf_global) != JXL_FRAME_OK) {
+    if (jxl_hf_global_parse(library_ctx, alloc, &hf_bs, &hp, &hf_global) != JXL_FRAME_OK) {
         fprintf(stderr, "hf global failed\n");
         return 1;
     }
@@ -222,7 +223,7 @@ int main(void) {
         lgp.lf_group_idx = i;
         lgp.allow_partial = 0;
 
-        if (jxl_lf_group_parse(&alloc, &lg_bs, &lgp, &lf_groups[i]) != JXL_FRAME_OK) {
+        if (jxl_lf_group_parse(alloc, &lg_bs, &lgp, &lf_groups[i]) != JXL_FRAME_OK) {
             fprintf(stderr, "lf group %u failed\n", i);
             return 1;
         }
@@ -325,14 +326,14 @@ int main(void) {
     printf("pg scan: ok=%u fail=%u skip=%u (passes=%u groups=%u)\n", ok_count, fail_count,
            skip_count, num_passes, num_groups);
 
-    jxl_frame_free(&alloc, &frame);
-    jxl_lf_global_free(&alloc, &lf_global);
-    jxl_hf_global_free(&alloc, &hf_global);
+    jxl_frame_free(alloc, &frame);
+    jxl_lf_global_free(alloc, &lf_global);
+    jxl_hf_global_free(alloc, &hf_global);
     for (i = 0; i < num_lf_groups; ++i) {
-        jxl_lf_group_free(&alloc, &lf_groups[i]);
+        jxl_lf_group_free(alloc, &lf_groups[i]);
     }
     free(lf_groups);
-    jxl_free_state(&alloc, cs);
+    jxl_free(alloc, cs);
     jxl_context_destroy(library_ctx);
     return rc;
 }

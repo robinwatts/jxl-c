@@ -33,13 +33,13 @@ static void test_dct_select(void) {
 static const uint8_t k_lf_defaults[] = {0x03, 0x00, 0x02};
 
 static void test_lf_bundles_default(void) {
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     jxl_bs bs;
     jxl_lf_channel_dequant dequant;
     jxl_lf_channel_correlation corr;
     jxl_quantizer q;
     jxl_hf_block_context ctx;
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
 
     jxl_bs_init(&bs, k_lf_defaults, sizeof(k_lf_defaults));
 
@@ -56,15 +56,15 @@ static void test_lf_bundles_default(void) {
     assert(q.quant_lf == 16);
 
     memset(&ctx, 0, sizeof(ctx));
-    JXL_TEST_ASSERT_EQ(jxl_hf_block_context_parse(&alloc, &bs, &ctx), JXL_VARDCT_OK);
+    JXL_TEST_ASSERT_EQ(jxl_hf_block_context_parse(alloc, &bs, &ctx), JXL_VARDCT_OK);
     assert(ctx.num_block_clusters == 15);
     assert(ctx.block_ctx_map_len == 39);
     assert(ctx.block_ctx_map[0] == 0 && ctx.block_ctx_map[38] == 14);
-    jxl_hf_block_context_free(&alloc, &ctx);
+    jxl_hf_block_context_free(alloc, &ctx);
 }
 
 static void test_dequant_all_default(void) {
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     jxl_bs bs;
     uint8_t byte;
     jxl_dequant_matrix_set set;
@@ -72,7 +72,7 @@ static void test_dequant_all_default(void) {
     jxl_context *library_ctx = NULL;
     JXL_TEST_ASSERT_EQ(jxl_context_create(NULL, &library_ctx), JXL_OK);
 
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
 
     byte = 0x01;
     jxl_bs_init(&bs, &byte, 1);
@@ -82,7 +82,7 @@ static void test_dequant_all_default(void) {
     params.stream_index = jxl_dequant_matrix_set_stream_index(0);
     params.global_ma = NULL;
 
-    JXL_TEST_ASSERT_EQ(jxl_dequant_matrix_set_parse(library_ctx, &alloc, &bs, &params, &set), JXL_VARDCT_OK);
+    JXL_TEST_ASSERT_EQ(jxl_dequant_matrix_set_parse(library_ctx, alloc, &bs, &params, &set), JXL_VARDCT_OK);
     assert(set.matrices[0].encoding == JXL_DEQUANT_ENC_DEFAULT);
     assert(set.matrices[0].dct_band_lens[0] == 6);
     assert(set.matrices[1].encoding == JXL_DEQUANT_ENC_DEFAULT);
@@ -104,7 +104,7 @@ static void test_hf_pass_natural_order(void) {
 }
 
 static void test_hf_pass_used_orders_zero(void) {
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     jxl_hf_block_context ctx;
     jxl_bs bs;
     uint8_t buf[4] = {0x02, 0x00, 0x00, 0x00};
@@ -113,7 +113,7 @@ static void test_hf_pass_used_orders_zero(void) {
     jxl_context *library_ctx = NULL;
     JXL_TEST_ASSERT_EQ(jxl_context_create(NULL, &library_ctx), JXL_OK);
 
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
 
     /* used_orders=0 (selector 0 for 0x5F), then minimal hf_dist fails — use clusters=0 invalid */
     memset(&ctx, 0, sizeof(ctx));
@@ -126,9 +126,9 @@ static void test_hf_pass_used_orders_zero(void) {
     params.num_hf_presets = 1;
 
     jxl_hf_pass_init(&pass);
-    jxl_vardct_status_t st = jxl_hf_pass_parse(library_ctx, &alloc, &bs, &params, &pass);
+    jxl_vardct_status_t st = jxl_hf_pass_parse(library_ctx, alloc, &bs, &params, &pass);
     assert(st == JXL_VARDCT_DECODER_ERROR || st == JXL_VARDCT_BITSTREAM_ERROR);
-    jxl_hf_pass_destroy(&alloc, &pass);
+    jxl_hf_pass_destroy(alloc, &pass);
     jxl_context_destroy(library_ctx);
 }
 

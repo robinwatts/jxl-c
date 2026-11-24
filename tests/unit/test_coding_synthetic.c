@@ -11,14 +11,14 @@
 
 int main(void) {
     size_t i;
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     jxl_bs bs;
     jxl_bs payload;
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
 
     jxl_bs_init(&bs, k_ans_synthetic_setup, k_ans_synthetic_setup_len);
     jxl_coding_decoder *dec = NULL;
-    JXL_TEST_ASSERT_EQ(jxl_coding_decoder_parse(&alloc, &bs, 1, &dec), JXL_CODING_OK);
+    JXL_TEST_ASSERT_EQ(jxl_coding_decoder_parse(alloc, &bs, 1, &dec), JXL_CODING_OK);
     assert(jxl_bs_num_read_bits(&bs) == k_ans_synthetic_setup_bits);
 
     jxl_bs_init(&payload, NULL, 0);
@@ -31,7 +31,7 @@ int main(void) {
     }
     JXL_TEST_ASSERT_EQ(jxl_coding_decoder_finalize(dec), JXL_CODING_OK);
 
-    jxl_coding_decoder_destroy(&alloc, dec);
+    jxl_coding_decoder_destroy(alloc, dec);
     printf("test_coding_synthetic: ok\n");
     return 0;
 }

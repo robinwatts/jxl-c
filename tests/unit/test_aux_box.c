@@ -68,7 +68,7 @@ static void test_brob_exif_decompresses(void) {
     static const uint8_t k_brotli_exif[] = {0x8b, 0x03, 0x80, 0x00, 0x00, 0x00, 0x00, 0x54,
                                             0x49, 0x46, 0x46, 0x03};
     uint8_t brob_payload[4 + sizeof(k_brotli_exif)];
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     size_t file_len;
     size_t file_cap;
     size_t consumed;
@@ -79,7 +79,7 @@ static void test_brob_exif_decompresses(void) {
     jxl_container_parser *parser;
     feed_ctx fctx;
 
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
 
     memcpy(brob_payload, "Exif", 4);
     memcpy(brob_payload + 4, k_brotli_exif, sizeof(k_brotli_exif));
@@ -87,15 +87,15 @@ static void test_brob_exif_decompresses(void) {
     file = NULL;
     file_len = 0;
     file_cap = 0;
-    append_bytes(&file, &file_len, &file_cap, &alloc, jxl_container_sig, JXL_CONTAINER_SIG_LEN);
-    append_box(&file, &file_len, &file_cap, &alloc, "brob", brob_payload, sizeof(brob_payload), 0);
-    append_box(&file, &file_len, &file_cap, &alloc, "jxlc", k_jxlc_codestream,
+    append_bytes(&file, &file_len, &file_cap, alloc, jxl_container_sig, JXL_CONTAINER_SIG_LEN);
+    append_box(&file, &file_len, &file_cap, alloc, "brob", brob_payload, sizeof(brob_payload), 0);
+    append_box(&file, &file_len, &file_cap, alloc, "jxlc", k_jxlc_codestream,
                sizeof(k_jxlc_codestream), 1);
 
-    aux = jxl_aux_box_list_create(&alloc);
+    aux = jxl_aux_box_list_create(alloc);
     assert(aux != NULL);
 
-    parser = jxl_container_parser_create(&alloc);
+    parser = jxl_container_parser_create(alloc);
     assert(parser != NULL);
 
     fctx.aux = aux;
@@ -112,13 +112,13 @@ static void test_brob_exif_decompresses(void) {
     assert(exif.data_len == sizeof(k_exif_box));
     assert(memcmp(exif.data, k_exif_box, sizeof(k_exif_box)) == 0);
 
-    jxl_container_parser_destroy(&alloc, parser);
-    jxl_aux_box_list_destroy(&alloc, aux);
-    jxl_free_state(&alloc, file);
+    jxl_container_parser_destroy(alloc, parser);
+    jxl_aux_box_list_destroy(alloc, aux);
+    jxl_free(alloc, file);
 }
 
 static void test_raw_exif_roundtrip(void) {
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     static const uint8_t k_exif_box[] = {0, 0, 0, 0, 'T', 'I', 'F', 'F'};
     size_t file_len;
     size_t file_cap;
@@ -129,18 +129,18 @@ static void test_raw_exif_roundtrip(void) {
     jxl_container_parser *parser;
     feed_ctx fctx;
 
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
 
     file = NULL;
     file_len = 0;
     file_cap = 0;
-    append_bytes(&file, &file_len, &file_cap, &alloc, jxl_container_sig, JXL_CONTAINER_SIG_LEN);
-    append_box(&file, &file_len, &file_cap, &alloc, "Exif", k_exif_box, sizeof(k_exif_box), 0);
-    append_box(&file, &file_len, &file_cap, &alloc, "jxlc", k_jxlc_codestream,
+    append_bytes(&file, &file_len, &file_cap, alloc, jxl_container_sig, JXL_CONTAINER_SIG_LEN);
+    append_box(&file, &file_len, &file_cap, alloc, "Exif", k_exif_box, sizeof(k_exif_box), 0);
+    append_box(&file, &file_len, &file_cap, alloc, "jxlc", k_jxlc_codestream,
                sizeof(k_jxlc_codestream), 1);
 
-    aux = jxl_aux_box_list_create(&alloc);
-    parser = jxl_container_parser_create(&alloc);
+    aux = jxl_aux_box_list_create(alloc);
+    parser = jxl_container_parser_create(alloc);
     fctx.aux = aux;
     fctx.error = JXL_BS_OK;
 
@@ -153,9 +153,9 @@ static void test_raw_exif_roundtrip(void) {
     assert(exif.data_len == sizeof(k_exif_box));
     assert(memcmp(exif.data, k_exif_box, sizeof(k_exif_box)) == 0);
 
-    jxl_container_parser_destroy(&alloc, parser);
-    jxl_aux_box_list_destroy(&alloc, aux);
-    jxl_free_state(&alloc, file);
+    jxl_container_parser_destroy(alloc, parser);
+    jxl_aux_box_list_destroy(alloc, aux);
+    jxl_free(alloc, file);
 }
 
 int main(void) {

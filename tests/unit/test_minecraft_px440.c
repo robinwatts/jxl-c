@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#include <assert.h>
 #include "test_paths.h"
 
 /* Debug: inspect VarDCT state at global pixel 440 / block bx=23 for minecraft_vardct_e7. */
@@ -82,7 +83,7 @@ int main(void) {
     int c;
     char path[512];
     size_t file_len;
-    jxl_allocator_state alloc;
+    jxl_context *alloc = NULL;
     size_t cs_len;
     jxl_bs bs;
     jxl_parsed_image_header parsed;
@@ -118,7 +119,7 @@ int main(void) {
         return 1;
     }
 
-    jxl_allocator_init(&alloc, NULL);
+    if (jxl_context_create(NULL, &alloc) != JXL_OK) { assert(0); }
     jxl_context *library_ctx = NULL;
     if (jxl_context_create(NULL, &library_ctx) != JXL_OK) {
         fprintf(stderr, "context create failed\n");
@@ -127,7 +128,7 @@ int main(void) {
 
     uint8_t *cs = NULL;
     cs_len = 0;
-    if (jxl_collect_codestream(&alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
+    if (jxl_collect_codestream(alloc, file, file_len, &cs, &cs_len) != JXL_OK) {
         fprintf(stderr, "codestream failed\n");
         return 1;
     }
@@ -141,7 +142,7 @@ int main(void) {
     }
 
     jxl_frame_init(&frame);
-    if (jxl_frame_parse(&alloc, &bs, &parsed, &frame) != JXL_FRAME_OK) {
+    if (jxl_frame_parse(alloc, &bs, &parsed, &frame) != JXL_FRAME_OK) {
         fprintf(stderr, "frame parse failed\n");
         return 1;
     }
@@ -171,7 +172,7 @@ int main(void) {
     lp.image = &parsed;
     lp.frame = &frame.header;
 
-    if (jxl_lf_global_consume(&alloc, &lf_bs, &lp, &lf_global) != JXL_FRAME_OK) {
+    if (jxl_lf_global_consume(alloc, &lf_bs, &lp, &lf_global) != JXL_FRAME_OK) {
         fprintf(stderr, "lf global failed\n");
         return 1;
     }
@@ -183,7 +184,7 @@ int main(void) {
     hp.global_ma = lf_global.has_global_ma ? &lf_global.global_ma : NULL;
     hp.hf_block_ctx = &lf_global.hf_block_ctx;
 
-    if (jxl_hf_global_parse(library_ctx, &alloc, &hf_bs, &hp, &hf_global) != JXL_FRAME_OK) {
+    if (jxl_hf_global_parse(library_ctx, alloc, &hf_bs, &hp, &hf_global) != JXL_FRAME_OK) {
         fprintf(stderr, "hf global failed\n");
         return 1;
     }
@@ -206,7 +207,7 @@ int main(void) {
         lgp.global_ma = lf_global.has_global_ma ? &lf_global.global_ma : NULL;
         lgp.lf_group_idx = i;
 
-        if (jxl_lf_group_parse(&alloc, &lg_bs, &lgp, &lf_groups[i]) != JXL_FRAME_OK) {
+        if (jxl_lf_group_parse(alloc, &lg_bs, &lgp, &lf_groups[i]) != JXL_FRAME_OK) {
             fprintf(stderr, "lf group %u failed\n", i);
             return 1;
         }
@@ -342,9 +343,9 @@ int main(void) {
     for (c = 0; c < 3; ++c) {
         block[c] = jxl_subgrid_f32_sub(coeff2[c], bx0, by0, 8, 8);
     }
-    jxl_render_transform_varblock(NULL, &alloc, block[0], info->dct_select);
-    jxl_render_transform_varblock(NULL, &alloc, block[1], info->dct_select);
-    jxl_render_transform_varblock(NULL, &alloc, block[2], info->dct_select);
+    jxl_render_transform_varblock(NULL, alloc, block[0], info->dct_select);
+    jxl_render_transform_varblock(NULL, alloc, block[1], info->dct_select);
+    jxl_render_transform_varblock(NULL, alloc, block[2], info->dct_select);
 
     in_bx = local_x - bx0;
     in_by = local_y - by0;
@@ -354,19 +355,19 @@ int main(void) {
 
     printf("Rust pre-filter ref @440: -0.00413295 0.57746 0.727269\n");
 
-    jxl_free_state(&alloc, cs);
+    jxl_free(alloc, cs);
     for (c = 0; c < 3; ++c) {
         free(i32_coeff[c]);
         free(fbuf[c]);
         free(fbuf2[c]);
     }
     for (i = 0; i < num_lf_groups; ++i) {
-        jxl_lf_group_free(&alloc, &lf_groups[i]);
+        jxl_lf_group_free(alloc, &lf_groups[i]);
     }
     free(lf_groups);
-    jxl_hf_global_free(&alloc, &hf_global);
-    jxl_lf_global_free(&alloc, &lf_global);
-    jxl_frame_free(&alloc, &frame);
+    jxl_hf_global_free(alloc, &hf_global);
+    jxl_lf_global_free(alloc, &lf_global);
+    jxl_frame_free(alloc, &frame);
     jxl_context_destroy(library_ctx);
     return 0;
 }

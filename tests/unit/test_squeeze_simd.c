@@ -11,13 +11,15 @@
 #include <string.h>
 
 static jxl_context *test_alloc(void) {
-    static jxl_allocator_state alloc;
+    static jxl_context *ctx;
     static int init;
     if (!init) {
-        jxl_allocator_init(&alloc, NULL);
+        if (jxl_context_create(NULL, &ctx) != JXL_OK) {
+            return NULL;
+        }
         init = 1;
     }
-    return &alloc;
+    return ctx;
 }
 
 static void fill(int16_t *buf, size_t width, size_t height, size_t stride) {
