@@ -24,6 +24,7 @@
 #include "enc_icc_codec.h"
 #include "encode_internal.h"
 #include "context_internal.h"
+#include "context.h"
 #include "enc_image_metadata.h"
 #include "jpeg/enc_jpeg_data.h"
 #include "luminance.h"
@@ -472,7 +473,7 @@ static jxl_status_t jxl_setup_metadata_from_jpeg(jxl_encoder* enc,
     return JXL_OK;
   }
   if (!jxl_enc_status_ok(jxl_set_color_encoding_from_jpeg_data(
-          enc->ctx, &enc->cms, jpeg_data, &enc->metadata.m.color_encoding))) {
+          enc->ctx, enc->ctx->cms, jpeg_data, &enc->metadata.m.color_encoding))) {
     return JXL_API_ERROR(
         enc, JXL_ERROR_INVALID_INPUT,
         "Error decoding the ICC profile embedded in the input JPEG");
@@ -855,16 +856,10 @@ jxl_encoder* jxl_encoder_create(jxl_context* ctx) {
   if (ctx == NULL) {
     return NULL;
   }
-  if (jxl_context_lcms(ctx) == NULL) {
-    return NULL;
-  }
-
   enc = (jxl_encoder*)jxl_alloc(ctx, sizeof(jxl_encoder));
   if (!enc) return NULL;
   enc->ctx = ctx;
   jxl_encoder_construct_empty(enc, ctx);
-  enc->cms = *jxl_get_default_cms();
-  enc->cms.set_fields_data = jxl_context_lcms(ctx);
   jxl_owned_queued_frames_clear(&enc->input_queue);
   enc->num_queued_frames = 0;
   jxl_owned_frame_settings_list_clear(&enc->encoder_options);

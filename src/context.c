@@ -5,6 +5,7 @@
 
 #include "context.h"
 
+#include "cms_builtin.h"
 #include "context_caches.h"
 
 #include "limits-imp.h"
@@ -125,13 +126,38 @@ const jxl_debug_flags *jxl_context_debug(const jxl_context *ctx) {
     return &ctx->debug;
 }
 
+static const jxl_cms k_jxl_cms_builtin = {
+    /*user_data=*/NULL,
+#if defined(JXL_C_ENABLE_JPEG_ENCODER)
+    /*set_fields_from_icc=*/jxl_cms_builtin_set_fields,
+#else
+    /*set_fields_from_icc=*/NULL,
+#endif
+    /*transform=*/jxl_cms_builtin_transform,
+};
+
+const jxl_cms *jxl_get_default_cms(void) {
+    return &k_jxl_cms_builtin;
+}
+
+static void jxl_context_install_cms(jxl_context *ctx, const jxl_context_options *opts) {
+    const jxl_cms *provided = opts != NULL ? opts->cms : NULL;
+    if (provided != NULL && provided != &k_jxl_cms_builtin) {
+        ctx->cms = provided;
+        return;
+    }
+    ctx->cms_default = k_jxl_cms_builtin;
+    ctx->cms_default.user_data = ctx;
+    ctx->cms = &ctx->cms_default;
+}
+
 void jxl_context_init_inplace(jxl_context *ctx, const jxl_context_options *opts) {
     if (ctx == NULL) {
         return;
     }
     memset(ctx, 0, sizeof(*ctx));
     jxl_allocator_init(&ctx->alloc, opts != NULL ? &opts->alloc : NULL);
-    ctx->cms = opts != NULL ? opts->cms : NULL;
+    jxl_context_install_cms(ctx, opts);
     jxl_debug_flags_read(&ctx->debug);
     ctx->dequant = jxl_calloc_state(&ctx->alloc, 1, sizeof(*ctx->dequant));
     ctx->hf_orders = jxl_calloc_state(&ctx->alloc, 1, sizeof(*ctx->hf_orders));

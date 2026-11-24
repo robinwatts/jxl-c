@@ -9,6 +9,7 @@
  */
 
 #include "allocator.h"
+#include "jxl/cms.h"
 #include "jxl/context.h"
 #include "jxl/status.h"
 #include "render/simd/features.h"
@@ -68,6 +69,8 @@ typedef struct {
 typedef struct jxl_context {
     jxl_allocator_state alloc;
     const jxl_cms *cms;
+    /* Used when the caller did not supply a CMS. cms points here. */
+    jxl_cms cms_default;
     jxl_debug_flags debug;
     jxl_context_cpu_features_cache cpu_features;
     jxl_context_dequant *dequant;

@@ -201,7 +201,7 @@ static inline bool jxl_is_jpg(const jxl_bytes* bytes) {
 }
 
 jxl_enc_status jxl_set_color_encoding_from_jpeg_data(jxl_context* ctx,
-                                    const jxl_cms_interface* cms,
+                                    const jxl_cms* cms,
                                     const jxl_jpeg_data* jpg,
                                     jxl_enc_color_encoding* color_encoding) {
   jxl_icc_bytes icc_profile;

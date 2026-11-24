@@ -15,7 +15,6 @@
 #include "allocator.h"
 #include "color_encoding_internal.h"
 
-void* jxl_context_lcms(jxl_context* ctx);
 const jxl_enc_color_encoding* jxl_context_srgb(jxl_context* ctx, int is_gray);
 
 #endif  // JXL_ENC_CONTEXT_INTERNAL_H_

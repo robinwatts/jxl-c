@@ -10,7 +10,7 @@
 // jxl_cms_color_encoding (storage_). Not the public jxl_color_encoding POD.
 // See color_encoding_cms.h for the full layering map (includes decode-parsed).
 
-#include <jxl/cms_interface.h>
+#include <jxl/cms.h>
 #include <jxl/color_encoding.h>
 #include <jxl/types.h>
 
@@ -206,7 +206,7 @@ static inline const jxl_icc_bytes* jxl_enc_color_encoding_icc(const jxl_enc_colo
 }
 
 static inline jxl_enc_status jxl_enc_color_encoding_set_icc(jxl_enc_color_encoding* self, jxl_icc_bytes* icc,
-                                         const jxl_cms_interface* cms) {
+                                         const jxl_cms* cms) {
   JXL_ENSURE(cms != NULL);
   JXL_ENSURE(icc != NULL);
   JXL_ENSURE(!jxl_array_empty(icc));

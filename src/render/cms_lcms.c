@@ -2,6 +2,7 @@
 #include "cms_lcms.h"
 
 #include "allocator.h"
+#include "cms_builtin.h"
 
 #include <stddef.h>
 #include "jxl/types.h"
@@ -326,4 +327,15 @@ jxl_status_t jxl_cms_transform_icc_to_icc(jxl_context *alloc, float **planes,
     cmsDeleteContext(ctx);
     return JXL_OK;
 #endif
+}
+
+jxl_status_t jxl_cms_builtin_transform(void *user_data, const uint8_t *src_icc, size_t src_len,
+                                       const uint8_t *dst_icc, size_t dst_len, float **planes,
+                                       size_t num_planes, size_t num_pixels) {
+    jxl_context *ctx = (jxl_context *)user_data;
+    if (ctx == NULL || num_planes > UINT32_MAX) {
+        return JXL_ERROR_INVALID_INPUT;
+    }
+    return jxl_cms_transform_icc_to_icc(ctx, planes, (uint32_t)num_planes, num_pixels, src_icc,
+                                        src_len, dst_icc, dst_len);
 }

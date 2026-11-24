@@ -7,7 +7,6 @@
 #ifndef JXL_ENC_ENCODE_INTERNAL_H_
 #define JXL_ENC_ENCODE_INTERNAL_H_
 
-#include <jxl/cms_interface.h>
 #include <jxl/encode.h>
 #include <jxl/context.h>
 #include "enc_allocator.h"
@@ -1065,8 +1064,6 @@ typedef struct jxl_encoder {
   size_t num_queued_frames;
   jxl_owned_queued_frames input_queue;
   jxl_encoder_output_processor_wrapper output_processor;
-
-  jxl_cms_interface cms;
 
   // Force using the container even if not needed
   bool use_container;

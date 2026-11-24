@@ -9,7 +9,6 @@
 typedef struct jxl_context jxl_context;
 
 typedef struct jxl_jpeg_encoder_context {
-  void* lcms;
   int srgb_ready;
   jxl_enc_color_encoding srgb[2];
 } jxl_jpeg_encoder_context;

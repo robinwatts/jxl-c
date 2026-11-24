@@ -5,6 +5,8 @@
 
 #include <jxl/cms.h>
 
+#include "cms_builtin.h"
+
 #include <jxl/cms_interface.h>
 #include <jxl/color_encoding.h>
 #include <jxl/types.h>
@@ -673,20 +675,21 @@ static cmsPluginMemHandler k_jxl_cms_mem_plugin = {
 extern "C" {
 #endif
 
-JXL_C_EXPORT const jxl_cms_interface* jxl_get_default_cms() {
-  // JPEG encoder only uses set_fields_from_icc; pixel transforms are unused.
-  // Callers must set set_fields_data to a cmsContext from jxl_cms_create_lcms_context
-  // (jxl_encoder_create does this from the jxl_context).
-  static const jxl_cms_interface kInterface = {
-      /*set_fields_data=*/NULL,
-      /*set_fields_from_icc=*/&jxl_cms_set_fields_from_icc,
-      /*init_data=*/NULL,
-      /*init=*/NULL,
-      /*get_src_buf=*/NULL,
-      /*get_dst_buf=*/NULL,
-      /*run=*/NULL,
-      /*destroy=*/NULL};
-  return &kInterface;
+JXL_BOOL jxl_cms_builtin_set_fields(void* user_data, const uint8_t* icc, size_t size,
+                                    jxl_color_encoding* out, JXL_BOOL* cmyk) {
+  jxl_context* ctx = (jxl_context*)user_data;
+  cmsContext lcms;
+  JXL_BOOL ok;
+  if (ctx == NULL) {
+    return JXL_FALSE;
+  }
+  lcms = (cmsContext)jxl_cms_create_lcms_context(ctx);
+  if (lcms == NULL) {
+    return JXL_FALSE;
+  }
+  ok = jxl_cms_set_fields_from_icc(lcms, icc, size, out, cmyk);
+  jxl_cms_destroy_lcms_context(lcms);
+  return ok;
 }
 
 JXL_C_EXPORT void* jxl_cms_create_lcms_context(jxl_context* ctx) {

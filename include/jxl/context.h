@@ -50,13 +50,19 @@ typedef struct {
  * ---------
  * opts->alloc supplies alloc/free (required). calloc and realloc may be NULL;
  * the library supplies portable defaults (zero-fill and copy-on-grow). All
- * heap use in jxl-c routes through this vtable, including LCMS2 transform
- * setup and Brotli container decompression when those subsystems are used.
+ * heap use in jxl-c routes through this vtable, including the built-in LCMS2
+ * adapter and Brotli container decompression when those subsystems are used.
  * Pair every successful allocation with a free through the same context.
+ *
+ * CMS
+ * ---
+ * opts->cms supplies set_fields_from_icc and transform. NULL selects the
+ * built-in LCMS2 adapter when it is compiled in; otherwise those operations
+ * return failure. The table must outlive the context. See jxl/cms.h.
  */
 typedef struct {
     jxl_allocator_t alloc;
-    const jxl_cms *cms; /* NULL → built-in LCMS2 */
+    const jxl_cms *cms; /* NULL → built-in LCMS2 adapter */
 } jxl_context_options;
 
 /*

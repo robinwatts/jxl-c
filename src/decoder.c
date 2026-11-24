@@ -13,7 +13,7 @@
 #include "image/image_internal.h"
 #include "modular/image.h"
 #include "modular/region.h"
-#include "render/cms_lcms.h"
+#include "render/linear_srgb_icc.inc"
 #include "image/icc_parse.h"
 #include "render/color_encoding_util.h"
 #include "render/color_transform.h"
@@ -379,6 +379,18 @@ static int decoder_postprocess_transform_is_noop(const jxl_parsed_image_header *
     return 0;
 }
 
+static jxl_status_t decoder_cms_transform(const jxl_decoder *dec, const uint8_t *src_icc, size_t src_len,
+                                          const uint8_t *dst_icc, size_t dst_len, float **planes,
+                                          size_t num_planes, size_t num_pixels) {
+    const jxl_cms *cms;
+    if (dec == NULL || dec->ctx == NULL || dec->ctx->cms == NULL || dec->ctx->cms->transform == NULL) {
+        return JXL_ERROR_UNSUPPORTED;
+    }
+    cms = dec->ctx->cms;
+    return cms->transform(cms->user_data, src_icc, src_len, dst_icc, dst_len, planes, num_planes,
+                          num_pixels);
+}
+
 static jxl_status_t decoder_postprocess_keyframe(jxl_decoder *dec, jxl_render *r,
                                                const jxl_parsed_image_header *parsed,
                                                const jxl_decoder_frame_hint *fh) {
@@ -450,10 +462,9 @@ static jxl_status_t decoder_postprocess_keyframe(jxl_decoder *dec, jxl_render *r
             parsed->embedded_icc_len == target_icc_len &&
             memcmp(parsed->embedded_icc, target_icc, target_icc_len) == 0;
         if (!icc_same) {
-            jxl_status_t st = jxl_cms_transform_icc_to_icc(dec_alloc(dec), r->planes, cms_planes, px_count,
-                                                           parsed->embedded_icc,
-                                                           parsed->embedded_icc_len, target_icc,
-                                                           target_icc_len);
+            jxl_status_t st = decoder_cms_transform(dec, parsed->embedded_icc, parsed->embedded_icc_len,
+                                                   target_icc, target_icc_len, r->planes, cms_planes,
+                                                   px_count);
             if (st != JXL_OK) {
                 return st;
             }
@@ -516,10 +527,14 @@ static jxl_status_t decoder_apply_output_color_transform(jxl_decoder *dec, jxl_r
     }
 
     if (use_cms) {
+        float *planes[3];
         jxl_color_transform_xyb_to_linear_rgb(dec->ctx, r->planes[0], r->planes[1], r->planes[2], px_count,
                                               &parsed->opsin_inverse, 255.0f);
-        return jxl_cms_transform_linear_srgb_to_icc(dec_alloc(dec), r->planes[0], r->planes[1], r->planes[2],
-                                                    px_count, target_icc, target_icc_len);
+        planes[0] = r->planes[0];
+        planes[1] = r->planes[1];
+        planes[2] = r->planes[2];
+        return decoder_cms_transform(dec, k_jxl_linear_srgb_icc, k_jxl_linear_srgb_icc_len, target_icc,
+                                     target_icc_len, planes, 3, px_count);
     }
 
     if (!jxl_color_encoding_is_d65_srgb_fast_path(&target_parsed)) {

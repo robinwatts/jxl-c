@@ -15,7 +15,7 @@
 // Convert at API edges with jxl_cms_color_encoding_to/from_external (encode)
 // and jxl_color_encoding_parsed_to_public (decode).
 
-#include <jxl/cms_interface.h>
+#include <jxl/cms.h>
 #include <jxl/color_encoding.h>
 #include <jxl/types.h>
 
@@ -519,10 +519,12 @@ static inline jxl_color_encoding jxl_cms_color_encoding_to_external(const jxl_cm
 // Returns false if the ICC profile is invalid or decoding it fails.
 static inline jxl_enc_status jxl_cms_color_encoding_set_fields_from_icc(jxl_cms_color_encoding* self,
                                                jxl_icc_bytes* new_icc,
-                                               const jxl_cms_interface* cms) {
+                                               const jxl_cms* cms) {
   // In case parsing fails, mark the jxl_cms_color_encoding as invalid.
   JXL_ENSURE(new_icc != NULL);
   JXL_ENSURE(!jxl_array_empty(new_icc));
+  JXL_ENSURE(cms != NULL);
+  JXL_ENSURE(cms->set_fields_from_icc != NULL);
   self->color_space = kColorSpaceUnknown;
   self->tf.transfer_function = kTFUnknown;
   jxl_array_clear(&self->icc);
@@ -531,7 +533,7 @@ static inline jxl_enc_status jxl_cms_color_encoding_set_fields_from_icc(jxl_cms_
   jxl_color_encoding_set_empty(&external);
   JXL_BOOL new_cmyk;
   JXL_RETURN_IF_ERROR(jxl_enc_status_from_bool(cms->set_fields_from_icc(
-      cms->set_fields_data, jxl_array_data(new_icc), jxl_array_len(new_icc), &external,
+      cms->user_data, jxl_array_data(new_icc), jxl_array_len(new_icc), &external,
       &new_cmyk)));
   self->cmyk = (bool)(new_cmyk);
   JXL_RETURN_IF_ERROR(jxl_cms_color_encoding_from_external(self, &external));
